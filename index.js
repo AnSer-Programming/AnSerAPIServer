@@ -1,6 +1,7 @@
 const express = require('express');
 const dayjs = require('dayjs');
-const timeStamp = window.location.searchParams.get("timeStamp");
+const paramsString = "q=URLUtils.searchParams&topic=api";
+const searchParams  = new URLSearchParams(paramsString);
 
 const PORT = process.env.PORT || 3001;
 
@@ -10,13 +11,12 @@ function converter(timeStamp) {
     return dayjs(timeStamp);
 }
 
-app.get('/api', (req, res) => {
-    res.sendFile("Hellow World");
-    //res.json({timeStamp});
-})
-    
-app.post('/api', (req, res) => {
-    res.json({timeDate: converter()});
+app.get('/', (req, res) => {
+    res.send(`${req.params.TimeStamp}`);
+});
+
+app.get('/api/:TimeStamp', (req, res) => {
+    res.send(dayjs(req.params.TimeStamp));
 });
 
 app.listen(PORT, () => 
