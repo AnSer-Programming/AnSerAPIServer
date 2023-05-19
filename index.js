@@ -20,7 +20,7 @@ function converter(timeStamp) {
 }
 
 // Set the homepage for the website
-app.get('/', (req, res) =>{
+app.get('/TimeConverter', (req, res) =>{
     converter(timeStamp);
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
