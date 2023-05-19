@@ -16,8 +16,12 @@ function converter(timeStamp) {
     return dayjs(timeStamp);
 }
 
-app.post('/TimeConverter', (req, res) =>{
-    res.json(converter(timeStamp));
+app.get('/api', (req, res) => {
+    res.json({timeStamp});
+})
+    
+app.post('/api', (req, res) => {
+    res.json({timeDate: converter()});
 });
 
 app.listen(PORT, () => 
