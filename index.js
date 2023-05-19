@@ -16,8 +16,7 @@ function converter(timeStamp) {
     return dayjs(timeStamp);
 }
 
-// Set the homepage for the website
-app.get('/TimeConverter', (req, res) =>{
+app.post('/TimeConverter', (req, res) =>{
     res.json(converter(timeStamp));
 });
 
