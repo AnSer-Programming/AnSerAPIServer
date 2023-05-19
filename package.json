@@ -1,4 +1,8 @@
 {
+  "name": "time-converter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "dependencies": {
     "dayjs": "^1.11.7"
   }
