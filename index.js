@@ -13,15 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 function converter(timeStamp) {
-    let converted = {
-        dateTime: dayjs(timeStamp),
-    }
-    return converted;
+    return dayjs(timeStamp);
 }
 
 // Set the homepage for the website
 app.get('/TimeConverter', (req, res) =>{
-    res.sendFile(converter(timeStamp));
+    res.json(converter(timeStamp));
 });
 
 app.listen(PORT, () => 
