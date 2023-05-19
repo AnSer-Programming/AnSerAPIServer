@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/:TimeStamp', (req, res) => {
-    res.send(dayjs(req.params.TimeStamp));
+    res.json(dayjs(req.params.TimeStamp));
 });
 
 app.listen(PORT, () => 
