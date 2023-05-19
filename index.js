@@ -4,7 +4,7 @@ const url = new URL(url_string);
 const timeStamp = url.searchParams.get("timeStamp");
 
 function converter(timeStamp) {
-    return dayjs(timeStamp);
+    return JSON.stringify(dayjs(timeStamp));
 }
 
 converter(timeStamp);
