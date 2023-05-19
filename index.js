@@ -12,7 +12,7 @@ function converter(timeStamp) {
 }
 
 app.get('/', (req, res) => {
-    res.send(`${req.params.TimeStamp}`);
+    res.send("Welcome!");
 });
 
 app.get('/api/:TimeStamp', (req, res) => {
