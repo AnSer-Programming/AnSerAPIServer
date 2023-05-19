@@ -11,7 +11,8 @@ function converter(timeStamp) {
 }
 
 app.get('/api', (req, res) => {
-    res.json({timeStamp});
+    res.sendFile("Hellow World");
+    //res.json({timeStamp});
 })
     
 app.post('/api', (req, res) => {
