@@ -21,8 +21,7 @@ function converter(timeStamp) {
 
 // Set the homepage for the website
 app.get('/TimeConverter', (req, res) =>{
-    converter(timeStamp);
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    res.sendFile(converter(timeStamp));
 });
 
 app.listen(PORT, () => 
