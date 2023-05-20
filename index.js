@@ -8,7 +8,11 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 function converter(timeStamp) {
-    return dayjs(timeStamp);
+    const timeConverted = {
+        date: dayjs(timeStamp * 1000, 'M/D/YYYY'),
+        time: dayjs(timeStamp * 1000, 'H:m:s')
+    }
+    return timeConverted;
 }
 
 app.get('/', (req, res) => {
@@ -16,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/:TimeStamp', (req, res) => {
-    res.send(dayjs(req.params.TimeStamp * 1000));
+    res.send(converter(req.params.TimeStamp));
 });
 
 app.listen(PORT, () => 
