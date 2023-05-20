@@ -9,8 +9,8 @@ const app = express();
 
 function converter(timeStamp) {
     const timeConverted = {
-        date: dayjs(timeStamp * 1000, 'M/D/YYYY'),
-        time: dayjs(timeStamp * 1000, 'H:m:s')
+        date: dayjs(timeStamp * 1000).format('M/D/YYYY'),
+        time: dayjs(timeStamp * 1000).format('H:m:s')
     }
     return timeConverted;
 }
