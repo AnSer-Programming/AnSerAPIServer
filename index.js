@@ -1,26 +1,27 @@
 const express = require('express');
 const dayjs = require('dayjs');
-const paramsString = "q=URLUtils.searchParams&topic=api";
-const searchParams  = new URLSearchParams(paramsString);
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-function converter(timeStamp) {
+function converter(sunRiseTimeStamp, timeZoneDiff) {
     const timeConverted = {
-        date: dayjs(timeStamp * 1000).format('M/D/YYYY'),
-        time: dayjs(timeStamp * 1000).format('H:m:s')
-    }
+        date: dayjs(sunRiseTimeStamp * 1000 - timeZoneDiff).format('M/D/YYYY'),
+        time: dayjs(sunRiseTimeStamp * 1000 - timeZoneDiff).format('h:mm:ss')
+    };
+
     return timeConverted;
 }
 
+// This is the homepage
 app.get('/', (req, res) => {
     res.send("Welcome!");
 });
 
-app.get('/api/:TimeStamp', (req, res) => {
-    res.send(converter(req.params.TimeStamp));
+// This leads to the actual API
+app.get('/api/:sunRiseTimeStamp/:timeZoneDiff', (req, res) => {
+    res.send(converter(req.params.sunRiseTimeStamp, req.params.timeZoneDiff));
 });
 
 app.listen(PORT, () => 
