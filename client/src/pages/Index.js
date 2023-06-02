@@ -16,9 +16,7 @@ const Index = () => {
   return (
     <>
       <div className='text-light bg-dark pt-5'>
-        <p>Billy!</p>
-
-        <p>Cristian is Short</p>
+        <p>Test!</p>
       </div>
     </>
   );
