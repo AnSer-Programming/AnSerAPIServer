@@ -1,29 +1,66 @@
 const router = require('express').Router();    
-const fs = require('fs')
+const fs = require('fs');
+let filePath;
 
-function scheduler(timeZoneDif, sunRiseUnix, sunSetUnix) {
-    fs.writeFile('Output.txt', data, (err) => {
-    // In case of a error throw err.
+function schedulerWrite(accountNum, data) {
+    filePath = `../../schedulerJSON/Account${ accountNum }.json`;
+    fs.writeFile(filePath, data, (err) => {
+    // In case of an error throw err.
         if(err) {
             res.send(`Error 500 server error ${ err }`);
-        } else {
-
+            console.log(err);
         }
-    })
+    });
 }
 
-router.post('/:account/:dates/:times', (req, res) => {
-    //timeConverter(req.params.timeZoneDif, req.params.sunRiseUnix, req.params.sunSetUnix)
-    const timeConverter = {
-        "timeZoneDif": req.params.timeZoneDif,
-        "sunRiseUnix": req.params.sunRiseUnix,
-        "sunSetUnix": req.params.sunSetUnix
-    };
+function schedulerAppend(accountNum, data) {
+    filePath = `../../../schedulerJSON/Account${ accountNum }.json`;
+    fs.appendFile(`../schedulerJSON/${ accountNum }.json`, data, (err) => {
+        if (err) {
+            res.send(`Error 500 server error ${ err }`);
+            console.log(err);
+        }
+        else {
+          // Get the file contents after the append operation
+            console.log("\nFile Contents of file after append:",
+            fs.readFileSync("example_file.txt", "utf8"));
+        }
+    });
+
+}
+
+function schedulerReader(accountNum) {
+    filePath = `../../schedulerJSON/Account${ accountNum }.json`;
+    try {
+        if(fs.existsSync(filePath)) {
+            console.log("The file exists");
+            fs.readFile(filePath, data, (err) => {
+                // In case of an error throw err.
+                if(err) {
+                    res.send(`Error 500 server error ${ err }`);
+                    console.log(err);
+                }
+            });
+        } else {
+            console.log(`The file, ${ filePath }, doesn't exist`);
+        }
+    } catch(err) {
+        console.log(`There was a server error`);
+        console.log(err);
+    }
+}
+
+router.post('/:account', (req, res) => {
+    schedulerWrite(req.params.account, req.body);
     res.send(timeConverter);
 });
 
-router.get('/:account', (req, res) => {
+router.put('/:account', (req, res) => {
+    res.send(schedulerAppend(req.params.account, req.body));
+});
 
+router.get('/:account', (req, res) => {
+    res.send(schedulerReader(req.params.account));
 });
 
 module.exports = router;
