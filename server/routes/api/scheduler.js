@@ -1,8 +1,8 @@
-const router = require('express').Router();    
-const path = require('path');
+const router = require('express').Router(); //do not convert to an ES module. It works as is and is fine until you are ready to fully update everything about this API! 
+const path = require('path'); //allows for combining relative file path with a set file path
 const fsp = require('fs').promises; //this file system call allows for async and await
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
-let filePath;
+let filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
 async function schedulerWrite(accountNum, data) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
