@@ -1,5 +1,5 @@
 const express = require('express');
-const pem = require('pem');
+const https =require('https');
 const fs = require('fs');
 const path = require('path');
 const routes = require('./routes');
@@ -15,9 +15,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(routes);
 
-const pfx = fs.readFileSync(path.join(__dirname, '../anser-wildcard-2023.pfx'));
-pem.readPkcs12(pfx, { p12Password: process.env.SSL_PASSWORD }, (err, cert) => {
-  app.listen(PORT, () => {
-    console.log(`🌍 Now listening on localhost:${PORT}`);
-  });
-});
+const httpsOptions = {
+  cert: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023.crt')),
+  key: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023-decrypted.key'))
+}
+
+https.createServer(httpsOptions, app).listen(PORT, function() {
+  console.log(`🌍 Now listening on localhost:${PORT}`);
+})
