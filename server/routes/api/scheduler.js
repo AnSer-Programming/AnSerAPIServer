@@ -1,66 +1,87 @@
-const router = require('express').Router();    
-const fs = require('fs');
-let filePath;
+const router = require('express').Router(); //do not convert to an ES module. It works as is and is fine until you are ready to fully update everything about this API! 
+const path = require('path'); //allows for combining relative file path with a set file path
+const fsp = require('fs').promises; //this file system call allows for async and await
+const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
+let filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
-function schedulerWrite(accountNum, data) {
+async function schedulerWrite(accountNum, data) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
-    fs.writeFile(filePath, data, (err) => {
-    // In case of an error throw err.
-        if(err) {
-            res.send(`Error 500 server error ${ err }`);
-            console.log(err);
-        }
-    });
-}
 
-function schedulerAppend(accountNum, data) {
-    filePath = `../../../schedulerJSON/Account${ accountNum }.json`;
-    fs.appendFile(`../schedulerJSON/${ accountNum }.json`, data, (err) => {
-        if (err) {
-            res.send(`Error 500 server error ${ err }`);
-            console.log(err);
-        }
-        else {
-          // Get the file contents after the append operation
-            console.log("\nFile Contents of file after append:",
-            fs.readFileSync("example_file.txt", "utf8"));
-        }
-    });
-
-}
-
-function schedulerReader(accountNum) {
-    filePath = `../../schedulerJSON/Account${ accountNum }.json`;
-    try {
-        if(fs.existsSync(filePath)) {
-            console.log("The file exists");
-            fs.readFile(filePath, data, (err) => {
-                // In case of an error throw err.
-                if(err) {
-                    res.send(`Error 500 server error ${ err }`);
-                    console.log(err);
-                }
-            });
+    await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
+        if(errFile) {
+            console.error(errFile);
         } else {
-            console.log(`The file, ${ filePath }, doesn't exist`);
+            console.log('File has been created');
         }
-    } catch(err) {
-        console.log(`There was a server error`);
-        console.log(err);
+    });
+
+    return JSON.stringify(data);
+}
+
+async function schedulerAppend(accountNum, data) {
+    filePath = `../../schedulerJSON/Account${ accountNum }.json`;
+    if(fs.existsSync(path.join(__dirname, filePath))) {
+        fs.appendFile((path.join(__dirname, filePath)), JSON.stringify(data), (err) => {
+            if(err) {
+                res.send(`Error 500 server error ${ err }`);
+                console.log(err);
+            }
+            else {
+              // Get the file contents after the append operation
+                return data
+            }
+        });
+        return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
+    } else {
+        console.log(`The file, ${ path.join(__dirname, filePath) }, doesn't exist`);
     }
 }
 
-router.post('/:account', (req, res) => {
-    schedulerWrite(req.params.account, req.body);
-    res.send(timeConverter);
+//Call the function in async to allow for data to be returned before the code moves on.
+async function schedulerReader(accountNum) {
+    const filePath = `../../schedulerJSON/Account${ accountNum }.json`;
+    // This is a dynamic filePath call that will allow for multiple account numbers to set up a scheduler.
+    if(fs.existsSync(path.join(__dirname, filePath))) {
+        console.log(`The file ${ path.join(__dirname, filePath) } exists`);
+        return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
+    } else {
+        //Create an empty JSON file
+        const data = {
+
+        };
+
+        await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
+            if(errFile) {
+                console.error(errFile);
+            } else {
+                console.log('File has been created');
+            }
+        });
+
+        //Make the JSON file readable
+        return JSON.stringify(data);
+    }
+}
+
+//Write to the accounts JSON file
+//  Use async and await to force the code to wait for results rather than letting it continue reading lines.
+router.post('/:account', async(req, res) => {
+    const data = await schedulerWrite(req.params.account, req.body);
+    res.send(JSON.parse(data));
 });
 
-router.put('/:account', (req, res) => {
-    res.send(schedulerAppend(req.params.account, req.body));
+//Update the accounts JSON file
+//  Use async and await to force the code to wait for results rather than letting it continue reading lines.
+router.put('/:account', async(req, res) => {
+    const data = await schedulerAppend(req.params.account, req.body);
+    res.send(JSON.parse(data));
 });
 
-router.get('/:account', (req, res) => {
-    res.send(schedulerReader(req.params.account));
+//Read from the accounts JSON file
+//  Use async and await to force the code to wait for results rather than letting it continue reading lines.
+router.get('/:account', async(req, res) => {
+    const data = await schedulerReader(req.params.account);
+    res.send(JSON.parse(data));
 });
 
 module.exports = router;
