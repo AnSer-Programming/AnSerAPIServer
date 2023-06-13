@@ -3,8 +3,9 @@ const pem = require('pem');
 const fs = require('fs');
 const path = require('path');
 const routes = require('./routes');
+require('dotenv').config();
 
-const PORT = process.env.PORT || 8443;
+const PORT = process.env.PORT || 443;
 
 const app = express();
 
