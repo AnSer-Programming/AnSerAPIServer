@@ -2,7 +2,7 @@ const router = require('express').Router(); //do not convert to an ES module. It
 const path = require('path'); //allows for combining relative file path with a set file path
 const fsp = require('fs').promises; //this file system call allows for async and await
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
-let filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
+var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
 async function schedulerWrite(accountNum, data) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
@@ -39,7 +39,7 @@ async function schedulerAppend(accountNum, data) {
 
 //Call the function in async to allow for data to be returned before the code moves on.
 async function schedulerReader(accountNum) {
-    const filePath = `../../schedulerJSON/Account${ accountNum }.json`;
+    filePath = `../../schedulerJSON/Account${ accountNum }.json`;
     // This is a dynamic filePath call that will allow for multiple account numbers to set up a scheduler.
     if(fs.existsSync(path.join(__dirname, filePath))) {
         console.log(`The file ${ path.join(__dirname, filePath) } exists`);
@@ -61,6 +61,13 @@ async function schedulerReader(accountNum) {
         //Make the JSON file readable
         return JSON.stringify(data);
     }
+}
+
+const setPath = () => {
+    if(process.env.PRODUCTION === 'True') {
+        return path.join(__dirname, filePath);
+    } 
+    return filePath;
 }
 
 //Write to the accounts JSON file
