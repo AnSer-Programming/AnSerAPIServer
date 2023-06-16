@@ -25,6 +25,7 @@ if(PORT===443) {
   }
   
   https.createServer(httpsOptions, app).listen(PORT, function() {
+    console.log(`Running in production!`);
     console.log(`🌍 Now listening on localhost:${PORT}`);
   });
 } else {
