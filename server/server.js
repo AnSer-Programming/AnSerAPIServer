@@ -3,7 +3,7 @@ const https =require('https');
 const fs = require('fs');
 const path = require('path');
 const routes = require('./routes');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const PORT = process.env.PORT || 3001;
 
@@ -12,9 +12,8 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-
 if(process.env.PRODUCTION === 'True') {
-  app.use(path.join(__dirname, '../client/build'));
+  app.use(express.static(path.join(__dirname, '../client/build')));
 } 
 
 app.use(routes);
