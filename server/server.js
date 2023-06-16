@@ -18,7 +18,7 @@ if(process.env.PRODUCTION === 'True') {
 
 app.use(routes);
 
-if(PORT===443) {
+if(PORT==443) {
   const httpsOptions = {
     cert: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023.crt')),
     key: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023-decrypted.key'))
