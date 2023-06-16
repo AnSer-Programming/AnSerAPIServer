@@ -15,11 +15,17 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(routes);
 
-const httpsOptions = {
-  cert: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023.crt')),
-  key: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023-decrypted.key'))
+if(PORT===443) {
+  const httpsOptions = {
+    cert: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023.crt')),
+    key: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023-decrypted.key'))
+  }
+  
+  https.createServer(httpsOptions, app).listen(PORT, function() {
+    console.log(`🌍 Now listening on localhost:${PORT}`);
+  });
+} else {
+  app.listen(PORT, function() {
+    console.log(`🌍 Now listening on localhost:${PORT}`);
+  });
 }
-
-https.createServer(httpsOptions, app).listen(PORT, function() {
-  console.log(`🌍 Now listening on localhost:${PORT}`);
-})
