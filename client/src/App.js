@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Index from './pages/Index';
-//import Navbar from './components/Navbar';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
@@ -11,6 +11,7 @@ function App() {
           <Route exact path='/' component={Index} />
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
         </Switch>
+        <Navbar />
       </>
     </Router>
   );
