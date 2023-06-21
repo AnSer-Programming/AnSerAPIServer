@@ -1,16 +1,12 @@
 const router = require('express').Router();
 
-function timeConverter(timeZoneDif, sunRiseUnix, sunSetUnix) {
+function timeConverter(body) {
     return router.send("This is the time converter");
 }
 
-router.get('/:timeZoneDif/:sunRiseUnix/:sunSetUnix', (req, res) => {
+router.get('/', async(req, res) => {
     //timeConverter(req.params.timeZoneDif, req.params.sunRiseUnix, req.params.sunSetUnix)
-    const timeConverter = {
-        "timeZoneDif": req.params.timeZoneDif,
-        "sunRiseUnix": req.params.sunRiseUnix,
-        "sunSetUnix": req.params.sunSetUnix
-    };
+    const timeConverter = await timeConverter(req.body);
     res.send(timeConverter);
 });
 
