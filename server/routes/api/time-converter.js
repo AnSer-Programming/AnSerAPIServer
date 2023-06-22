@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 function timeConverter(body) {
-    return router.send("This is the time converter");
+    return router.send(body);
 }
 
 router.get('/', async(req, res) => {
