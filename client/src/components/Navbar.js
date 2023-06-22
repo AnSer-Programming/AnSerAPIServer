@@ -1,55 +1,53 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Navbar, Nav, Container, Modal, Tab } from 'react-bootstrap';
+import Accordion from 'react-bootstrap/Accordion';
 
-const AppNavbar = () => {
-  // set modal display state
-  const [showModal, setShowModal] = useState(false);
+function BasicExample() {
+  const accordionStyle = {
+    marginBottom: '45px',
 
-  return (  
-    <>  
-      <Navbar bg='dark' variant='dark' expand='lg'>
-        <Container fluid>
-          <Navbar.Brand as={Link} to='/'>
-            API Directory
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls='navbar' />
-          <Navbar.Collapse id='navbar' className='d-flex flex-row-reverse'>
-            <Nav className='ml-auto d-flex'>
-              <Nav.Link as={Link} to='/'>
-                Search For Books
-              </Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Modal
-        size='lg'
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        aria-labelledby='signup-modal'>
-        {/* tab container to do either signup or login component */}
-        <Tab.Container defaultActiveKey='login'>
-          <Modal.Header closeButton>
-            <Modal.Title id='signup-modal'>
-              <Nav variant='pills'>
-                <Nav.Item>
-                  <Nav.Link eventKey='login'>Login</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey='signup'>Sign Up</Nav.Link>
-                </Nav.Item>
-              </Nav>
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-          </Modal.Body>
-        </Tab.Container>
-      </Modal>
-    </>  
+  };
+
+  const headerStyle = {
+    backgroundColor: '#f8f9fa',
+    padding: '12px 16px',
+    fontWeight: 'bold',
+    color: '#333',
+    cursor: 'pointer',
+  };
+
+  const bodyStyle = {
+    padding: '16px',
+    backgroundColor: '#333435',
+    color: "white",
+    fontfamily: 'Poppins, sans-serif',
+  };
+  return (
+    <Accordion style={accordionStyle}> 
+      <Accordion.Item eventKey="0">
+        <Accordion.Header style={headerStyle}>Scheduler API</Accordion.Header>
+        <Accordion.Body style={bodyStyle}>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. THis does that Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </Accordion.Body>
+      </Accordion.Item>
+      <Accordion.Item eventKey="1">
+        <Accordion.Header style={headerStyle}>Vessel API</Accordion.Header>
+        <Accordion.Body style={bodyStyle}>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </Accordion.Body>
+      </Accordion.Item>
+    </Accordion>
   );
-{/* set modal data up */}
-};
+}
 
-
-export default AppNavbar;
+export default BasicExample;
