@@ -2,6 +2,9 @@ const router = require('express').Router(); //do not convert to an ES module. It
 const path = require('path'); //allows for combining relative file path with a set file path
 const fsp = require('fs').promises; //this file system call allows for async and await
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
+const dayjs = require('dayjs'); //allows for easy date manipulation and date math
+const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows for time manipulation
+dayjs.extend(customParseFormat); //brings in the time manipulation extension into the main dayjs function call
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
 async function schedulerWrite(accountNum, data) {
@@ -14,27 +17,39 @@ async function schedulerWrite(accountNum, data) {
             console.log('File has been created');
         }
     });
-
-    return JSON.stringify(data);
+    return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
 }
 
 async function schedulerAppend(accountNum, data) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
-    if(fs.existsSync(path.join(__dirname, filePath))) {
-        fs.appendFile((path.join(__dirname, filePath)), JSON.stringify(data), (err) => {
-            if(err) {
-                res.send(`Error 500 server error ${ err }`);
-                console.log(err);
-            }
-            else {
-              // Get the file contents after the append operation
-                return data
-            }
-        });
-        return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
-    } else {
-        console.log(`The file, ${ path.join(__dirname, filePath) }, doesn't exist`);
+    console.log(data.Time);
+    if(data.Set) {
+        console.log(`Move ${ data.Date } and ${ dayjs(data.Time, ['h:mm A', 'h A', 'hA', 'h:mmA']).format("HH:mm:00") } from Available to Unavailable`);
     }
+    // current = await schedulerReader(accountNum);
+    // if(data.set) {
+    //     // for(let i = 0; i < current.date.length(); i++) {
+
+    //     // }
+    // } else {
+
+    // }
+    // if(fs.existsSync(path.join(__dirname, filePath))) {
+    //     // fs.appendFile((path.join(__dirname, filePath)), JSON.stringify(data), (err) => {
+    //     //     if(err) {
+    //     //         res.send(`Error 500 server error ${ err }`);
+    //     //         console.log(err);
+    //     //     }
+    //     //     else {
+    //     //       // Get the file contents after the append operation
+    //     //         return data
+    //     //     }
+    //     // });
+    //     // return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
+    // // } else {
+    // //     console.log(`The file, ${ path.join(__dirname, filePath) }, doesn't exist`);
+    // // }
+    return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
 }
 
 //Call the function in async to allow for data to be returned before the code moves on.
@@ -42,7 +57,6 @@ async function schedulerReader(accountNum) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
     // This is a dynamic filePath call that will allow for multiple account numbers to set up a scheduler.
     if(fs.existsSync(path.join(__dirname, filePath))) {
-        console.log(`The file ${ path.join(__dirname, filePath) } exists`);
         return data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
     } else {
         //Create an empty JSON file
@@ -61,13 +75,6 @@ async function schedulerReader(accountNum) {
         //Make the JSON file readable
         return JSON.stringify(data);
     }
-}
-
-const setPath = () => {
-    if(process.env.PRODUCTION === 'True') {
-        return path.join(__dirname, filePath);
-    } 
-    return filePath;
 }
 
 //Write to the accounts JSON file
