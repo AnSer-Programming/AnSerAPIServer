@@ -22,9 +22,15 @@ async function schedulerWrite(accountNum, data) {
 
 async function schedulerAppend(accountNum, data) {
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
-    console.log(data.Time);
+    time = data.Time.substr(0, data.Time.length-2); // everything that is in the string before the last two characters will be stored in the time variable
+    meridiem = data.Time.substr(data.Time.length-2); // remove the meridiem from the time string
+    timeLastChar = time.substr(time.length-1);
+    if(timeLastChar!=" ") {
+        data.Time = `${time} ${meridiem}`; // concatinating the time and meridiem with a space between to keep it dynamic
+    }
+
     if(data.Set) {
-        console.log(`Move ${ data.Date } and ${ dayjs(data.Time, ['h:mm A', 'h A', 'hA', 'h:mmA']).format("HH:mm:00") } from Available to Unavailable`);
+        console.log(`Move ${ data.Date } and ${ dayjs(data.Time, ['h:mm A', 'h A', 'hA', 'h:mmA', 'h:mm a', 'h a', 'ha', 'h:mma']).format("HH:mm") } from Available to Unavailable`);
     }
     // current = await schedulerReader(accountNum);
     // if(data.set) {
