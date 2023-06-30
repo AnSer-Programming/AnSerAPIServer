@@ -42,13 +42,13 @@ router.get('/', async(req, res) => {
             // console.dir(result2)
         } catch (err) {
             // ... error checks
-        res.send("catch block" + err);
+        res.send("catch block: " + err);
         }
     })()
     
     sql.on('error', err => {
         // ... error handler
-        res.send("sql on " + err);
+        res.send("sql on: " + err);
     })
         // const executeSQL = (sql, callback) => {
     //     let connection = new Connection(config);
