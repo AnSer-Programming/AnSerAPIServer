@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const timeConverterRoute = require('./time-converter');
-const schedulerRoute = require('./scheduler');
+const timeConverterRoute = require('./TimeConverter');
+const schedulerRoute = require('./Scheduler');
 const billy = require('./Billy');
 const onTimeRoute = require('./OnTime');
 
