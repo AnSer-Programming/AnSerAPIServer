@@ -7,7 +7,33 @@ const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows fo
 dayjs.extend(customParseFormat); //brings in the time manipulation extension into the main dayjs function call
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
+async function pastDateChecker(accountNum) {
+    const data = await schedulerReader(accountNum);
+    let dataParsed = JSON.parse(data);
+    let dataString = JSON.stringify(data);
+    let dates = [];
+    //console.log(Object.values(dataParsed.Available.Dates));
+    //dataParsed.Available.Dates.Date.values();
+
+    console.log(Object.values(dataParsed.Available.Dates));
+    //console.log(dates);
+    let newData = {
+        "Available": {"Dates": []},
+    }
+
+    //console.log(data);
+
+    if(data != null) {
+        for(let i = 0; i< Object.keys(dataParsed.Available.Dates).length; i++) {
+            // console.log(Object.values(dataParsed.Available.Dates[i]));
+            // if(dayjs() > Object.values(dataParsed.Available.Dates[i])) {
+            // }
+        }
+    }
+}
+
 async function schedulerWrite(accountNum, data) {
+    pastDateChecker(accountNum);
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
 
     await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
@@ -21,6 +47,7 @@ async function schedulerWrite(accountNum, data) {
 }
 
 async function schedulerAppend(accountNum, data) {
+    pastDateChecker(accountNum);
     filePath = `../../schedulerJSON/Account${ accountNum }.json`;
     time = data.Time.substr(0, data.Time.length-2); // everything that is in the string before the last two characters will be stored in the time variable
     meridiem = data.Time.substr(data.Time.length-2); // remove the meridiem from the time string
@@ -100,6 +127,7 @@ router.put('/:account', async(req, res) => {
 //Read from the accounts JSON file
 //  Use async and await to force the code to wait for results rather than letting it continue reading lines.
 router.get('/:account', async(req, res) => {
+    pastDateChecker(req.params.account)
     const data = await schedulerReader(req.params.account);
     res.send(JSON.parse(data));
 });
