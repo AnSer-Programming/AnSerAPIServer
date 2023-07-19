@@ -10,8 +10,6 @@ try {
         `${ process.env.DB_NAME }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
         {
             "host": `${ process.env.DB_SERVER }`,
-            // "userName": `${ process.env.DB_USER }`,
-            // "password": `${ process.env.DB_PWD }`,
             "dialect": 'mssql',
             "port": 1433,
             "encrypt": false,
