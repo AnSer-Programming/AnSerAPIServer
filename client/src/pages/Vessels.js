@@ -31,13 +31,14 @@ const Vessels = () => {
 
   return (
     <>
-      <div className='text-light bg-dark pt-5'>{accountNum}
+      <div className='text-light bg-dark pt-5'>
         <Select
+          className='text-dark'
           name="Account List"
           value={option.value}
           onChange={handlerChangeAccount}
           options={option}
-        />
+        /> <br />
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
         {
           isEdit ? 

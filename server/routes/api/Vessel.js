@@ -14,8 +14,7 @@ async function vesselWrite(accountNum, data) {
       return arrOfObj.map(obj => Object.values(obj));
     }
     
-    let sorted = vesselOwner(data.VesselsOwners).sort();
-
+    let sorted = vesselOwner(data.VesselsOwners).sort().reverse();
     let sortedJSON = `{"VesselsOwners": [`
     for(let i = 0; i < sorted.length; i++) {
         if(i === sorted.length-1) {

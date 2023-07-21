@@ -27,7 +27,7 @@ const GetVessels = ({accountNum}) => {
     };
 
     getVesselData();
-  }, [vesselDataLength]);
+  }, [vesselDataLength, accountNum]);
   
   if (!vesselDataLength) {
     return <h2>LOADING...</h2>;
@@ -35,7 +35,6 @@ const GetVessels = ({accountNum}) => {
 
   return (
     <>
-    {accountNum}
       <div>
         {Object.keys(vesselData).map((index) => (<p>Vessel: {vesselData[index].Vessel} | Owner: {vesselData[index].Person}</p>))}
       </div>
