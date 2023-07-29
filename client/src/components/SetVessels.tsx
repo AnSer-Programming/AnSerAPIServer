@@ -24,7 +24,7 @@ const SetVessels = ({accountNum}) => {
     };
 
     getVesselData();
-  }, [vesselDataLength, accountNum]);
+  }, [vesselDataLength, accountNum]); // If either the amount of data being received changes or if the account number changes the useEffect will run
   
   if (!vesselDataLength) {
     return <h2>LOADING...</h2>;
@@ -47,8 +47,25 @@ const SetVessels = ({accountNum}) => {
     }
   };
 
-  const handleVesselEdit = async() => {    
-    // updateVesselData
+  const handleVesselEdit = async() => {
+    const elementsLength:number = document.getElementsByClassName("Vessels").length;
+    const vessels:any = document.getElementsByClassName("Vessels");
+    const people:any = document.getElementsByClassName("Person");
+    for(let i = 0; i < elementsLength; i++) {
+      if(vessels[i].value != "") {
+        if(people[i].value != "") {
+          updateVesselData[i] = {"Vessel": `${vessels[i].value}`, "Owner": `${people[i].value}`}
+        } else {
+          updateVesselData[i] = {"Vessel": `${vessels[i].value}`, "Owner": `${people[i].placeholder}`}
+        }
+      } else {
+        if(people[i].value != "") {
+          updateVesselData[i] = {"Vessel": `${vessels[i].placeholder}`, "Owner": `${people[i].value}`}
+        } else {
+          updateVesselData[i] = {"Vessel": `${vessels[i].placeholder}`, "Owner": `${people[i].placeholder}`}
+        }
+      }
+    }
     handleVesselUpdate();
   } 
 
@@ -61,7 +78,6 @@ const SetVessels = ({accountNum}) => {
   
   const deleteRowHandler = (index:number) => {
     updateVesselData.splice(index, 1);
-    console.log(updateVesselData);
     handleVesselUpdate();
   }
 
@@ -74,13 +90,13 @@ const SetVessels = ({accountNum}) => {
           vesselDataLength ? 
           Object.keys(vesselData).map((index) => (
             <p>
-              Vessel: <input type="text" placeholder={vesselData[index].Vessel} id={`vessel${index}`}></input> Owner: <input type="text" placeholder={vesselData[index].Person} id={`person${index}`}></input> <button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`}>Delete Row</button>
+              Vessel: <input type="text" placeholder={vesselData[index].Vessel} id={`vessel${index}`} className='Vessels'></input> Owner: <input type="text" placeholder={vesselData[index].Person} id={`person${index}`} className='Person'></input> <button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`}>Delete Row</button>
             </p>
             ),
           ) : noItems
         }
-        <button onClick={handleAddRow} id="newRow">Add A Row</button>
-        <button onClick={handleVesselEdit}>Save Edits</button>
+        <button onClick={handleAddRow} id="newRow">Add A Blank Row</button>
+        <button onClick={handleVesselEdit}>Save All Edits</button>
       </div>
     </>
   );
