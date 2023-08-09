@@ -1,4 +1,6 @@
-const { OnTimeTable } = require('../models');
+// const { OnTimeTable } = require('../models');
+
+const sequelize = require('../config/connection');
 
 module.exports = {
   async onTime({}, res) {

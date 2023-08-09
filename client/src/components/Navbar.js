@@ -11,16 +11,19 @@ const AppNavbar = () => {
       <Navbar bg='dark' variant='dark' expand='lg'>
         <Container fluid>
           <Navbar.Brand as={Link} to='/'>
-            API Directory
+            Home
           </Navbar.Brand>
           <Navbar.Toggle aria-controls='navbar' />
           <Navbar.Collapse id='navbar' className='d-flex flex-row-reverse'>
             <Nav className='ml-auto d-flex'>
-              <Nav.Link as={Link} to='/'>
+              {/* <Nav.Link as={Link} to='/'>
                 Search For API
-              </Nav.Link>
+              </Nav.Link> */}
               <Nav.Link as={Link} to='/Vessels'>
                 Vessels API
+              </Nav.Link>
+              <Nav.Link as={Link} to='/ContactDispatch'>
+                ContactDispatch API
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>
