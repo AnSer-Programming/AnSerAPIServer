@@ -1,10 +1,10 @@
 try {
     const sequelize = require('../config/connection');
-    const { OnTimeTable } = require('../models');
-    const onTimeData = require('./onTimeData.json');
+    const { ContactDispatchTable } = require('../models');
+    const Accounts = require('./Accounts.json');
     const seedDatabase = async () => {
         await sequelize.sync({ force: true });   
-        await OnTimeTable.bulkCreate(onTimeData, {
+        await ContactDispatchTable.bulkCreate(Accounts.Accounts, {
             returning: true,
         });
         process.exit(0);

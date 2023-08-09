@@ -7,9 +7,9 @@ try {
     dotenv.config();
     
     config = new Sequelize(
-        `${ process.env.DB_NAME }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
+        `${ process.env.DB_NAME_PRODUCTION }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
         {
-            "host": `${ process.env.DB_SERVER }`,
+            "host": `${ process.env.DB_SERVER_PRODUCTION }`,
             "dialect": 'mssql',
             "port": 1433,
             "encrypt": false,

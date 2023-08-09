@@ -82,7 +82,7 @@ const OnTimeGraph = () => {
       backgroundColor: 'rgba(255, 99, 132, 0.5)',
     }],
   };
-  console.log(numbers);
+  
   return (
     <>
       <Line options={options} data={data} />

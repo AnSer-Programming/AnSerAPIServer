@@ -1,19 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Index from './pages/Index';
+import Vessels from './pages/Vessels';
+import ContactDispatch from './pages/ContactDispatch';
 import Navbar from './components/Navbar';
-import Graph from './components/Graph.tsx';
 
 function App() {
   return (
     <Router>
       <>
+        <Navbar />
         <Switch>
           <Route exact path='/' component={Index} />
+          <Route exact path='/Vessels' component={Vessels} />
+          <Route exact path='/ContactDispatch' component={ContactDispatch} />
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
         </Switch>
-        <Graph />
-        <Navbar />
       </>
     </Router>
   );
