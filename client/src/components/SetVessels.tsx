@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react'; 
+import { useState, useEffect } from 'react';
 import { getVesselsAPI, setVesselsAPI } from '../utils/API';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 
-const SetVessels = ({accountNum}) => {
-  const [vesselData, setVesselData] = useState([]);
-  let updateVesselData:any = vesselData;
+const SetVessels = ({accountNum, setEdit}) => {
+  const [vesselData, setVesselData] = useState<any[]>([]);
+  const [option, setOptions] = useState<String[]>([]);
   // use this to determine if `useEffect()` hook needs to run again
   const vesselDataLength = Object.keys(vesselData).length;
 
@@ -23,6 +26,26 @@ const SetVessels = ({accountNum}) => {
       }
     };
 
+    const options = async() => {
+      switch(accountNum) {
+        case '38':
+          setOptions(["Stephen Merki", "Cristian Mueller", "Billy Palmer", "Adam Jeanquart", "Sam Cloyd", "Jane Coleman"]);
+          break;
+        case '6071':
+          setOptions(
+            ["Chris Thibodeaux", "Eric Steudelin", "Jeremy", 
+            "Jon Tarver", "Kevin Hunt", "Kraig Prinz",
+            "Randy Dedon", "Ronnie Dedon", "Terry Rodney", 
+            "TJ", "Trent Blanchard", "Walter Cryer", "Wayne"]
+          );
+          break;
+        default:
+          setOptions(["Invalid option"]);
+          break;
+      }
+    };
+  
+    options();
     getVesselData();
   }, [vesselDataLength, accountNum]); // If either the amount of data being received changes or if the account number changes the useEffect will run
   
@@ -30,47 +53,65 @@ const SetVessels = ({accountNum}) => {
     return <h2>LOADING...</h2>;
   }
 
-  let updateVesselDataLength = vesselDataLength;
+  let updateVesselData:any = vesselData;
+  
+  let updateVesselDataLength:number = vesselDataLength;
+
+  function tableBuilder(index) {
+    return (
+      <tr style={rowStyles}>
+        <td style={fieldStyles}>
+          Vessel: <br />
+          <TextField label={vesselData[index].Vessel} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            handleVesselEdit(index, event.target.value, "Vessel");
+          }} 
+          sx={{ width: 250, background: 'white'}} />
+        </td>
+        <td style={fieldStyles}>
+          Contact: <Autocomplete
+            disablePortal
+            onChange={(event, newInputValue) => {
+              handleVesselEdit(index, newInputValue, "Person");
+            }}
+            options={option}
+            sx={{ width: 250, background: 'white'}}
+            renderInput={(params) => <TextField {...params} label={vesselData[index].Person} />}
+          /> 
+        </td>
+        <td style={fieldStyles}>
+          <button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`}>Delete Row</button>
+        </td>
+      </tr>
+    )
+  }
+
   const handleVesselUpdate = async() => {
     updateVesselData = await {VesselsOwners: updateVesselData};
     try {
       const response = await setVesselsAPI(accountNum, updateVesselData);
-
+  
       if (!response.ok) {
         throw new Error('something went wrong!');
       }
-
+  
       const updatedVessels = await response.json();
       setVesselData(updatedVessels);
     } catch (err) {
       console.error(err);
     }
   };
-
-  const handleVesselEdit = async() => {
-    const elementsLength:number = document.getElementsByClassName("Vessels").length;
-    const vessels:any = document.getElementsByClassName("Vessels");
-    const people:any = document.getElementsByClassName("Person");
-    for(let i = 0; i < elementsLength; i++) {
-      if(vessels[i].value != "") {
-        if(people[i].value != "") {
-          updateVesselData[i] = {"Vessel": `${vessels[i].value}`, "Owner": `${people[i].value}`}
-        } else {
-          updateVesselData[i] = {"Vessel": `${vessels[i].value}`, "Owner": `${people[i].placeholder}`}
-        }
-      } else {
-        if(people[i].value != "") {
-          updateVesselData[i] = {"Vessel": `${vessels[i].placeholder}`, "Owner": `${people[i].value}`}
-        } else {
-          updateVesselData[i] = {"Vessel": `${vessels[i].placeholder}`, "Owner": `${people[i].placeholder}`}
-        }
-      }
+  
+  const handleVesselEdit = async(index:any, newValue:any, valueType:String) => {
+    if(valueType == "Vessel") {
+      updateVesselData[index] = {"Vessel": `${newValue}`, "Person": `${vesselData[index]['Person']}`};
+    } else if(valueType == "Person") {
+      updateVesselData[index] = {"Vessel": `${vesselData[index]['Vessel']}`, "Person": `${newValue}`};
     }
-    handleVesselUpdate();
+    setVesselData(updateVesselData);
   } 
-
+  
   const handleAddRow = async() => {
-    const newObj = {"Vessel": " ", "Owner": " "};
+    const newObj = {"Vessel": " ", "Person": " "};
     updateVesselData[updateVesselDataLength] = await newObj;
     updateVesselDataLength +=1;
     handleVesselUpdate(); 
@@ -81,23 +122,30 @@ const SetVessels = ({accountNum}) => {
     handleVesselUpdate();
   }
 
-  const noItems = `<p>There are no items to display!</p>`;
-  
+  const saveAll = () => {
+    handleVesselUpdate(); 
+    setEdit(false);
+  }
+
+  const rowStyles = {
+    width: '75%',
+  }
+
+  const fieldStyles = {
+    width: '25%',
+  }
+
   return (
     <>
-      <div>
-        {
-          vesselDataLength ? 
-          Object.keys(vesselData).map((index) => (
-            <p>
-              Vessel: <input type="text" placeholder={vesselData[index].Vessel} id={`vessel${index}`} className='Vessels'></input> Owner: <input type="text" placeholder={vesselData[index].Person} id={`person${index}`} className='Person'></input> <button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`}>Delete Row</button>
-            </p>
-            ),
-          ) : noItems
-        }
-        <button onClick={handleAddRow} id="newRow">Add A Blank Row</button>
-        <button onClick={handleVesselEdit}>Save All Edits</button>
-      </div>
+    <div>
+      <table>
+        <tbody>
+          {Object.keys(vesselData).map((index) => (tableBuilder(index)))}
+        </tbody>
+      </table> <br />
+      <button onClick={handleAddRow} id="newRow">Add A Blank Row</button>
+      <button onClick={saveAll}>Save Edits</button>
+    </div>
     </>
   );
 };

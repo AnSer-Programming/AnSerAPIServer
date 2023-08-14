@@ -31,7 +31,7 @@ const Vessels = () => {
 
   return (
     <>
-      <div className='text-light bg-dark pt-5' style={{width: '100%'}}>
+      <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
             className='text-dark'
@@ -45,7 +45,8 @@ const Vessels = () => {
         {
           isEdit ? 
           <SetVessels 
-          accountNum={accountNum}/> : 
+          accountNum={accountNum}
+          setEdit={(editBoolean) => setIsEdit(editBoolean)}/> : 
           <GetVessels
           accountNum={accountNum} />
         } 

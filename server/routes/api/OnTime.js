@@ -13,7 +13,6 @@ router.get('/', async(req, res) => {
             let array = toJSON(result);
             array = JSON.parse(array[2]);    
 
-            console.log(array.OnTime[0]);
             res.json(array);
         } catch (err) {
             // ... error checks

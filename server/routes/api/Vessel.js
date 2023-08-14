@@ -10,22 +10,17 @@ async function vesselWrite(accountNum, data) {
     }
     filePath = `../../vesselJSON/Account${ accountNum }.json`;
     data = JSON.parse(JSON.stringify(data));
+    data = JSON.parse(JSON.stringify(data));
     const vesselOwner = arrOfObj => {
-      return arrOfObj.map(obj => Object.values(obj));
+        return arrOfObj.map(obj => Object.values(obj));
     }
-    
-    console.log(vesselOwner(data.VesselsOwners)[0][1]);
-    let sorted = vesselOwner(data.VesselsOwners).sort((colA, colB) => colA[1].localeCompare(colB[1])).reverse();
-    let sortedJSON = `{"VesselsOwners": [`
-    for(let i = 0; i < sorted.length; i++) {
-        if(i === sorted.length-1) {
-            sortedJSON += `{"Vessel": "${sorted[i][0]}", "Person": "${sorted[i][1]}"}`;
-        } else {
-            sortedJSON += `{"Vessel": "${sorted[i][0]}", "Person": "${sorted[i][1]}"},`;
-        }
+    let sorted = await vesselOwner(data.VesselsOwners).sort((colA, colB) => colA[1].localeCompare(colB[1])).reverse();
+    let sortedJSON = `{"VesselsOwners": [{"Vessel": "${sorted[0][0]}", "Person": "${sorted[0][1]}"}`
+    for(let i = 1; i < sorted.length; i++) {
+        sortedJSON += `,{"Vessel": "${sorted[i][0]}", "Person": "${sorted[i][1]}"}`;
     }
     sortedJSON += `]}`;    
-    sortedJSON = JSON.parse(sortedJSON);
+    sortedJSON = await JSON.parse(sortedJSON);
 
     await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(sortedJSON), (errFile) => {
         if(errFile) {
@@ -34,7 +29,7 @@ async function vesselWrite(accountNum, data) {
             console.log('File has been created');
         }
     });
-    data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
+    data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
     return data = JSON.parse(data);
 }
 
@@ -46,7 +41,7 @@ async function vesselReader(accountNum) {
     filePath = `../../vesselJSON/Account${ accountNum }.json`;
     // This is a dynamic filePath call that will allow for multiple account numbers to set up a scheduler.
     if(fs.existsSync(path.join(__dirname, filePath))) {
-        data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
+        let data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
         return data = JSON.parse(data);
     } else {
         //Create an empty JSON file
