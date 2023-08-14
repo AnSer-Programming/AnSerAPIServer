@@ -3,9 +3,10 @@ node_modules
 .DS_Store
 package-lock.json
 build
-server/schedulerJSON/*
+schedulerJSON/
 anser-wildcard-2023.pfx
 anser-wildcard-2023.pem
 anser-wildcard-2023.crt
 anser-wildcard-2023.key
 anser-wildcard-2023-decrypted.key
+vesselJSON/
