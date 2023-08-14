@@ -5,7 +5,9 @@ const billy = require('./Billy');
 const onTimeRoute = require('./OnTime');
 const contactDispatch = require('./ContactDispatch');
 const vesselRoute = require('./Vessel');
+const brainier = require('./Brainier/Index');
 
+router.use('/Brainier', brainier);
 router.use('/Billy', billy);
 router.use('/OnTime', onTimeRoute);
 router.use('/ContactDispatch', contactDispatch);

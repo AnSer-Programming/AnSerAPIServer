@@ -12,7 +12,7 @@ module.exports = {
   },
 
   getGroupContactDispatch({ params }, res) {
-    const foundGroupContactDispatchTable = ContactDispatchTable.findAll({ where: {account: params.groupNum}});
+    const foundGroupContactDispatchTable = ContactDispatchTable.findOne({ where: {account: params.groupNum}});
 
     if (!foundGroupContactDispatchTable) {
       return res.status(400).json({ message: 'Cannot find table data!' });
@@ -25,7 +25,7 @@ module.exports = {
   async setContactDispatch({ body }, res) {
     try {
       // body = JSON.stringify(body);
-      console.log(body);
+      // console.log(body);
       let updateContactDispatch;
       for(let i = 0; i < body.Data.length; i++) {
         updateContactDispatch = await ContactDispatchTable.update (

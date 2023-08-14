@@ -35,9 +35,11 @@ const GetVessels = ({accountNum}) => {
 
   return (
     <>
-      <div>
-        {Object.keys(vesselData).map((index) => (<p>Vessel: {vesselData[index].Vessel} | Owner: {vesselData[index].Person}</p>))}
-      </div>
+      <table>
+        <tbody>
+          {Object.keys(vesselData).map((index) => (<tr><td style={{paddingRight: '25px'}}>Vessel: {vesselData[index].Vessel}</td> <td>Contact: {vesselData[index].Person}</td></tr>))}
+        </tbody>
+      </table>
     </>
   );
 };
