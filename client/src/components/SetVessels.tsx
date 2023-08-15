@@ -19,7 +19,8 @@ const SetVessels = ({accountNum, setEdit}) => {
           throw new Error('something went wrong!');
         }
 
-        const vessel = await response.json();
+        let vessel = await response.json();
+        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a, b) =>  a.Person.localeCompare(b.Person)));
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
@@ -29,7 +30,7 @@ const SetVessels = ({accountNum, setEdit}) => {
     const options = async() => {
       switch(accountNum) {
         case '38':
-          setOptions(["Stephen Merki", "Cristian Mueller", "Billy Palmer", "Adam Jeanquart", "Sam Cloyd", "Jane Coleman"]);
+          setOptions(["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]);
           break;
         case '6071':
           setOptions(
@@ -69,6 +70,7 @@ const SetVessels = ({accountNum, setEdit}) => {
         </td>
         <td style={fieldStyles}>
           Contact: <Autocomplete
+            id={"vesselInput"}
             disablePortal
             onChange={(event, newInputValue) => {
               handleVesselEdit(index, newInputValue, "Person");
@@ -144,7 +146,7 @@ const SetVessels = ({accountNum, setEdit}) => {
         </tbody>
       </table> <br />
       <button onClick={handleAddRow} id="newRow">Add A Blank Row</button>
-      <button onClick={saveAll}>Save Edits</button>
+      <button onClick={saveAll} id="saveBtn">Save and View</button>
     </div>
     </>
   );

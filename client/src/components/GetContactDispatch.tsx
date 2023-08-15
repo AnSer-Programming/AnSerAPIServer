@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactComponentElement, ReactElement, JSXElementConstructor } from 'react';
 import { getContactDispatchAPI } from '../utils/API';
 
-const GetContactDispatch = (data) => {
+const GetContactDispatch = ({optionNum, setOptions}) => {
   const [contactDispatchData, setContactDispatchData] = useState({});
   const [firstDigit, setFirstDigit] = useState<number[]>([]);
+  const modifier = Math.pow(10, optionNum) -1;
   // let firstDigit:number[] = new Array();
 
   // use this to determine if `useEffect()` hook needs to run again
   const contactDispatchDataLength = Object.keys(contactDispatchData).length;
+  const pages = Math.ceil(contactDispatchDataLength / 100);
+  console.log(pages);
   
   useEffect(() => {
     const getContactDispatchData = async() => {
@@ -24,20 +27,6 @@ const GetContactDispatch = (data) => {
         console.error(err);
       }
     };
-  
-    async function getFirstDigits() {
-      let firstDigitArray:number[] = new Array();
-      for(let i = 0; i < Object.keys(contactDispatchData).length; i ++) {
-        let checker = contactDispatchData[i].account / 10;
-        while(checker >= 1) {
-          checker = checker / 10;
-        }
-        firstDigitArray[i] = checker * 10;
-      }
-      setFirstDigit(firstDigitArray)
-    }
-  
-    getFirstDigits();
     
     const interval = setInterval(() => {
       getContactDispatchData();
@@ -50,30 +39,6 @@ const GetContactDispatch = (data) => {
   
   if (!contactDispatchDataLength) {
     return <h2>LOADING...</h2>;
-  } 
-
-  function tableBuilder(index) {
-    if(data.groupNum === 0) {
-      return (
-        <tr>
-          <td style={tableField}>{contactDispatchData[index].account}</td>
-          <td style={tableField}>{contactDispatchData[index].status}</td>
-          <td style={tableField}>{contactDispatchData[index].account_type}</td>
-          <td style={tableField}>{contactDispatchData[index].api}</td>
-        </tr>
-      )
-    } else {
-      if(Math.floor(firstDigit[index]) == data.groupNum) {
-        return (
-          <tr>
-            <td style={tableField}>{contactDispatchData[index].account}</td>
-            <td style={tableField}>{contactDispatchData[index].status}</td>
-            <td style={tableField}>{contactDispatchData[index].account_type}</td>
-            <td style={tableField}>{contactDispatchData[index].api}</td>
-          </tr>
-        )
-      }
-    }
   }
 
   const tableStyles = {
@@ -100,9 +65,22 @@ const GetContactDispatch = (data) => {
             </tr>
           </thead>
           <tbody>
-            {Object.keys(contactDispatchData).map((index) => (tableBuilder(index)))}
+            {(function (len) {
+              let rows:any = [];
+              for (let i = 0; i < len; i++) {
+                rows.push(
+                  <tr>
+                    <td style={tableField}>{contactDispatchData[i+modifier].account}</td>
+                    <td style={tableField}>{contactDispatchData[i+modifier].status}</td>
+                    <td style={tableField}>{contactDispatchData[i+modifier].account_type}</td>
+                    <td style={tableField}>{contactDispatchData[i+modifier].api}</td>
+                  </tr>)
+              }
+              return rows;
+            })(100)}
           </tbody>
         </table>
+        {}
       </div>
     </>
   );
