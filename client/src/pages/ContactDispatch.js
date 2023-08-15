@@ -5,7 +5,7 @@ import Select from 'react-select';
 
 const ContactDispatch = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [group, setGroup] = useState(0);
+  const [option, setOption] = useState([]);
   // create method to search for books and set state on form submit
 
   const editingEnabled = `Exit Editing`;
@@ -21,21 +21,8 @@ const ContactDispatch = () => {
   }
 
   const handlerChangeGroup = (event) => {
-    setGroup(event.value);
+    // setGroup(event.value);
   }
-
-  const option = [
-    {value: 0, label: 'All'},
-    {value: 1, label: '1'},
-    {value: 2, label: '2'},
-    {value: 3, label: '3'},
-    {value: 4, label: '4'},
-    {value: 5, label: '5'},
-    {value: 6, label: '6'},
-    {value: 7, label: '7'},
-    {value: 8, label: '8'},
-    {value: 9, label: '9'}
-  ]
 
   return (
     <>
@@ -51,7 +38,13 @@ const ContactDispatch = () => {
         </div>
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
         {
-          isEdit ? <SetContactDispatch groupNum={group}/> : <GetContactDispatch groupNum={group}/>
+          isEdit ? <SetContactDispatch 
+            optionNum={option}
+            setOptions={(optionNum) => setOption(optionNum)}
+          /> : <GetContactDispatch 
+            optionNum={option}
+            setOptions={(optionNum) => setOption(optionNum)}
+          />
         } 
         <br />
       </div> 

@@ -9,22 +9,11 @@ async function vesselWrite(accountNum, data) {
         accountNum = 0;
     }
     filePath = `../../vesselJSON/Account${ accountNum }.json`;
-    data = JSON.parse(JSON.stringify(data));
-    data = JSON.parse(JSON.stringify(data));
-    const vesselOwner = arrOfObj => {
-        return arrOfObj.map(obj => Object.values(obj));
-    }
-    let sorted = await vesselOwner(data.VesselsOwners).sort((colA, colB) => colA[1].localeCompare(colB[1])).reverse();
-    let sortedJSON = `{"VesselsOwners": [{"Vessel": "${sorted[0][0]}", "Person": "${sorted[0][1]}"}`
-    for(let i = 1; i < sorted.length; i++) {
-        sortedJSON += `,{"Vessel": "${sorted[i][0]}", "Person": "${sorted[i][1]}"}`;
-    }
-    sortedJSON += `]}`;    
-    sortedJSON = await JSON.parse(sortedJSON);
+    data.VesselsOwners = data.VesselsOwners.sort(((a, b) =>  a.Vessel.localeCompare(b.Vessel)));
 
-    await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(sortedJSON), (errFile) => {
+    await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
         if(errFile) {
-            console.error(errFile);
+            console.error(`Write Error ${errFile}`);
         } else {
             console.log('File has been created');
         }

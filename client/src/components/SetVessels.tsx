@@ -19,7 +19,8 @@ const SetVessels = ({accountNum, setEdit}) => {
           throw new Error('something went wrong!');
         }
 
-        const vessel = await response.json();
+        let vessel = await response.json();
+        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a, b) =>  a.Person.localeCompare(b.Person)));
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
@@ -69,6 +70,7 @@ const SetVessels = ({accountNum, setEdit}) => {
         </td>
         <td style={fieldStyles}>
           Contact: <Autocomplete
+            id={"vesselInput"}
             disablePortal
             onChange={(event, newInputValue) => {
               handleVesselEdit(index, newInputValue, "Person");

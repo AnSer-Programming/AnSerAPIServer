@@ -19,7 +19,8 @@ const GetVessels = ({accountNum}) => {
           throw new Error('something went wrong!');
         }
 
-        const vessel = await response.json();
+        let vessel = await response.json();
+        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a, b) =>  a.Person.localeCompare(b.Person)));
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
