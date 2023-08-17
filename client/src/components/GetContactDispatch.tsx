@@ -1,16 +1,13 @@
 import React, { useState, useEffect, ReactComponentElement, ReactElement, JSXElementConstructor } from 'react';
 import { getContactDispatchAPI } from '../utils/API';
 
-const GetContactDispatch = ({optionNum, setOptions}) => {
-  const [contactDispatchData, setContactDispatchData] = useState({});
-  const [firstDigit, setFirstDigit] = useState<number[]>([]);
-  const modifier = Math.pow(10, optionNum) -1;
-  // let firstDigit:number[] = new Array();
+const GetContactDispatch = (data:any) => {
+  const [contactDispatchData, setContactDispatchData] = useState<any>({});
+  const [modifier, setModifier] = useState(0);
 
   // use this to determine if `useEffect()` hook needs to run again
   const contactDispatchDataLength = Object.keys(contactDispatchData).length;
-  const pages = Math.ceil(contactDispatchDataLength / 100);
-  console.log(pages);
+  const pages = Math.ceil(contactDispatchDataLength / 100)-1;
   
   useEffect(() => {
     const getContactDispatchData = async() => {
@@ -32,10 +29,12 @@ const GetContactDispatch = ({optionNum, setOptions}) => {
       getContactDispatchData();
     }, 30000);
     getContactDispatchData();
+    data.setMax(pages);
+    setModifier(data.pageNum*100);
 
     return () => clearInterval(interval);
 
-  }, [contactDispatchDataLength]);
+  }, [contactDispatchDataLength, data.pageNum]);
   
   if (!contactDispatchDataLength) {
     return <h2>LOADING...</h2>;
@@ -68,19 +67,22 @@ const GetContactDispatch = ({optionNum, setOptions}) => {
             {(function (len) {
               let rows:any = [];
               for (let i = 0; i < len; i++) {
-                rows.push(
-                  <tr>
-                    <td style={tableField}>{contactDispatchData[i+modifier].account}</td>
-                    <td style={tableField}>{contactDispatchData[i+modifier].status}</td>
-                    <td style={tableField}>{contactDispatchData[i+modifier].account_type}</td>
-                    <td style={tableField}>{contactDispatchData[i+modifier].api}</td>
-                  </tr>)
+                if(contactDispatchData[i+modifier] == undefined) {
+                  break;
+                } else {
+                  rows.push(
+                    <tr id={`${i}`}>
+                      <td style={tableField}>{contactDispatchData[i+modifier].account}</td>
+                      <td style={tableField}>{contactDispatchData[i+modifier].status}</td>
+                      <td style={tableField}>{contactDispatchData[i+modifier].account_type}</td>
+                      <td style={tableField}>{contactDispatchData[i+modifier].api}</td>
+                    </tr>)
+                }
               }
               return rows;
             })(100)}
           </tbody>
         </table>
-        {}
       </div>
     </>
   );

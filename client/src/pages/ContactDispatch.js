@@ -1,11 +1,12 @@
-import {React, useState} from 'react';
+import {React, useState, useCallback} from 'react';
 import GetContactDispatch from '../components/GetContactDispatch.tsx';
 import SetContactDispatch from '../components/SetContactDispatch.tsx';
 import Select from 'react-select';
 
 const ContactDispatch = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [option, setOption] = useState([]);
+  const [maxPage, setMaxPage] = useState(1);
+  const [option, setOption] = useState(0);
   // create method to search for books and set state on form submit
 
   const editingEnabled = `Exit Editing`;
@@ -20,33 +21,45 @@ const ContactDispatch = () => {
     }
   }
 
-  const handlerChangeGroup = (event) => {
-    // setGroup(event.value);
+  const nextPageHandler = () => {
+    if(option < maxPage) {
+      let pageNum = option + 1;
+      setOption(pageNum);
+    } else {
+      setOption(maxPage);
+    }
   }
+
+  const previousPageHandler = () => {
+    if(option > 0) {
+      let pageNum = option -1;
+      setOption(pageNum);
+    } else {
+      setOption(0);
+    }
+  }
+
 
   return (
     <>
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
-        <div style={{width: '50%', marginLeft: '5px'}}>
-          <Select
-            className='text-dark'
-            name="Account List"
-            value={option.value}
-            onChange={handlerChangeGroup}
-            options={option}
-          /> <br />
-        </div>
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
+        <button onClick={previousPageHandler}>Pervious</button>
+        <span> Page: {option+1} </span>
+        <button onClick={nextPageHandler}>Next</button><br /><br />
         {
           isEdit ? <SetContactDispatch 
-            optionNum={option}
-            setOptions={(optionNum) => setOption(optionNum)}
+            pageNum={option}
+            setMax={(max) => setMaxPage(max)}
           /> : <GetContactDispatch 
-            optionNum={option}
-            setOptions={(optionNum) => setOption(optionNum)}
+            pageNum={option}
+            setMax={(max) => setMaxPage(max)}
           />
         } 
         <br />
+        <button onClick={previousPageHandler}>Pervious</button>
+        <span> Page: {option+1} </span>
+        <button onClick={nextPageHandler}>Next</button>
       </div> 
     </>
   );

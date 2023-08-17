@@ -2,7 +2,7 @@ const express = require('express');
 const https =require('https');
 const fs = require('fs');
 const path = require('path');
-const routes = require('./routes');
+const routes = require('./routes/Index');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const PORT = process.env.PORT || 3001;
