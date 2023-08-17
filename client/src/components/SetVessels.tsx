@@ -4,7 +4,7 @@ import { getVesselsAPI, setVesselsAPI } from '../utils/API';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
-const SetVessels = ({accountNum, setEdit}) => {
+const SetVessels = (data:any) => {
   const [vesselData, setVesselData] = useState<any[]>([]);
   const [option, setOptions] = useState<String[]>([]);
   // use this to determine if `useEffect()` hook needs to run again
@@ -13,14 +13,14 @@ const SetVessels = ({accountNum, setEdit}) => {
   useEffect(() => {
     const getVesselData = async() => {
       try {
-        const response = await getVesselsAPI(accountNum);
+        const response = await getVesselsAPI(data.accountNum);
 
         if (!response.ok) {
           throw new Error('something went wrong!');
         }
 
         let vessel = await response.json();
-        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a, b) =>  a.Person.localeCompare(b.Person)));
+        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a:any, b:any) =>  a.Person.localeCompare(b.Person))).reverse();
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
@@ -28,7 +28,7 @@ const SetVessels = ({accountNum, setEdit}) => {
     };
 
     const options = async() => {
-      switch(accountNum) {
+      switch(data.accountNum) {
         case '38':
           setOptions(["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]);
           break;
@@ -48,7 +48,7 @@ const SetVessels = ({accountNum, setEdit}) => {
   
     options();
     getVesselData();
-  }, [vesselDataLength, accountNum]); // If either the amount of data being received changes or if the account number changes the useEffect will run
+  }, [vesselDataLength, data.accountNum]); // If either the amount of data being received changes or if the account number changes the useEffect will run
   
   if (!vesselDataLength) {
     return <h2>LOADING...</h2>;
@@ -58,7 +58,7 @@ const SetVessels = ({accountNum, setEdit}) => {
   
   let updateVesselDataLength:number = vesselDataLength;
 
-  function tableBuilder(index) {
+  function tableBuilder(index:any) {
     return (
       <tr style={rowStyles}>
         <td style={fieldStyles}>
@@ -66,7 +66,8 @@ const SetVessels = ({accountNum, setEdit}) => {
           <TextField label={vesselData[index].Vessel} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             handleVesselEdit(index, event.target.value, "Vessel");
           }} 
-          sx={{ width: 250, background: 'white'}} />
+          sx={{ width: 250, background: 'white'}}
+          variant="filled" />
         </td>
         <td style={fieldStyles}>
           Contact: <Autocomplete
@@ -77,7 +78,8 @@ const SetVessels = ({accountNum, setEdit}) => {
             }}
             options={option}
             sx={{ width: 250, background: 'white'}}
-            renderInput={(params) => <TextField {...params} label={vesselData[index].Person} />}
+            renderInput={(params) => <TextField {...params} label={vesselData[index].Person} 
+            variant="filled"/>}
           /> 
         </td>
         <td style={fieldStyles}>
@@ -90,7 +92,7 @@ const SetVessels = ({accountNum, setEdit}) => {
   const handleVesselUpdate = async() => {
     updateVesselData = await {VesselsOwners: updateVesselData};
     try {
-      const response = await setVesselsAPI(accountNum, updateVesselData);
+      const response = await setVesselsAPI(data.accountNum, updateVesselData);
   
       if (!response.ok) {
         throw new Error('something went wrong!');
@@ -126,7 +128,7 @@ const SetVessels = ({accountNum, setEdit}) => {
 
   const saveAll = () => {
     handleVesselUpdate(); 
-    setEdit(false);
+    data.setEdit(false);
   }
 
   const rowStyles = {

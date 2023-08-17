@@ -15,7 +15,7 @@ import { graphData } from '../utils/API';
 const OnTimeGraph = () => {
   let fullName:string[] = new Array();
   let numbers:number[] = new Array();
-  const [gd, setGraphData] = useState({});
+  const [gd, setGraphData] = useState<any>({});
 
   // use this to determine if `useEffect()` hook needs to run again
   const graphDataLength = Object.keys(gd).length;

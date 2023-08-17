@@ -3,8 +3,8 @@ import { getVesselsAPI } from '../utils/API';
 
 let accountNumPlaceHolder = null;
 
-const GetVessels = ({accountNum}) => {
-  const [vesselData, setVesselData] = useState({});
+const GetVessels = (data:any) => {
+  const [vesselData, setVesselData] = useState<any>({});
 
   // use this to determine if `useEffect()` hook needs to run again
   const vesselDataLength = Object.keys(vesselData).length;
@@ -12,15 +12,15 @@ const GetVessels = ({accountNum}) => {
   useEffect(() => {
     const getVesselData = async() => {
       try {
-        accountNumPlaceHolder = accountNum;
-        const response = await getVesselsAPI(accountNum);
+        accountNumPlaceHolder = data.accountNum;
+        const response = await getVesselsAPI(data.accountNum);
 
         if (!response.ok) {
           throw new Error('something went wrong!');
         }
 
         let vessel = await response.json();
-        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a, b) =>  a.Person.localeCompare(b.Person)));
+        vessel.VesselsOwners = vessel.VesselsOwners.sort(((a:any, b:any) =>  a.Person.localeCompare(b.Person))).reverse();
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
@@ -28,7 +28,7 @@ const GetVessels = ({accountNum}) => {
     };
 
     getVesselData();
-  }, [vesselDataLength, accountNum]);
+  }, [vesselDataLength, data.accountNum]);
   
   if (!vesselDataLength) {
     return <h2>LOADING...</h2>;
