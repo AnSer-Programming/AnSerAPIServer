@@ -6,6 +6,9 @@ const SetContactDispatchAccountNum = (data:any) => {
     <>
     <TextField label={data.api}
       sx={{background: 'white'}}
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        data.updateHandler(event);
+      }}
       InputProps={{
         readOnly: false,
       }} />

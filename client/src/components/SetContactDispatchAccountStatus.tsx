@@ -13,7 +13,7 @@ const SetContactDispatchAccountStatus = (data:any) => {
       <Autocomplete
         disablePortal
         onChange={(event, newInputValue) => {
-          data.handleContactDispatchEdit(event, newInputValue, "Person");
+          data.updateHandler(newInputValue);
         }}
         options={statusOptions}
         sx={{background: 'white'}}
