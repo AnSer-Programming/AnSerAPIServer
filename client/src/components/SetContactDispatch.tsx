@@ -55,8 +55,8 @@ const SetContactDispatch = (data:any) => {
   //   }
   // };
 
-  const handleContactDispatchEdit = async(index:any, input:any, field:string) => {
-    console.log(`${index} ${input} ${field}`);
+  const handleContactDispatchEdit = async(data:any) => {
+    console.log(`${data}`);
   }
 
   // const saveBtn = {
@@ -103,18 +103,21 @@ const SetContactDispatch = (data:any) => {
                         Status: 
                         <SetContactDispatchAccountStatus
                           status={contactDispatchData[i+modifier].status}
+                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
                         /> 
                       </td>
                       <td style={tableField}>
                         Account Type: 
                         <SetContactDispatchAccountType
                           type={contactDispatchData[i+modifier].account_type}
+                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
                         /> 
                       </td>
                       <td style={tableField}>
                         API: 
                         <SetContactDispatchAccountAPI 
                           api={contactDispatchData[i+modifier].api}
+                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
                         />
                       </td>
                     </tr>
