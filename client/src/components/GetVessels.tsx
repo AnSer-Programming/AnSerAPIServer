@@ -36,6 +36,7 @@ const GetVessels = (data:any) => {
 
   return (
     <>
+      <p>*If your updates don't appear right away please refresh the page.</p>
       <table>
         <tbody>
           {Object.keys(vesselData).map((index) => (<tr><td style={{paddingRight: '25px'}}>Vessel: {vesselData[index].Vessel}</td> <td>Contact: {vesselData[index].Person}</td></tr>))}
