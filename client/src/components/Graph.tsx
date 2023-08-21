@@ -11,10 +11,13 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { graphData } from '../utils/API';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const OnTimeGraph = () => {
-  let fullName:string[] = new Array();
-  let numbers:number[] = new Array();
+  let months:string[] = new Array();
+  let numbers:any = {};
+  let low:number = 0;
+  let average:number = 0;
   const [gd, setGraphData] = useState<any>({});
 
   // use this to determine if `useEffect()` hook needs to run again
@@ -30,7 +33,7 @@ const OnTimeGraph = () => {
         }
 
         const onTime = await response.json();
-        setGraphData(onTime);
+        setGraphData(onTime.OnTime);
       } catch (err) {
         console.error(err);
       }
@@ -40,13 +43,23 @@ const OnTimeGraph = () => {
   }, [graphDataLength]);
   
   if (!graphDataLength) {
-    return <h2>LOADING...</h2>;
+    return <LinearProgress color="secondary" />;
   }
 
   for(let i = 0; i < graphDataLength; i++) {
-    fullName[i] = `${gd[i].first_name} ${gd[i].last_name}`;
-    numbers[i] = gd[i].number;
+    months[i] = gd[i].Month;
+    if(i==0) {
+      low = gd[i].PercentOn;
+    } else if(i>0 && low > gd[i].PercentOn) {
+      low = gd[i].PercentOn;
+    }
+    average += gd[i].PercentOn;
+    numbers[months[i]] = gd[i].PercentOn;
   }
+
+  average = average/graphDataLength;
+
+  console.log(average.toFixed(2));
 
   ChartJS.register(
     CategoryScale,
@@ -69,15 +82,21 @@ const OnTimeGraph = () => {
         text: 'Chart.js Line Chart',
       },
     },
+    scales: {
+      y: {
+        max: 1.00,
+        min: low-.05
+      }
+    },
   };
   
-  const labels = fullName;
+  const labels = months;
   
   const data = {
     labels,
     datasets: [{
-      label: 'Programmers',
-      data: numbers,
+      label: 'Persons Name',
+      data: labels.map((index:any) => numbers[index]),      
       borderColor: 'rgb(255, 99, 132)',
       backgroundColor: 'rgba(255, 99, 132, 0.5)',
     }],
@@ -85,7 +104,9 @@ const OnTimeGraph = () => {
   
   return (
     <>
-      <Line options={options} data={data} />
+      <div className='text-dark bg-light pt-5'>
+        <Line options={options} data={data} />
+      </div>
     </>
   );
 };

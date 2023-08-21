@@ -4,6 +4,8 @@ import SetContactDispatchAccountNum from './SetContactDispatchAccountNum';
 import SetContactDispatchAccountStatus from './SetContactDispatchAccountStatus';
 import SetContactDispatchAccountType from './SetContactDispatchAccountType';
 import SetContactDispatchAccountAPI from './SetContactDispatchAccountAPI';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const SetContactDispatch = (data:any) => {
   // let updateContactDispatchData:JSON = JSON.parse('{"Data":[]}');
@@ -37,7 +39,11 @@ const SetContactDispatch = (data:any) => {
   }, [contactDispatchDataLength, data.pageNum]);
     
   if (!contactDispatchDataLength) {
-    return <h2>LOADING...</h2>;
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress color="secondary" disableShrink />
+      </Box>
+    );
   }
   
   // const handleContactUpdate = async() => {
