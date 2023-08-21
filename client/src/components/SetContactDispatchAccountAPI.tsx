@@ -5,7 +5,7 @@ const SetContactDispatchAccountNum = (data:any) => {
   return (
     <>
     <TextField label={data.api}
-      sx={{background: 'white'}}
+      sx={{background: 'white', width: '75%'}}
       onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         data.updateHandler(event);
       }}

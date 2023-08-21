@@ -70,7 +70,7 @@ const SetContactDispatch = (data:any) => {
 
   const tableStyles = {
     marginLeft: '1%',
-    width: '90%'
+    width: '75%'
   }
 
   const tableField = {
@@ -114,7 +114,7 @@ const SetContactDispatch = (data:any) => {
                         /> 
                       </td>
                       <td style={tableField}>
-                        API: 
+                        API: <br />
                         <SetContactDispatchAccountAPI 
                           api={contactDispatchData[i+modifier].api}
                           updateHandler={(data:any) => handleContactDispatchEdit(data)}

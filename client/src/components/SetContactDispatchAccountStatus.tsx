@@ -16,7 +16,7 @@ const SetContactDispatchAccountStatus = (data:any) => {
           data.updateHandler(newInputValue);
         }}
         options={statusOptions}
-        sx={{background: 'white'}}
+        sx={{background: 'white', width: '75%'}}
         renderInput={(params) => <TextField {...params} value={data.status} />}
       /> 
     </>

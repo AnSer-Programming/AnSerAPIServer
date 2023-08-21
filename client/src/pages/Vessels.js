@@ -41,6 +41,11 @@ const Vessels = () => {
             options={option}
           /> <br />
         </div>
+        {
+          isEdit ?
+            <p></p> :
+            <p>*If your updates don't appear right away please refresh the page.</p>
+        }
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
         {
           isEdit ? 

@@ -9,13 +9,15 @@ function App() {
   return (
     <Router>
       <>
-        <Navbar />
-        <Switch>
-          <Route exact path='/' component={Index} />
-          <Route exact path='/Vessels' component={Vessels} />
-          <Route exact path='/ContactDispatch' component={ContactDispatch} />
-          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
-        </Switch>
+        <div className='text-light bg-dark' style={{minHeight: '100vh'}}>
+          <Navbar />
+          <Switch>
+            <Route exact path='/' component={Index} />
+            <Route exact path='/Vessels' component={Vessels} />
+            <Route exact path='/ContactDispatch' component={ContactDispatch} />
+            <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
+          </Switch>
+        </div>
       </>
     </Router>
   );
