@@ -1,14 +1,4 @@
-import React from 'react';
-import {
-  Container,
-  Col,
-  Form,
-  Button,
-  Card,
-  Row
-} from 'react-bootstrap';
 import Graph from '../components/Graph.tsx';
-import HomeAccordion from '../components/HomeAccordion.js';
 import logo from '../assets/img/AnSerLogo2.png';
 
 const AgentStats = () => {

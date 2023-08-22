@@ -5,11 +5,32 @@ const fs = require('fs'); //this one is being used for methods and functions tha
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
 async function vesselWrite(accountNum, data) {
+    let placeHolder;
     if(accountNum == null) {
         accountNum = 0;
     }
     filePath = `../../vesselJSON/Account${ accountNum }.json`;
     data.VesselsOwners = data.VesselsOwners.sort(((a, b) =>  a.Vessel.localeCompare(b.Vessel)));
+    
+    if(accountNum == 38 || accountNum == 6071) {
+        for(var i = 0; i < data.VesselsOwners.length; i++) {
+            if(data.VesselsOwners[i].Vessel == "Unlisted") {
+                if(data.VesselsOwners[i].Person != "Misc") {
+                    data.VesselsOwners[i].Person = "Misc";
+                }
+                if(i < data.VesselsOwners.length) {
+                    placeHolder = data.VesselsOwners[i];
+                    data.VesselsOwners.splice(i, 1);
+                    data.VesselsOwners[data.VesselsOwners.length] = placeHolder;
+                }
+                break;
+            } else {
+                if(data.VesselsOwners.length-1 == i) {
+                    data.VesselsOwners[i+1] = {Vessel: "Unlisted", Person: "Misc"};
+                }
+            }
+        }
+    }
 
     await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
         if(errFile) {
