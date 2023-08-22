@@ -32,11 +32,14 @@ const GetContactDispatch = (data:any) => {
     }, 30000);
     getContactDispatchData();
     data.setMax(pages);
-    setModifier(data.pageNum*100);
 
     return () => clearInterval(interval);
 
-  }, [contactDispatchDataLength, data.pageNum]);
+  }, [contactDispatchDataLength]);
+
+  useEffect(() => {
+    setModifier(data.pageNum*100);
+  }, [data.pageNum])
     
   if (!contactDispatchDataLength) {
     return (

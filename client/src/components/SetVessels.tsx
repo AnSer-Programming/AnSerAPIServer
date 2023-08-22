@@ -30,14 +30,14 @@ const SetVessels = (data:any) => {
     const options = async() => {
       switch(data.accountNum) {
         case '38':
-          setOptions(["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]);
+          setOptions((["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]).sort());
           break;
         case '6071':
           setOptions(
-            ["Chris Thibodeaux", "Eric Steudelin", "Jeremy", 
+            (["Chris Thibodeaux", "Eric Steudelin", "Jeremy", 
             "Jon Tarver", "Kevin Hunt", "Kraig Prinz",
             "Randy Dedon", "Ronnie Dedon", "Terry Rodney", 
-            "TJ", "Trent Blanchard", "Walter Cryer", "Wayne"]
+            "TJ", "Trent Blanchard", "Walter Cryer", "Wayne"]).sort()
           );
           break;
         default:

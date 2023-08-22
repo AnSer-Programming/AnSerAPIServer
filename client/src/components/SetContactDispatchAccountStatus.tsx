@@ -5,7 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 const SetContactDispatchAccountStatus = (data:any) => {
   const [statusOptions, setStatus] = useState<any[]>([]);
   useEffect(() => {
-    setStatus(["Contact Dispatch", "Delivery Screen", "System Script", "Agent Account", "Client Off Service", "Cue"]);
+    setStatus((["Contact Dispatch", "Delivery Screen", "System Script", "Agent Account", "Client Off Service", "Cue"]).sort());
   }, []);
 
   return (

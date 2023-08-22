@@ -36,7 +36,11 @@ const SetContactDispatch = (data:any) => {
     data.setMax(pages);
     setModifier(data.pageNum*100);
   
-  }, [contactDispatchDataLength, data.pageNum]);
+  }, [contactDispatchDataLength]);
+
+  useEffect(() => {
+    setModifier(data.pageNum*100);
+  }, [data.pageNum])
     
   if (!contactDispatchDataLength) {
     return (

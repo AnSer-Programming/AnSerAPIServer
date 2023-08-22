@@ -5,7 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 const SetContactDispatchAccountType = (data:any) => {
   const [typeOptions, setType] = useState<any[]>([]);
   useEffect(() => {
-    setType(["HVAC", "Medical", "Realty", "Funeral Home", "Plumbing", "Tech"]);
+    setType((["HVAC", "Medical", "Realty", "Funeral Home", "Plumbing", "Tech"]).sort());
   }, []);
 
   return (
