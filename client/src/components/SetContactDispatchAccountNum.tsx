@@ -6,7 +6,7 @@ const SetContactDispatchAccountNum = (data:any) => {
       <TextField label={data.accountNum}
         disabled
         id="filled-read-only-input"
-        sx={{background: 'white'}}
+        sx={{background: 'white', width: '75%'}}
         InputProps={{
           readOnly: true,
         }}

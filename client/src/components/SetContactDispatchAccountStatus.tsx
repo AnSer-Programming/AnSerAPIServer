@@ -5,7 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 const SetContactDispatchAccountStatus = (data:any) => {
   const [statusOptions, setStatus] = useState<any[]>([]);
   useEffect(() => {
-    setStatus(["Contact Dispatch", "Delivery Screen", "System Script", "Agent Account", "Client Off Service", "Cue"]);
+    setStatus((["Contact Dispatch", "Delivery Screen", "System Script", "Agent Account", "Client Off Service", "Cue"]).sort());
   }, []);
 
   return (
@@ -16,7 +16,7 @@ const SetContactDispatchAccountStatus = (data:any) => {
           data.updateHandler(newInputValue);
         }}
         options={statusOptions}
-        sx={{background: 'white'}}
+        sx={{background: 'white', width: '75%'}}
         renderInput={(params) => <TextField {...params} value={data.status} />}
       /> 
     </>

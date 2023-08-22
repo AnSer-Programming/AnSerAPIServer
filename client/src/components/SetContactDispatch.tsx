@@ -4,6 +4,8 @@ import SetContactDispatchAccountNum from './SetContactDispatchAccountNum';
 import SetContactDispatchAccountStatus from './SetContactDispatchAccountStatus';
 import SetContactDispatchAccountType from './SetContactDispatchAccountType';
 import SetContactDispatchAccountAPI from './SetContactDispatchAccountAPI';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const SetContactDispatch = (data:any) => {
   // let updateContactDispatchData:JSON = JSON.parse('{"Data":[]}');
@@ -34,10 +36,18 @@ const SetContactDispatch = (data:any) => {
     data.setMax(pages);
     setModifier(data.pageNum*100);
   
-  }, [contactDispatchDataLength, data.pageNum]);
+  }, [contactDispatchDataLength]);
+
+  useEffect(() => {
+    setModifier(data.pageNum*100);
+  }, [data.pageNum])
     
   if (!contactDispatchDataLength) {
-    return <h2>LOADING...</h2>;
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress color="secondary" disableShrink />
+      </Box>
+    );
   }
   
   // const handleContactUpdate = async() => {
@@ -70,7 +80,7 @@ const SetContactDispatch = (data:any) => {
 
   const tableStyles = {
     marginLeft: '1%',
-    width: '90%'
+    width: '75%'
   }
 
   const tableField = {
@@ -114,7 +124,7 @@ const SetContactDispatch = (data:any) => {
                         /> 
                       </td>
                       <td style={tableField}>
-                        API: 
+                        API: <br />
                         <SetContactDispatchAccountAPI 
                           api={contactDispatchData[i+modifier].api}
                           updateHandler={(data:any) => handleContactDispatchEdit(data)}

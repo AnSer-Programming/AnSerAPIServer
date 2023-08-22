@@ -3,8 +3,22 @@ import { Link } from 'react-router-dom';
 import { Navbar, Nav, Container } from 'react-bootstrap';
 
 const AppNavbar = () => {
-  // set modal display state
-  const [showModal, setShowModal] = useState(false);
+  const [vesselAPILink, setVesselAPILink] = useState(false);
+  const [contactDispatListLink, setContactDispatListLink] = useState(false);
+
+  function hoverHandler(e) {
+    let id = e.target.id;
+    switch(id) {
+      case "vesselAPI":
+        setVesselAPILink(!vesselAPILink);
+        break;
+      case "contactDispatchList":
+        setContactDispatListLink(!contactDispatListLink);
+        break;
+      default:
+        break;
+    } 
+  }
 
   return (  
     <>  
@@ -16,14 +30,11 @@ const AppNavbar = () => {
           <Navbar.Toggle aria-controls='navbar' />
           <Navbar.Collapse id='navbar' className='d-flex flex-row-reverse'>
             <Nav className='ml-auto d-flex'>
-              {/* <Nav.Link as={Link} to='/'>
-                Search For API
-              </Nav.Link> */}
-              <Nav.Link as={Link} to='/Vessels'>
+              <Nav.Link className={vesselAPILink ? 'text-success' : 'text-info'} id="vesselAPI" as={Link} to='/Vessels' onMouseEnter={hoverHandler} onMouseLeave={hoverHandler}>
                 Vessels API
               </Nav.Link>
-              <Nav.Link as={Link} to='/ContactDispatch'>
-                ContactDispatch API
+              <Nav.Link className={contactDispatListLink ? 'text-success' : 'text-info'} id="contactDispatchList" as={Link} to='/ContactDispatch' onMouseEnter={hoverHandler} onMouseLeave={hoverHandler}>
+                ContactDispatch List
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>

@@ -5,7 +5,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 const SetContactDispatchAccountType = (data:any) => {
   const [typeOptions, setType] = useState<any[]>([]);
   useEffect(() => {
-    setType(["HVAC", "Medical", "Realty", "Funeral Home", "Plumbing", "Tech"]);
+    setType((["HVAC", "Medical", "Realty", "Funeral Home", "Plumbing", "Tech"]).sort());
   }, []);
 
   return (
@@ -16,7 +16,7 @@ const SetContactDispatchAccountType = (data:any) => {
           data.updateHandler(newInputValue);
         }}
         options={typeOptions}
-        sx={{background: 'white'}}
+        sx={{background: 'white', width: '75%'}}
         renderInput={(params) => <TextField {...params} value={data.type} />}
       /> 
     </>

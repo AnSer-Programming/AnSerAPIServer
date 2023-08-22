@@ -44,7 +44,7 @@ const ContactDispatch = () => {
     <>
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
-        <button onClick={previousPageHandler}>Pervious</button>
+        <button onClick={previousPageHandler}>Previous</button>
         <span> Page: {option+1} </span>
         <button onClick={nextPageHandler}>Next</button><br /><br />
         {
@@ -57,7 +57,7 @@ const ContactDispatch = () => {
           />
         } 
         <br />
-        <button onClick={previousPageHandler}>Pervious</button>
+        <button onClick={previousPageHandler}>Previous</button>
         <span> Page: {option+1} </span>
         <button onClick={nextPageHandler}>Next</button>
       </div> 

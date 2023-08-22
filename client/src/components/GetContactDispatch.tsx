@@ -1,5 +1,7 @@
 import React, { useState, useEffect, ReactComponentElement, ReactElement, JSXElementConstructor } from 'react';
 import { getContactDispatchAPI } from '../utils/API';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const GetContactDispatch = (data:any) => {
   const [contactDispatchData, setContactDispatchData] = useState<any>({});
@@ -30,14 +32,21 @@ const GetContactDispatch = (data:any) => {
     }, 30000);
     getContactDispatchData();
     data.setMax(pages);
-    setModifier(data.pageNum*100);
 
     return () => clearInterval(interval);
 
-  }, [contactDispatchDataLength, data.pageNum]);
-  
+  }, [contactDispatchDataLength]);
+
+  useEffect(() => {
+    setModifier(data.pageNum*100);
+  }, [data.pageNum])
+    
   if (!contactDispatchDataLength) {
-    return <h2>LOADING...</h2>;
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress color="secondary" disableShrink />
+      </Box>
+    );
   }
 
   const tableStyles = {

@@ -9,6 +9,7 @@ const SetVessels = (data:any) => {
   const [option, setOptions] = useState<String[]>([]);
   // use this to determine if `useEffect()` hook needs to run again
   const vesselDataLength = Object.keys(vesselData).length;
+  let placeHolder:{};
 
   useEffect(() => {
     const getVesselData = async() => {
@@ -21,6 +22,39 @@ const SetVessels = (data:any) => {
 
         let vessel = await response.json();
         vessel.VesselsOwners = vessel.VesselsOwners.sort(((a:any, b:any) =>  a.Person.localeCompare(b.Person))).reverse();
+    
+        if(data.accountNum == 38 || data.accountNum == 6071) {
+            for(var i:number = 0; i < vessel.VesselsOwners.length; i++) {
+                if(vessel.VesselsOwners[i].Vessel == "Unlisted") {
+                    if(vessel.VesselsOwners[i].Person != "Misc") {
+                      vessel.VesselsOwners[i].Person = "Misc";
+                    }
+                    if(i < vessel.VesselsOwners.length) {
+                        placeHolder = vessel.VesselsOwners[i];
+                        vessel.VesselsOwners.splice(i, 1);
+                        vessel.VesselsOwners[vessel.VesselsOwners.length] = placeHolder;
+                    }
+                    break;
+                } else {
+                    if(vessel.VesselsOwners.length == i) {
+                      vessel.VesselsOwners[i] = {Vessel: "Unlisted", Person: "Misc"};
+                    }
+                }
+            }
+        } //list, blank, then Unlisted
+    
+        if(data.accountNum == 38 || data.accountNum == 6071) {
+          for(var i:number = vessel.VesselsOwners.length-1; i > 0; i--) {
+            if(vessel.VesselsOwners[i].Vessel == "Unlisted") {
+              if(vessel.VesselsOwners[i-1].Vessel == " ") {
+                placeHolder = vessel.VesselsOwners[i];
+                vessel.VesselsOwners[i] = vessel.VesselsOwners[i-1];
+                vessel.VesselsOwners[i-1] = placeHolder;
+              }
+            }
+          }
+        } // list, unlisted, then blank
+
         setVesselData(vessel.VesselsOwners);
       } catch (err) {
         console.error(err);
@@ -30,14 +64,14 @@ const SetVessels = (data:any) => {
     const options = async() => {
       switch(data.accountNum) {
         case '38':
-          setOptions(["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]);
+          setOptions((["Adam Jeanquart", "Billy Palmer", "Cristian Mueller", "Jane Coleman", "Sam Cloyd", "Stephen Merki"]).sort());
           break;
         case '6071':
           setOptions(
-            ["Chris Thibodeaux", "Eric Steudelin", "Jeremy", 
+            (["Chris Thibodeaux", "Eric Steudelin", "Jeremy", 
             "Jon Tarver", "Kevin Hunt", "Kraig Prinz",
             "Randy Dedon", "Ronnie Dedon", "Terry Rodney", 
-            "TJ", "Trent Blanchard", "Walter Cryer", "Wayne"]
+            "TJ", "Trent Blanchard", "Walter Cryer", "Wayne"]).sort()
           );
           break;
         default:
