@@ -94,8 +94,8 @@ const SetVessels = (data:any) => {
 
   function tableBuilder(index:any) {
     return (
-      <tr style={rowStyles}>
-        <td style={fieldStyles}>
+      <tr key={`row${index}`} style={rowStyles}>
+        <td key={vesselData[index].Vessel} style={fieldStyles}>
           Vessel: <br />
           <TextField label={vesselData[index].Vessel} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             handleVesselEdit(index, event.target.value, "Vessel");
@@ -103,7 +103,7 @@ const SetVessels = (data:any) => {
           sx={{ width: 250, background: 'white'}}
           variant="filled" />
         </td>
-        <td style={fieldStyles}>
+        <td key={vesselData[index].Person} style={fieldStyles}>
           Contact: <Autocomplete
             id={"vesselInput"}
             disablePortal
@@ -117,7 +117,7 @@ const SetVessels = (data:any) => {
           /> 
         </td>
         <td style={fieldStyles}>
-          <button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`}>Delete Row</button>
+          <br /><button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
         </td>
       </tr>
     )
@@ -166,10 +166,12 @@ const SetVessels = (data:any) => {
   }
 
   const rowStyles = {
+    height: '100%',
     width: '75%',
   }
 
   const fieldStyles = {
+    height: '75%',
     width: '25%',
   }
 
