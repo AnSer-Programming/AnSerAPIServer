@@ -55,7 +55,7 @@ async function vesselReader(accountNum) {
         return data = JSON.parse(data);
     } else {
         //Create an empty JSON file
-        const data = { "VesselsOwners": [{}]};
+        let data = { "VesselsOwners": [{"Vessel": "", "Person": ""}]};
 
         await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
             if(errFile) {
