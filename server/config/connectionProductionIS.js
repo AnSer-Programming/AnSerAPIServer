@@ -1,5 +1,6 @@
 var ISOLATION_LEVEL = require('tedious').ISOLATION_LEVEL;
 let config;
+
 try {
     const Sequelize = require('sequelize');
     const dotenv = require("dotenv");
@@ -7,7 +8,7 @@ try {
     dotenv.config();
     
     config = new Sequelize(
-        `${ process.env.DB_NAME_PRODUCTION }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
+        `${ process.env.DB_NAME_PRODUCTION_IS }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
         {
             "host": `${ process.env.DB_SERVER_PRODUCTION }`,
             "dialect": 'mssql',

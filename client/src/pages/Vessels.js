@@ -44,7 +44,10 @@ const Vessels = () => {
         {
           isEdit ?
             <p></p> :
-            <p>*If your updates don't appear right away please refresh the page.</p>
+            <div>
+              <p>*If your updates don't appear right away, please refresh the page.</p> 
+              <p>The list is grouped by Contact, then sorted in reverse alphabetical order for each Vessel under that specific Contact.</p>
+            </div>
         }
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
         {
