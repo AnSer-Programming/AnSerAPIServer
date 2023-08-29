@@ -32,6 +32,10 @@ async function vesselWrite(accountNum, data) {
         }
     }
 
+    for(let i = 0; i < data.VesselsOwners.length; i++) {
+        data.VesselsOwners[i].index = i;
+    }
+
     await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
         if(errFile) {
             console.error(`Write Error ${errFile}`);

@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const storedProcedure = '[dbo].[spSnapGraphLineOnTime]';
-const config = require('../../config/connectionProduction');
+const config = require('../../config/connectionProductionCustom');
 const sql = require('mssql');
 const {parse, stringify, toJSON, fromJSON} = require('flatted');
 
