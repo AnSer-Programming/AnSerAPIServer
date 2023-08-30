@@ -2,15 +2,15 @@ const express = require('express');
 const https =require('https');
 const fs = require('fs');
 const path = require('path');
-const routes = require('./routes');
+const routes = require('./routes/Index');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ limit:'50mb', extended: true }));
+app.use(express.json({ limit:'50mb' }));
 
 if(process.env.PRODUCTION === 'True') {
   app.use(express.static(path.join(__dirname, '../client/build')));

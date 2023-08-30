@@ -1,0 +1,42 @@
+[
+    {
+        "first_name": "Stephen",
+        "last_name": "Merki",
+        "number": 1
+    },
+    {
+        "first_name": "Cristian",
+        "last_name": "Mueller",
+        "number": 2
+    },
+    {
+        "first_name": "Sam",
+        "last_name": "Cloyed",
+        "number": 2
+    },
+    {
+        "first_name": "Adam",
+        "last_name": "Jeanquart",
+        "number": 3
+    },
+    {
+        "first_name": "Billy",
+        "last_name": "Palmer",
+        "number": 10
+    },
+    {
+        "first_name": "Jane",
+        "last_name": "Coloeman",
+        "number": 3
+    },
+    {
+        "first_name": "Joe",
+        "last_name": "Belfeuil",
+        "number": 1
+    },
+    {
+        "first_name": "Ryan",
+        "last_name": "Nettesheim",
+        "number": 2
+    }
+]
