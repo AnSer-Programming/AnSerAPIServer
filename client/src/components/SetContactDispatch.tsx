@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getContactDispatchAPI, setContactDispatchAPI } from '../utils/API';
-import SetContactDispatchAccountNum from './SetContactDispatchAccountNum';
-import SetContactDispatchAccountStatus from './SetContactDispatchAccountStatus';
-import SetContactDispatchAccountType from './SetContactDispatchAccountType';
-import SetContactDispatchAccountAPI from './SetContactDispatchAccountAPI';
+import SetContactDispatchAccountNum from './SetContactDispatchComponents/SetContactDispatchAccountNum';
+import SetContactDispatchAccountStatus from './SetContactDispatchComponents/SetContactDispatchAccountStatus';
+import SetContactDispatchAccountType from './SetContactDispatchComponents/SetContactDispatchAccountType';
+import SetContactDispatchAccountAPI from './SetContactDispatchComponents/SetContactDispatchAccountAPI';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 

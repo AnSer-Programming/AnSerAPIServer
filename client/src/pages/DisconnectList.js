@@ -1,9 +1,9 @@
 import {React, useState} from 'react';
-import GetVessels from '../components/GetVessels.tsx';
-import SetVessels from '../components/SetVessels.tsx';
+import GetDisconnectList from '../components/GetDisconnectList.tsx';
+import SetDisconnectList from '../components/SetDisconnectList.tsx';
 import Select from 'react-select';
 
-const Vessels = () => {
+const DisconnectList = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [accountNum, setAccountNum] = useState(0);
   // create method to search for books and set state on form submit
@@ -24,7 +24,7 @@ const Vessels = () => {
             <p></p> :
             <div>
               <p>*If your updates don't appear right away, please refresh the page.</p> 
-              <p>The list is grouped by Contact, then sorted in reverse alphabetical order for each Vessel under that specific Contact.</p>
+              <p>The list is ordered in alphabetical order by Property Owner.</p>
             </div>
         }
         <div> 
@@ -32,10 +32,10 @@ const Vessels = () => {
         </div>
         {
           isEdit ? 
-          <SetVessels 
+          <SetDisconnectList
           accountNum={accountNum}
           setEdit={(editBoolean) => setIsEdit(editBoolean)}/> : 
-          <GetVessels
+          <GetDisconnectList
           accountNum={accountNum} />
         } 
       </>
@@ -57,7 +57,7 @@ const Vessels = () => {
   const option = [
     {value: '0', label: 'Walk-Through'},
     {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '6071', label: 'Account 6071: Gulf Inland Marine'}
+    {value: '6509', label: 'Account 6509: Plymoth Utilities'}
   ]
 
   return (
@@ -80,4 +80,4 @@ const Vessels = () => {
   );
 };
 
-export default Vessels;
+export default DisconnectList;

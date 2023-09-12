@@ -3,12 +3,16 @@ import { Link } from 'react-router-dom';
 import { Navbar, Nav, Container } from 'react-bootstrap';
 
 const AppNavbar = () => {
+  const [disconnectListAPILink, setDisconnectListAPILink] = useState(false);
   const [vesselAPILink, setVesselAPILink] = useState(false);
   const [contactDispatListLink, setContactDispatListLink] = useState(false);
 
   function hoverHandler(e) {
     let id = e.target.id;
     switch(id) {
+      case "disconnectListAPI":
+        setDisconnectListAPILink(!disconnectListAPILink);
+        break;
       case "vesselAPI":
         setVesselAPILink(!vesselAPILink);
         break;
@@ -30,6 +34,9 @@ const AppNavbar = () => {
           <Navbar.Toggle aria-controls='navbar' />
           <Navbar.Collapse id='navbar' className='d-flex flex-row-reverse'>
             <Nav className='ml-auto d-flex'>
+              <Nav.Link className={disconnectListAPILink ? 'text-success' : 'text-info'} id="disconnectListAPI" as={Link} to='/DisconnectList' onMouseEnter={hoverHandler} onMouseLeave={hoverHandler}>
+                Disconnect List API
+              </Nav.Link>
               <Nav.Link className={vesselAPILink ? 'text-success' : 'text-info'} id="vesselAPI" as={Link} to='/Vessels' onMouseEnter={hoverHandler} onMouseLeave={hoverHandler}>
                 Vessels API
               </Nav.Link>
