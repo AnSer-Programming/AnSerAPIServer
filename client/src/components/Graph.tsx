@@ -10,7 +10,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { graphData } from '../utils/API';
+import { onTimeData } from '../utils/API';
 import LinearProgress from '@mui/material/LinearProgress';
 
 const OnTimeGraph = () => {
@@ -26,7 +26,7 @@ const OnTimeGraph = () => {
   useEffect(() => {
     const getGraphData = async() => {
       try {
-        const response = await graphData();
+        const response = await onTimeData();
 
         if (!response.ok) {
           throw new Error('something went wrong!');

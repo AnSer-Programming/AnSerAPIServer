@@ -4,38 +4,40 @@ const fsp = require('fs').promises; //this file system call allows for async and
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
-async function vesselWrite(accountNum, data) {
+async function disconnectWrite(accountNum, data) {
     let placeHolder;
     if(accountNum == null) {
         accountNum = 0;
     }
-    filePath = `../../vesselJSON/Account${ accountNum }.json`;
-    data.VesselsOwners = data.VesselsOwners.sort(((a, b) =>  a.Vessel.localeCompare(b.Vessel)));
+    filePath = `../../disconnectJSON/Account${ accountNum }.json`;
+    data.DisconnectList = data.DisconnectList.sort();
     
     // Force the unlisted row for the accounts declared in the if statement
-    if(accountNum == 38 || accountNum == 6071) {
-        for(var i = 0; i < data.VesselsOwners.length; i++) {
-            if(data.VesselsOwners[i].Vessel == "Unlisted") {
-                if(data.VesselsOwners[i].Person != "Misc") {
-                    data.VesselsOwners[i].Person = "Misc";
+    if(accountNum == 38 || accountNum == 6509) {
+        for(var i = 0; i < data.DisconnectList.length; i++) {
+            if(data.DisconnectList[i].PropertyOwner == "Unlisted") {
+                if(data.DisconnectList[i].Notes != "Unlisted") {
+                    data.DisconnectList[i].Notes = "Unlisted";
                 }
-                if(i < data.VesselsOwners.length) {
-                    placeHolder = data.VesselsOwners[i];
-                    data.VesselsOwners.splice(i, 1);
-                    data.VesselsOwners[data.VesselsOwners.length] = placeHolder;
+                if(i < data.DisconnectList.length) {
+                    placeHolder = data.DisconnectList[i];
+                    data.DisconnectList.splice(i, 1);
+                    data.DisconnectList[data.DisconnectList.length] = placeHolder;
                 }
                 break;
             } else {
-                if(data.VesselsOwners.length-1 == i) {
-                    data.VesselsOwners[i+1] = {Vessel: "Unlisted", Person: "Misc"};
+                if(data.DisconnectList.length-1 == i) {
+                    data.DisconnectList[i+1] = {PropertyOwner: "Unlisted", Notes: "Unlisted"};
                 }
             }
         }
     }
 
     // Set the index column for each row
-    for(let i = 0; i < data.VesselsOwners.length; i++) {
-        data.VesselsOwners[i].index = i;
+    if(typeof(data.DisconnectList) != undefined) {
+        for(let i = 0; i < data.DisconnectList.length; i++) {
+            data.DisconnectList[i].index = i;
+        }
     }
 
     await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
@@ -46,22 +48,22 @@ async function vesselWrite(accountNum, data) {
         }
     });
     data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
-    return data = JSON.parse(data);
+    return data = JSON.parse(data); 
 }
 
 //Call the function in async to allow for data to be returned before the code moves on.
-async function vesselReader(accountNum) {
+async function disconnectReader(accountNum) {
     if(accountNum == null) {
         accountNum = 0;
     }
-    filePath = `../../vesselJSON/Account${ accountNum }.json`;
+    filePath = `../../disconnectJSON/Account${ accountNum }.json`;
     // This is a dynamic filePath call that will allow for multiple account numbers to set up a scheduler.
     if(fs.existsSync(path.join(__dirname, filePath))) {
         let data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
         return data = JSON.parse(data);
     } else {
         //Create an empty JSON file
-        let data = { "VesselsOwners": [{"Vessel": "", "Person": ""}]};
+        let data = { "DisconnectList": [{"PropertyOwner": "Unlisted", "Street": "", "City": "", "State": "", "Zip": "", "Amount": "", "Notes": "Unlisted"}]};
 
         await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
             if(errFile) {
@@ -72,7 +74,7 @@ async function vesselReader(accountNum) {
         });
 
         //Make the JSON file readable
-        data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'}); 
+        data = await fsp.readFile(path.join(__dirname, filePath), {encoding: 'utf8'});
         return data = JSON.parse(data);
     }
 }
@@ -80,14 +82,14 @@ async function vesselReader(accountNum) {
 //Write to the accounts JSON file
 //  Use async and await to force the code to wait for results rather than letting it continue reading lines.
 router.post('/:account', async(req, res) => {
-    const data = await vesselWrite(req.params.account, req.body);
+    const data = await disconnectWrite(req.params.account, req.body);
     res.json(data);
 });
 
 //Read from the accounts JSON file
 //  Use async and await to force the code to wait for results rather than letting it continue reading lines.
 router.get('/:account', async(req, res) => {
-    const data = await vesselReader(req.params.account);
+    const data = await disconnectReader(req.params.account);
     res.json(data);
 });
 

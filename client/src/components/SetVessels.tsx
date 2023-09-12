@@ -46,6 +46,9 @@ const SetVessels = (data:any) => {
         if(data.accountNum == 38 || data.accountNum == 6071) {
           for(var i:number = vessel.VesselsOwners.length-1; i > 0; i--) {
             if(vessel.VesselsOwners[i].Vessel == "Unlisted") {
+              if(vessel.VesselsOwners[i].Person != "Misc") {
+                vessel.VesselsOwners[i].Person = "Misc";
+              }
               if(vessel.VesselsOwners[i-1].Vessel == " ") {
                 placeHolder = vessel.VesselsOwners[i];
                 vessel.VesselsOwners[i] = vessel.VesselsOwners[i-1];
