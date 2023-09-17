@@ -5,6 +5,7 @@ import Vessels from './pages/Vessels';
 import DisconnectList from './pages/DisconnectList';
 import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
+import Calendar from './pages/Calendar';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route exact path='/Vessels' component={Vessels} />
             <Route exact path='/DisconnectList' component={DisconnectList} />
             <Route exact path='/ContactDispatch' component={ContactDispatch} />
+            <Route exact path='/Calendar' component={Calendar} />
             <Route exact path='/AgentStats' component={AgentStats} />
             <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
           </Switch>

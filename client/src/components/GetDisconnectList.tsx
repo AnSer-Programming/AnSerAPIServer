@@ -70,13 +70,13 @@ const GetDisconnectList = (data:any) => {
         <tbody>
           {Object.keys(disconnectListData).map((index) => (
             <tr key={`row${index}`}>
-              <td key={disconnectListData[index].PropertyOwner} style={{paddingRight: '25px'}}>Property Owner: {disconnectListData[index].PropertyOwner}</td>
-              <td key={disconnectListData[index].Street} style={{paddingRight: '25px'}} >Street: {disconnectListData[index].Street}</td>
-              <td key={disconnectListData[index].City} style={{paddingRight: '25px'}} >City: {disconnectListData[index].City}</td>
-              <td key={disconnectListData[index].State} style={{paddingRight: '25px'}} >State: {disconnectListData[index].State}</td>
-              <td key={disconnectListData[index].Zip} style={{paddingRight: '25px'}} >Zip: {disconnectListData[index].Zip}</td>
-              <td key={disconnectListData[index].Amount} style={{paddingRight: '25px'}} >Amount: {disconnectListData[index].Amount}</td>
-              <td key={disconnectListData[index].Note} style={{paddingRight: '25px'}} >Note: {disconnectListData[index].Notes}</td> 
+              <td key={`PropertyOwner${disconnectListData[index].PropertyOwner}${index}`} style={{paddingRight: '25px'}}>Property Owner: {disconnectListData[index].PropertyOwner}</td>
+              <td key={`Street${disconnectListData[index].Street}${index}`} style={{paddingRight: '25px'}} >Street: {disconnectListData[index].Street}</td>
+              <td key={`City${disconnectListData[index].City}${index}`} style={{paddingRight: '25px'}} >City: {disconnectListData[index].City}</td>
+              <td key={`State${disconnectListData[index].State}${index}`} style={{paddingRight: '25px'}} >State: {disconnectListData[index].State}</td>
+              <td key={`Zip${disconnectListData[index].Zip}${index}`} style={{paddingRight: '25px'}} >Zip: {disconnectListData[index].Zip}</td>
+              <td key={`Amount${disconnectListData[index].Amount}${index}`} style={{paddingRight: '25px'}} >Amount: {disconnectListData[index].Amount}</td>
+              <td key={`Notes${disconnectListData[index].Notes}${index}`} style={{paddingRight: '25px'}} >Note: {disconnectListData[index].Notes}</td> 
             </tr>
           ))}
         </tbody>
