@@ -19,6 +19,9 @@ async function disconnectWrite(accountNum, data) {
                 if(data.DisconnectList[i].Notes != "Unlisted") {
                     data.DisconnectList[i].Notes = "Unlisted";
                 }
+                if(data.DisconnectList[i].Street != "Unlisted") {
+                    data.DisconnectList[i].Street = "Unlisted";
+                }
                 if(i < data.DisconnectList.length) {
                     placeHolder = data.DisconnectList[i];
                     data.DisconnectList.splice(i, 1);
@@ -27,7 +30,7 @@ async function disconnectWrite(accountNum, data) {
                 break;
             } else {
                 if(data.DisconnectList.length-1 == i) {
-                    data.DisconnectList[i+1] = {PropertyOwner: "Unlisted", Notes: "Unlisted"};
+                    data.DisconnectList[i+1] = {PropertyOwner: "Unlisted", Street: "Unlisted", Notes: "Unlisted"};
                 }
             }
         }
@@ -63,7 +66,7 @@ async function disconnectReader(accountNum) {
         return data = JSON.parse(data);
     } else {
         //Create an empty JSON file
-        let data = { "DisconnectList": [{"PropertyOwner": "Unlisted", "Street": "", "City": "", "State": "", "Zip": "", "Amount": "", "Notes": "Unlisted"}]};
+        let data = { "DisconnectList": [{"PropertyOwner": "Unlisted", "Street": "Unlisted", "City": "", "State": "", "Zip": "", "Amount": "", "Notes": "Unlisted"}]};
 
         await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
             if(errFile) {

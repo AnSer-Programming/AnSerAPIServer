@@ -71,69 +71,96 @@ const SetDisconnectList = (data:any) => {
     return (
       <>
         <tr key={`primaryRow${index}`} style={rowStyles}>
-          <td key={disconnectListData[index].PropertyOwner} style={fieldStyles}>
+          <td key={`PropertyOwner${disconnectListData[index].PropertyOwner}${index}`} style={fieldStyles}>
             Property Owner: <br />
-            <TextField label={disconnectListData[index].PropertyOwner} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "PropertyOwner");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].PropertyOwner} 
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "propertyOwner");
+              }} 
+              id={`propertyOwner${index}`}
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
-          <td key={disconnectListData[index].Street} style={fieldStyles}>
+          <td key={`Street${disconnectListData[index].Street}${index}`} style={fieldStyles}>
             Street: <br />
-            <TextField label={disconnectListData[index].Street} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "Street");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].Street} 
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "Street");
+              }} 
+              id={`street${index}`}
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
-          <td key={disconnectListData[index].City} style={fieldStyles}>
+          <td key={`City${disconnectListData[index].City}${index}`} style={fieldStyles}>
             City: <br />
-            <TextField label={disconnectListData[index].City} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "City");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].City} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "City");
+              }} 
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
-          <td key={disconnectListData[index].State} style={fieldStyles}>
+          <td key={`State${disconnectListData[index].State}${index}`} style={fieldStyles}>
             State: <br />
-            <TextField label={disconnectListData[index].State} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "State");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].State} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "State");
+              }} 
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
         </tr>
         <tr key={`secondaryRow${index}`} style={rowStyles}>
-          <td key={disconnectListData[index].Zip} style={fieldStyles}>
+          <td key={`Zip${disconnectListData[index].Zip}${index}`} style={fieldStyles}>
             Zip: <br />
-            <TextField label={disconnectListData[index].Zip} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "Zip");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].Zip} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "Zip");
+              }} 
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
-          <td key={disconnectListData[index].Amount} style={fieldStyles}>
+          <td key={`Amount${disconnectListData[index].Amount}${index}`} id={index} style={fieldStyles}>
             Amount: <br />
-            <TextField label={disconnectListData[index].Amount} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "Amount");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].Amount} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "Amount");
+              }} 
+              id={`amount${index}`}
+              className={'bg-white'}
+              sx={{ width: 250 }}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
-          <td key={disconnectListData[index].Notes} style={fieldStyles}>
+          <td key={`Notes${disconnectListData[index].Notes}${index}`} id={index} style={fieldStyles}>
             Notes: <br />
-            <TextField label={disconnectListData[index].Notes} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(index, event.target.value, "Notes");
-            }} 
-            sx={{ width: 250, background: 'white'}}
-            variant="filled" />
+            <TextField 
+              label={disconnectListData[index].Notes} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                handleVesselEdit(index, event.target.value, "Notes");
+              }} 
+              id={`notes${index}`}
+              className={'bg-white'}
+              sx={{ width: 250}}
+              variant="filled"
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
           <td style={fieldStyles}>
             <br /><button onClick={() => deleteRowHandler(parseInt(index))} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Listing</button>
           </td>
         </tr>
-        <tr key={`gapRow${ index }`} style={{borderBottom: '2px solid', height: '15px'}}></tr>
+        <tr key={`gapRow${ index }`} style={{borderBottom: '2px solid', borderColor: '#54B4D3', height: '15px'}} className='bg-info'></tr>
       </>
     )
   }
@@ -155,12 +182,50 @@ const SetDisconnectList = (data:any) => {
   };
   
   const handleVesselEdit = async(index:any, newValue:any, valueType:String) => {
+    let classOptions:String[];
+    const ownerElement = document.getElementById("propertyOwner"+index);
+    const streetElement = document.getElementById("street"+index);
+    const amountElement = document.getElementById("amount"+index);
+    const notesElement = document.getElementById("notes"+index);
+
     switch(valueType) {
-      case "PropertyOwner":
+      case "propertyOwner":
         updateDisconnectListData[index].PropertyOwner = `${newValue}`;
+        if(ownerElement) {
+          if(ownerElement.parentElement) {
+            if(ownerElement.parentElement.parentElement) {
+              classOptions = ownerElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-danger') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              ownerElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
         break;
       case "Street":
         updateDisconnectListData[index].Street = `${newValue}`;
+        if(streetElement) {
+          if(streetElement.parentElement) {
+            if(streetElement.parentElement.parentElement) {
+              classOptions = streetElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-danger') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              streetElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
         break;
       case "City":
         updateDisconnectListData[index].City = `${newValue}`;
@@ -173,48 +238,203 @@ const SetDisconnectList = (data:any) => {
         break;
       case "Amount":
         updateDisconnectListData[index].Amount = `${newValue}`;
+        if(amountElement) {
+          if(amountElement.parentElement) {
+            if(amountElement.parentElement.parentElement) {
+              classOptions = amountElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-warning') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        if(notesElement) {
+          if(notesElement.parentElement) {
+            if(notesElement.parentElement.parentElement) {
+              classOptions = notesElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-warning') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
         break;
       case "Notes":
         updateDisconnectListData[index].Notes = `${newValue}`;
+        if(amountElement) {
+          if(amountElement.parentElement) {
+            if(amountElement.parentElement.parentElement) {
+              classOptions = amountElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i > classOptions.length; i++) {
+                if(classOptions[i] === 'bg-warning') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        if(notesElement) {
+          if(notesElement.parentElement) {
+            if(notesElement.parentElement.parentElement) {
+              classOptions = notesElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-warning') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-white';
+              notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
         break;
       default:
-        console.log(`${ index } ${ newValue } ${ valueType }`);
+        // console.log(`${ index } ${ newValue } ${ valueType }`);
         // code block
     } 
     setDisconnectListData(updateDisconnectListData);
   } 
 
-  const handleSendError = async(index:number) => {
-    const errorRow = document.getElementById(`${index}`);
-    if(errorRow) {
-      errorRow.setAttribute("background","red");
-    }
+  const handleSendError = async(index:number, option:String) => {
+    let classOptions:String[];
+    const errorOwner = document.getElementById("propertyOwner"+index);
+    const errorStreet = document.getElementById("street"+index);
+    const errorAmount = document.getElementById("amount"+index);
+    const errorNotes = document.getElementById("notes"+index);
+
+    switch(option) {
+      case "amountNotes":
+        if(errorAmount) {
+          if(errorAmount.parentElement) {
+            if(errorAmount.parentElement.parentElement) {
+              classOptions = errorAmount.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-white') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-warning';
+              errorAmount.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        if(errorNotes) {
+          if(errorNotes.parentElement) {
+            if(errorNotes.parentElement.parentElement) {
+              classOptions = errorNotes.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-white') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-warning';
+              errorNotes.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        break;
+      case "propertyOwner":
+        if(errorOwner) {
+          if(errorOwner.parentElement) {
+            if(errorOwner.parentElement.parentElement) {
+              classOptions = errorOwner.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-white') {
+                  classOptions.splice(i, 1);
+                }
+              }
+              console.log(classOptions);
+    
+              classOptions[classOptions.length-1] = 'bg-danger';
+              errorOwner.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        break;
+      case "street":
+        if(errorStreet) {
+          if(errorStreet.parentElement) {
+            if(errorStreet.parentElement.parentElement) {
+              classOptions = errorStreet.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-white') {
+                  classOptions.splice(i, 1);
+                }
+              }
+    
+              classOptions[classOptions.length-1] = 'bg-danger';
+              errorStreet.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              // console.log("errorStreet " + classOptions);
+            }
+          }
+        }
+        break;
+      default:
+        
+    }    
   }
   
   const handleAddRow = async() => {
     const newObj = {"PropertyOwner": " ", "Street": " ", "City": " ", "State": " ", "Zip": " ", "Amount": " ", "Notes": " "};
     updateDisconnectListData[updateDisconnectListDataLength] = await newObj;
-    console.log(updateDisconnectListData);
+    // console.log(updateDisconnectListData);
     updateDisconnectListDataLength ++; 
     handleDisconnectListUpdate();
   }
   
   const deleteRowHandler = (index:number) => { 
     updateDisconnectListData.splice(index, 1); 
-    console.log(updateDisconnectListData);
     updateDisconnectListDataLength --;
     handleDisconnectListUpdate(); 
   }
 
   const saveAll = () => {
-    for(let i = 0; i < disconnectListData.length; i++) {
-      if(updateDisconnectListData.Notes == null || updateDisconnectListData.Amount == null) {
-        handleSendError(i);
-        break;
+    let error:boolean = false;
+    for(let i = 0; i < updateDisconnectListData.length; i++) {
+      if(!updateDisconnectListData[i].Amount || updateDisconnectListData[i].Amount == " " || updateDisconnectListData[i].Amount.length === 0) {
+        if(!updateDisconnectListData[i].Notes || updateDisconnectListData[i].Notes == " " || updateDisconnectListData[i].Notes.length === 0) {
+          error = true;
+          console.log(i);
+          handleSendError(i, 'amountNotes');
+        }
       }
+      if(!updateDisconnectListData[i].PropertyOwner || updateDisconnectListData[i].PropertyOwner === " " || updateDisconnectListData[i].PropertyOwner.length === 0) {
+        error = true;
+        handleSendError(i, 'propertyOwner');
+      }
+      // console.log(updateDisconnectListData[i].Street);
+      if(!updateDisconnectListData[i].Street || updateDisconnectListData[i].Street === " " || updateDisconnectListData[i].Street.length === 0) {
+        error = true;
+        handleSendError(i, 'street');
+      }
+    } 
+    if(!error) {
+      handleDisconnectListUpdate(); 
+      data.setEdit(false);
     }
-    handleDisconnectListUpdate(); 
-    data.setEdit(false);
   }
 
   const rowStyles = {
@@ -230,7 +450,7 @@ const SetDisconnectList = (data:any) => {
   return (
     <>
       <div>
-        <table>
+        <table key="SetDisconnectListTable">
           <tbody>
             {Object.keys(updateDisconnectListData).map((index) => (tableBuilder(index)))}
           </tbody>

@@ -3,7 +3,7 @@ import GetDisconnectList from '../components/GetDisconnectList.tsx';
 import SetDisconnectList from '../components/SetDisconnectList.tsx';
 import Select from 'react-select';
 
-const DisconnectList = () => {
+const Calendar = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [accountNum, setAccountNum] = useState(0);
   // create method to search for books and set state on form submit
@@ -83,4 +83,4 @@ const DisconnectList = () => {
   );
 };
 
-export default DisconnectList;
+export default Calendar;
