@@ -194,15 +194,15 @@ const SetDisconnectList = (data:any) => {
         if(ownerElement) {
           if(ownerElement.parentElement) {
             if(ownerElement.parentElement.parentElement) {
-              classOptions = ownerElement.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
-                if(classOptions[i] === 'bg-white') {
+              classOptions = ownerElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-danger') {
                   classOptions.splice(i, 1);
                 }
               }
     
-              classOptions[classOptions.length-1] = 'bg-danger';
-              ownerElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              classOptions[classOptions.length-1] = 'bg-white';
+              ownerElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -213,15 +213,15 @@ const SetDisconnectList = (data:any) => {
         if(streetElement) {
           if(streetElement.parentElement) {
             if(streetElement.parentElement.parentElement) {
-              classOptions = streetElement.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
-                if(classOptions[i] === 'bg-white') {
+              classOptions = streetElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
+                if(classOptions[i] === 'bg-danger') {
                   classOptions.splice(i, 1);
                 }
               }
     
-              classOptions[classOptions.length-1] = 'bg-danger';
-              streetElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              classOptions[classOptions.length-1] = 'bg-white';
+              streetElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -241,15 +241,15 @@ const SetDisconnectList = (data:any) => {
         if(amountElement) {
           if(amountElement.parentElement) {
             if(amountElement.parentElement.parentElement) {
-              classOptions = amountElement.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = amountElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-warning') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-white';
-              amountElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -257,15 +257,15 @@ const SetDisconnectList = (data:any) => {
         if(notesElement) {
           if(notesElement.parentElement) {
             if(notesElement.parentElement.parentElement) {
-              classOptions = notesElement.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = notesElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-warning') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-white';
-              notesElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -276,7 +276,7 @@ const SetDisconnectList = (data:any) => {
         if(amountElement) {
           if(amountElement.parentElement) {
             if(amountElement.parentElement.parentElement) {
-              classOptions = amountElement.parentElement.className.split(" ");
+              classOptions = amountElement.parentElement.parentElement.className.split(" ");
               for(let i = 0; i > classOptions.length; i++) {
                 if(classOptions[i] === 'bg-warning') {
                   classOptions.splice(i, 1);
@@ -284,7 +284,7 @@ const SetDisconnectList = (data:any) => {
               }
     
               classOptions[classOptions.length-1] = 'bg-white';
-              amountElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -292,15 +292,15 @@ const SetDisconnectList = (data:any) => {
         if(notesElement) {
           if(notesElement.parentElement) {
             if(notesElement.parentElement.parentElement) {
-              classOptions = notesElement.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = notesElement.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-warning') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-white';
-              notesElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -325,15 +325,15 @@ const SetDisconnectList = (data:any) => {
         if(errorAmount) {
           if(errorAmount.parentElement) {
             if(errorAmount.parentElement.parentElement) {
-              classOptions = errorAmount.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = errorAmount.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-white') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-warning';
-              errorAmount.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              errorAmount.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -341,15 +341,15 @@ const SetDisconnectList = (data:any) => {
         if(errorNotes) {
           if(errorNotes.parentElement) {
             if(errorNotes.parentElement.parentElement) {
-              classOptions = errorNotes.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = errorNotes.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-white') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-warning';
-              errorNotes.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              errorNotes.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -359,15 +359,16 @@ const SetDisconnectList = (data:any) => {
         if(errorOwner) {
           if(errorOwner.parentElement) {
             if(errorOwner.parentElement.parentElement) {
-              classOptions = errorOwner.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = errorOwner.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-white') {
                   classOptions.splice(i, 1);
                 }
               }
+              console.log(classOptions);
     
               classOptions[classOptions.length-1] = 'bg-danger';
-              errorOwner.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              errorOwner.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -377,15 +378,15 @@ const SetDisconnectList = (data:any) => {
         if(errorStreet) {
           if(errorStreet.parentElement) {
             if(errorStreet.parentElement.parentElement) {
-              classOptions = errorStreet.parentElement.className.split(" ");
-              for(let i = 0; i > classOptions.length; i++) {
+              classOptions = errorStreet.parentElement.parentElement.className.split(" ");
+              for(let i = 0; i < classOptions.length; i++) {
                 if(classOptions[i] === 'bg-white') {
                   classOptions.splice(i, 1);
                 }
               }
     
               classOptions[classOptions.length-1] = 'bg-danger';
-              errorStreet.parentElement.className = classOptions.toString().replace(/,/g, " ");
+              errorStreet.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
               // console.log("errorStreet " + classOptions);
             }
           }
@@ -413,9 +414,10 @@ const SetDisconnectList = (data:any) => {
   const saveAll = () => {
     let error:boolean = false;
     for(let i = 0; i < updateDisconnectListData.length; i++) {
-      if(updateDisconnectListData[i].Amount == " ") {
-        if(updateDisconnectListData[i].Notes == " ") {
+      if(!updateDisconnectListData[i].Amount || updateDisconnectListData[i].Amount == " " || updateDisconnectListData[i].Amount.length === 0) {
+        if(!updateDisconnectListData[i].Notes || updateDisconnectListData[i].Notes == " " || updateDisconnectListData[i].Notes.length === 0) {
           error = true;
+          console.log(i);
           handleSendError(i, 'amountNotes');
         }
       }
@@ -423,7 +425,7 @@ const SetDisconnectList = (data:any) => {
         error = true;
         handleSendError(i, 'propertyOwner');
       }
-      console.log(updateDisconnectListData[i].Street);
+      // console.log(updateDisconnectListData[i].Street);
       if(!updateDisconnectListData[i].Street || updateDisconnectListData[i].Street === " " || updateDisconnectListData[i].Street.length === 0) {
         error = true;
         handleSendError(i, 'street');
