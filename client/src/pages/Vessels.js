@@ -1,6 +1,7 @@
 import {React, useState} from 'react';
 import GetVessels from '../components/GetVessels.tsx';
 import SetVessels from '../components/SetVessels.tsx';
+import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 
 const Vessels = () => {
@@ -13,7 +14,7 @@ const Vessels = () => {
   const editingDisabled = `Enable Editing`;
 
   const walkThroughDisplay = () => {
-    return(<p>This is where the walk-through will go.</p>);
+    return(<VesselListWalkThrough />);
   }
 
   const editDisplay = () => {

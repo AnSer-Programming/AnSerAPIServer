@@ -203,7 +203,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               ownerElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -222,7 +221,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               streetElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -250,7 +248,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -266,7 +263,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -285,7 +281,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               amountElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -301,7 +296,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-white';
               notesElement.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -334,7 +328,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-warning';
               errorAmount.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -350,7 +343,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-warning';
               errorNotes.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -365,11 +357,9 @@ const SetDisconnectList = (data:any) => {
                   classOptions.splice(i, 1);
                 }
               }
-              console.log(classOptions);
     
               classOptions[classOptions.length-1] = 'bg-danger';
               errorOwner.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -387,7 +377,6 @@ const SetDisconnectList = (data:any) => {
     
               classOptions[classOptions.length-1] = 'bg-danger';
               errorStreet.parentElement.parentElement.className = classOptions.toString().replace(/,/g, " ");
-              // console.log("errorStreet " + classOptions);
             }
           }
         }
@@ -400,7 +389,6 @@ const SetDisconnectList = (data:any) => {
   const handleAddRow = async() => {
     const newObj = {"PropertyOwner": " ", "Street": " ", "City": " ", "State": " ", "Zip": " ", "Amount": " ", "Notes": " "};
     updateDisconnectListData[updateDisconnectListDataLength] = await newObj;
-    // console.log(updateDisconnectListData);
     updateDisconnectListDataLength ++; 
     handleDisconnectListUpdate();
   }
@@ -417,7 +405,6 @@ const SetDisconnectList = (data:any) => {
       if(!updateDisconnectListData[i].Amount || updateDisconnectListData[i].Amount == " " || updateDisconnectListData[i].Amount.length === 0) {
         if(!updateDisconnectListData[i].Notes || updateDisconnectListData[i].Notes == " " || updateDisconnectListData[i].Notes.length === 0) {
           error = true;
-          console.log(i);
           handleSendError(i, 'amountNotes');
         }
       }
@@ -425,7 +412,6 @@ const SetDisconnectList = (data:any) => {
         error = true;
         handleSendError(i, 'propertyOwner');
       }
-      // console.log(updateDisconnectListData[i].Street);
       if(!updateDisconnectListData[i].Street || updateDisconnectListData[i].Street === " " || updateDisconnectListData[i].Street.length === 0) {
         error = true;
         handleSendError(i, 'street');
