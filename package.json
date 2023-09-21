@@ -17,6 +17,7 @@
     "dotenv": "^16.1.4"
   },
   "devDependencies": {
+    "@types/react-router-dom": "^5.3.3",
     "concurrently": "^5.1.0"
   }
 }

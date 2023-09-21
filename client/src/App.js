@@ -7,13 +7,13 @@ import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
 import Calendar from './pages/Calendar';
 import Navbar from './components/Navbar';
+import Menu from './components/Menu.tsx';
 
 function App() {
   return (
     <Router>
       <>
         <div className='text-light bg-dark' style={{minHeight: '100vh'}}>
-          <Navbar />
           <Switch>
             <Route exact path='/' component={Index} />
             <Route exact path='/Vessels' component={Vessels} />

@@ -2,6 +2,7 @@ import {React, useState} from 'react';
 import GetDisconnectList from '../components/GetDisconnectList.tsx';
 import SetDisconnectList from '../components/SetDisconnectList.tsx';
 import Select from 'react-select';
+import Menu from '../components/Menu.tsx';
 
 const DisconnectList = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -65,6 +66,8 @@ const DisconnectList = () => {
 
   return (
     <>
+      <Menu 
+        page="Disconnect List" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
