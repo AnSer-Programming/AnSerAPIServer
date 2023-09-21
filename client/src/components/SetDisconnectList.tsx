@@ -68,6 +68,21 @@ const SetDisconnectList = (data:any) => {
   }
 
   function tableBuilder(index:any) {
+    function autoFill(field:string) {
+      if(data.accountNum == 6509) {
+        switch(field) {
+          case "city":
+            return "Plymouth";
+          case "state":
+            return "WI";
+          case "zip":
+            return "53073";
+          default:
+            break;
+        }
+      }
+    }
+
     return (
       <>
         <tr key={`primaryRow${index}`} style={rowStyles}>
@@ -103,10 +118,11 @@ const SetDisconnectList = (data:any) => {
               label={disconnectListData[index].City} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 handleVesselEdit(index, event.target.value, "City");
               }} 
+              value = {autoFill("city")}
               className={'bg-white'}
               sx={{ width: 250 }}
               variant="filled"
-              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
           <td key={`State${disconnectListData[index].State}${index}`} style={fieldStyles}>
             State: <br />
@@ -114,10 +130,11 @@ const SetDisconnectList = (data:any) => {
               label={disconnectListData[index].State} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 handleVesselEdit(index, event.target.value, "State");
               }} 
+              value = {autoFill("state")}
               className={'bg-white'}
               sx={{ width: 250 }}
               variant="filled"
-              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
         </tr>
         <tr key={`secondaryRow${index}`} style={rowStyles}>
@@ -127,10 +144,11 @@ const SetDisconnectList = (data:any) => {
               label={disconnectListData[index].Zip} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 handleVesselEdit(index, event.target.value, "Zip");
               }} 
+              value = {autoFill("zip")}
               className={'bg-white'}
               sx={{ width: 250 }}
               variant="filled"
-              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
+              InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
           <td key={`Amount${disconnectListData[index].Amount}${index}`} id={index} style={fieldStyles}>
             Amount: <br />

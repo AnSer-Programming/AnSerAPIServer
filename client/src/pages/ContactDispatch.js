@@ -2,6 +2,7 @@ import {React, useState, useCallback} from 'react';
 import GetContactDispatch from '../components/GetContactDispatch.tsx';
 import SetContactDispatch from '../components/SetContactDispatch.tsx';
 import Select from 'react-select';
+import Menu from '../components/Menu.tsx';
 
 const ContactDispatch = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -42,6 +43,8 @@ const ContactDispatch = () => {
 
   return (
     <>
+      <Menu 
+        page="Contact Dispatch List" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
         <button onClick={previousPageHandler}>Previous</button>

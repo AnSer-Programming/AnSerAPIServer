@@ -3,6 +3,7 @@ import GetVessels from '../components/GetVessels.tsx';
 import SetVessels from '../components/SetVessels.tsx';
 import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
+import Menu from '../components/Menu.tsx';
 
 const Vessels = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -63,6 +64,8 @@ const Vessels = () => {
 
   return (
     <>
+      <Menu 
+        page="Vessel API" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
