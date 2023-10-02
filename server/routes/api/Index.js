@@ -36,4 +36,13 @@ router.use('/Scheduler', schedulerRoute);
 router.use('/timeConverter', timeConverterRoute);
 router.use('/Vessel', vesselRoute);
 
+// Data Tracker Routes
+// Declare Variables
+const agentLogRoute = require('./Tracker/ActiveAgentLog');
+const completedCalls = require('./Tracker/CallsCompleted');
+
+// Set Routes
+router.use('/ActiveAgentLog', agentLogRoute);
+router.use('/CompletedCalls', completedCalls);
+
 module.exports = router;

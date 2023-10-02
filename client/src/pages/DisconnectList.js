@@ -7,10 +7,7 @@ import Menu from '../components/Menu.tsx';
 const DisconnectList = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [accountNum, setAccountNum] = useState(0);
-  // create method to search for books and set state on form submit
-
   const editingEnabled = `Exit Editing`;
-
   const editingDisabled = `Enable Editing`;
 
   const walkThroughDisplay = () => {

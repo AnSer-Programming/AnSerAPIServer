@@ -28,7 +28,7 @@ try {
                 "connectionIsolationLevel": ISOLATION_LEVEL.READ_UNCOMMITTED,
                 "validateBulkLoadParameters": false,
                 "rowCollectionOnRequestCompletion": true,
-                "database": `${ process.env.DB_NAME }`
+                "database": `${ process.env.DB_NAME_PRODUCTION_IS }`
             }
         }
     );
