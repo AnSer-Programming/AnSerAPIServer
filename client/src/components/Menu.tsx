@@ -72,6 +72,7 @@ export default function MenuAppBar(data:any) {
                   Home
                 </MenuItem>
                 <hr />
+                <strong>Web Tools</strong>
                 <MenuItem
                   onClick={(event: any) => {
                     handleClose(event, 'Contact Dispatch List');
@@ -93,6 +94,16 @@ export default function MenuAppBar(data:any) {
                     handleRoutes('/Vessels');
                   }} >
                   Vessel API
+                </MenuItem>
+                <hr />
+                <strong>Other</strong>
+                <MenuItem
+                  href="/StatTracker" 
+                  onClick={(event: any) => {
+                    handleClose(event, 'Stat Tracker');
+                    handleRoutes('/StatTracker');
+                  }} >
+                  Stat Tracker
                 </MenuItem>
               </Menu>
             </div>

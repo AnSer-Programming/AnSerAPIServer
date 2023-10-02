@@ -8,10 +8,7 @@ const ContactDispatch = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [maxPage, setMaxPage] = useState(1);
   const [option, setOption] = useState(0);
-  // create method to search for books and set state on form submit
-
   const editingEnabled = `Exit Editing`;
-
   const editingDisabled = `Enable Editing`;
 
   const editingHandler = () => {

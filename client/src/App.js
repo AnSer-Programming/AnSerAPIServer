@@ -6,8 +6,7 @@ import DisconnectList from './pages/DisconnectList';
 import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
 import Calendar from './pages/Calendar';
-import Navbar from './components/Navbar';
-import Menu from './components/Menu.tsx';
+import Tracker from './pages/TrackerPages';
 
 function App() {
   return (
@@ -21,6 +20,7 @@ function App() {
             <Route exact path='/ContactDispatch' component={ContactDispatch} />
             <Route exact path='/Calendar' component={Calendar} />
             <Route exact path='/AgentStats' component={AgentStats} />
+            <Route exact path='/StatTracker' component={Tracker} />
             <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
           </Switch>
         </div>

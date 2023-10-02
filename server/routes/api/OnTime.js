@@ -2,7 +2,7 @@ const router = require('express').Router();
 const storedProcedure = '[dbo].[spSnapGraphLineOnTime]';
 const config = require('../../config/connectionProductionCustom');
 const sql = require('mssql');
-const {parse, stringify, toJSON, fromJSON} = require('flatted');
+const {parse, stringify, toJSON, fromJSON} = require('flatted'); // Only use on storedProcedures
 
 router.get('/', async(req, res) => {
     (async function () {
