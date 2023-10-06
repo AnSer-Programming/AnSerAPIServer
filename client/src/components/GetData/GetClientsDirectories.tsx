@@ -61,7 +61,7 @@ const GetClientsDirecoties = () => {
       }} 
       sx={{ width: 250, background: 'white', marginLeft: '5%'}}
       variant="filled" />
-      <TextField label={"Direcotry Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+      <TextField label={"Directory Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setDirectoryName(event.target.value);
       }} 
       sx={{ width: 250, background: 'white', marginLeft: '5%'}}
