@@ -5,7 +5,7 @@ const sql = require('mssql');
 router.get('/', async(req, res) => {
     const query = `SELECT [ClientNumber], [ClientName], [Name] 
         FROM [dbo].[cltClients]
-        INNER JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
+        LEFT JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
         ORDER BY [ClientNumber] ASC`;
     (async function () {
         try {
@@ -30,7 +30,7 @@ router.get('/ByNumber/:accountNum', async(req, res) => {
     let accountNum = req.params.accountNum;
     const query = `SELECT [ClientNumber], [ClientName], [Name]
         FROM [dbo].[cltClients]
-        INNER JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
+        LEFT JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
         WHERE [ClientNumber] LIKE '${accountNum}%'
         ORDER BY [ClientNumber] ASC`;
     (async function () {
@@ -56,7 +56,7 @@ router.get('/ByName/:accountName', async(req, res) => {
     let accountName = req.params.accountName;
     const query = `SELECT [ClientNumber], [ClientName], [Name]
         FROM [dbo].[cltClients]
-        INNER JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
+        LEFT JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
         WHERE [ClientName] LIKE '%${accountName}%'
         ORDER BY [ClientNumber] ASC`;
     (async function () {
