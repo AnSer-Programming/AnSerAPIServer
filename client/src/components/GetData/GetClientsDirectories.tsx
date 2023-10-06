@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getClientsDirectories, getClientDirectory } from '../../utils/GetDataAPI';
+import { getClientsDirectories, getClientsDirectoriesByNum, getClientsDirectoriesByName, getClientsDirectoriesByDirectory } from '../../utils/GetDataAPI';
 import TextField from '@mui/material/TextField';
 
 const GetClientsDirecoties = () => {
   const [clientsDirectoriesData, setClientsDirectoriesData] = useState<any>({});
   const [accountNum, setAccountNum] = useState<number>();
+  const [accountName, setAccountName] = useState<String>();
+  const [directoryName, setDirectoryName] = useState<String>();
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDirectoriesDataLength = Object.keys(clientsDirectoriesData).length;
@@ -14,12 +16,22 @@ const GetClientsDirecoties = () => {
       try {
         let response;
         if(accountNum) {
-          response = await getClientDirectory(accountNum);
+          response = await getClientsDirectoriesByNum(accountNum);
+          if (!response.ok) {
+            response = await getClientsDirectories();
+          }
+        } else if(accountName) {
+          response = await getClientsDirectoriesByName(accountName);
+          if (!response.ok) {
+            response = await getClientsDirectories();
+          }
+        } else if(directoryName) {
+          response = await getClientsDirectoriesByDirectory(directoryName);
           if (!response.ok) {
             response = await getClientsDirectories();
           }
         } else {
-          response = await getClientsDirectories();
+          response = await getClientsDirectories();          
         }
 
         if (!response.ok) {
@@ -35,7 +47,7 @@ const GetClientsDirecoties = () => {
     };
 
     getClientsDirectoriesData();
-  }, [clientsDirectoriesDataLength, accountNum]);
+  }, [clientsDirectoriesDataLength, accountNum, accountName, directoryName]);
 
   return (
     <>
@@ -43,6 +55,16 @@ const GetClientsDirecoties = () => {
         setAccountNum(parseInt(event.target.value));
       }} 
       sx={{ width: 250, background: 'white'}}
+      variant="filled" />
+      <TextField label={"Account Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        setAccountName(event.target.value);
+      }} 
+      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
+      variant="filled" />
+      <TextField label={"Direcotry Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        setDirectoryName(event.target.value);
+      }} 
+      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
       variant="filled" /> <br /><br />
       {
         clientsDirectoriesDataLength ? 
