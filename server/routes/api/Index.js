@@ -39,10 +39,19 @@ router.use('/Vessel', vesselRoute);
 // Data Tracker Routes
 // Declare Variables
 const agentLogRoute = require('./Tracker/ActiveAgentLog');
-const completedCalls = require('./Tracker/CallsCompleted');
+const completedCallsRoute = require('./Tracker/CallsCompleted');
 
 // Set Routes
 router.use('/ActiveAgentLog', agentLogRoute);
-router.use('/CompletedCalls', completedCalls);
+router.use('/CompletedCalls', completedCallsRoute);
+
+// Get Data Routes
+// Declare Variables
+const clientsAndDirectoriesRoute = require('./GetData/GetClientsDirectories');
+const clientRoutes = require('./GetData/GetClients');
+
+// Set Routes
+router.use('/clients', clientRoutes);
+router.use('/clientsAndDirectories', clientsAndDirectoriesRoute);
 
 module.exports = router;

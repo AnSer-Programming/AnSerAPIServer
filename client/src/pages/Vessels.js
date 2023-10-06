@@ -57,7 +57,7 @@ const Vessels = () => {
     {value: '0', label: 'Walk-Through'},
     {value: '38', label: 'Account 38: Stephen Merki Test Account'},
     {value: '6071', label: 'Account 6071: Gulf Inland Marine'}
-  ]
+  ];
 
   return (
     <>

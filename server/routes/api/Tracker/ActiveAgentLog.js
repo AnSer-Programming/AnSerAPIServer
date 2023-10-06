@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const query = `SELECT [stamp], [agtId], [initials], [stationType], [stationNumber], [type] 
-    FROM [Intellegent].[dbo].[statAgentTracker] 
+    FROM [dbo].[statAgentTracker] 
     WHERE [stationType] = 0 AND [stamp] > DATEADD(hour, -24, CURRENT_TIMESTAMP) 
     ORDER BY [stamp] ASC`;
-const config = require('../../../config/connectionProductionCustom');
+const config = require('../../../config/connectionProductionIS');
 const sql = require('mssql');
 
 router.get('/', async(req, res) => {
