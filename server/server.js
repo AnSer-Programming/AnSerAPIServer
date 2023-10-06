@@ -3,6 +3,7 @@ const https =require('https');
 const fs = require('fs');
 const path = require('path');
 const routes = require('./routes/Index');
+const scheduledEvents = require('./scheduled-events');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const PORT = process.env.PORT || 3001;
@@ -16,6 +17,7 @@ if(process.env.PRODUCTION === 'True') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 } 
 
+// scheduledEvents;
 app.use(routes);
 
 if(PORT==443) {

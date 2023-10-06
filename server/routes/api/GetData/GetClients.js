@@ -1,12 +1,11 @@
 const router = require('express').Router();
-const query = `SELECT [callId], CONVERT(varchar, [Stamp]) as "dateTime" ,[cltId] ,[TimezoneOffset] ,[stationNumber] ,[agtId]
-    FROM [dbo].[statCallEnd]
-    WHERE [Stamp] > DATEADD(hour, -24, CURRENT_TIMESTAMP) AND [stationType] = 0
-    ORDER BY [Stamp] ASC`;
 const config = require('../../../config/connectionProductionIS');
 const sql = require('mssql');
 
 router.get('/', async(req, res) => {
+    const query = `SELECT [ClientNumber], [ClientName]
+        FROM [dbo].[cltClients]
+        ORDER BY [ClientNumber] ASC`;
     (async function () {
         try {
             const seq = require('sequelize') ;
