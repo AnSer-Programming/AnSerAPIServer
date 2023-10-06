@@ -17,9 +17,26 @@ export const getClientsDirectories = () => {
   });
 };
 
-export const getClientDirectory = (accountNum) => {
-  console.log(accountNum);
-  return fetch(`/api/clientsAndDirectories/${accountNum}`, {
+export const getClientsDirectoriesByNum = (accountNum) => {
+  return fetch(`/api/clientsAndDirectories/ByNumber/${accountNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getClientsDirectoriesByName = (accountName) => {
+  return fetch(`/api/clientsAndDirectories/ByName/${accountName}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getClientsDirectoriesByDirectory = (directoryName) => {
+  return fetch(`/api/clientsAndDirectories/ByDirectory/${directoryName}`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',
