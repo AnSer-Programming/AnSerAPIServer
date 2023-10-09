@@ -95,9 +95,10 @@ const SetContactDispatch = (data:any) => {
       <div>
         <table style={tableStyles}>
           <tbody>
-            {(function (len) {
+            {(function() {
+              let length:number = 100;
               let rows:any = [];
-              for (let i = 0; i < len; i++) {
+              for (let i = 0; i < length; i++) {
                 if(contactDispatchData[i+modifier] == undefined) {
                   break;
                 } else {
@@ -135,7 +136,7 @@ const SetContactDispatch = (data:any) => {
                 }
               }
               return rows;
-            })(100)}
+            }) ()}
           </tbody>
         </table>
       </div>

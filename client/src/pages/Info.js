@@ -1,6 +1,7 @@
 import {React, useState} from 'react';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
-import GetClients from '../components/GetData/GetClients.tsx'
+import GetClients from '../components/GetData/GetClients.tsx';
+import GetCcontactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -14,7 +15,7 @@ const Info = () => {
   const option = [
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
-    {value: '6071', label: 'Account 6071: Gulf Inland Marine'}
+    {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'}
   ];
   
   return (
@@ -35,7 +36,8 @@ const Info = () => {
         {
           {
             'GetClients': <GetClients />,
-            'GetClientsDirectories': <GetClientsDirectories />
+            'GetClientsDirectories': <GetClientsDirectories />,
+            'GetContactsDirectories': <GetCcontactsDirectories />
           }[content]
         }
       </div>
