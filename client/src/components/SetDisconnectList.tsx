@@ -95,7 +95,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               id={`propertyOwner${index}`}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -108,7 +108,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               id={`street${index}`}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -120,7 +120,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               value = {autoFill("city")}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -132,7 +132,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               value = {autoFill("state")}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -146,7 +146,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               value = {autoFill("zip")}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" || data.accountNum == 6509 ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -158,7 +158,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               id={`amount${index}`}
               className={'bg-white'}
-              sx={{ width: 250 }}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>
@@ -170,7 +170,7 @@ const SetDisconnectList = (data:any) => {
               }} 
               id={`notes${index}`}
               className={'bg-white'}
-              sx={{ width: 250}}
+              sx={{ width: 250, zIndex: 0 }}
               variant="filled"
               InputProps={disconnectListData[index].PropertyOwner == "Unlisted" ? { readOnly: true } : { readOnly: false }} />
           </td>

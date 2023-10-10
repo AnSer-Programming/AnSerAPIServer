@@ -103,7 +103,7 @@ const SetVessels = (data:any) => {
           <TextField label={vesselData[index].Vessel} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             handleVesselEdit(index, event.target.value, "Vessel");
           }} 
-          sx={{ width: 250, background: 'white'}}
+          sx={{ width: 250, background: 'white', zIndex: 0 }}
           variant="filled" />
         </td>
         <td key={vesselData[index].Person} style={fieldStyles}>
@@ -114,7 +114,7 @@ const SetVessels = (data:any) => {
               handleVesselEdit(index, newInputValue, "Person");
             }}
             options={option}
-            sx={{ width: 250, background: 'white'}}
+            sx={{ width: 250, background: 'white', zIndex: 0 }}
             renderInput={(params) => <TextField {...params} label={vesselData[index].Person} 
             variant="filled"/>}
           /> 

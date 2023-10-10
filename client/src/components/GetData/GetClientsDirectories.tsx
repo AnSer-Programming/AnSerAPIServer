@@ -54,17 +54,17 @@ const GetClientsDirecoties = () => {
       <TextField label={"Account Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setAccountNum(parseInt(event.target.value));
       }} 
-      sx={{ width: 250, background: 'white'}}
+      sx={{ width: 250, background: 'white', zIndex: 0}}
       variant="filled" />
       <TextField label={"Account Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setAccountName(event.target.value);
       }} 
-      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
+      sx={{ width: 250, background: 'white', marginLeft: '5%', zIndex: 0}}
       variant="filled" />
       <TextField label={"Directory Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setDirectoryName(event.target.value);
       }} 
-      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
+      sx={{ width: 250, background: 'white', marginLeft: '5%', zIndex: 0}}
       variant="filled" /> <br /><br />
       {
         clientsDirectoriesDataLength ? 

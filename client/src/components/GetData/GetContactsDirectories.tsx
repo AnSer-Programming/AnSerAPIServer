@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getContactsDirectories, getContactsDirectoriesByPersonName, getContactsDirectoriesByDirectory } from '../../utils/GetDataAPI';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 
 const GetContactsDirectories = () => {
   const [contactsDirectoriesData, setContactsDirectories] = useState<any>({});
@@ -45,8 +46,16 @@ const GetContactsDirectories = () => {
     getClientsDirectoriesData();
   }, [contactsDirectoriesDataLength, personName, directoryName]);
 
-  const pageChangeHandler = (direction:String) => {
-    if(direction === 'Next') {
+  const pageChangeHandler = (direction:String, input:number) => {
+    if(direction==="Select"){
+      if(input > (contactsDirectoriesDataLength/50)-1) {
+        setPageNum(Math.ceil((contactsDirectoriesDataLength/50)-1));
+      } else if(input < 0 || !input) {
+        setPageNum(0);
+      } else if(input) {
+        setPageNum(input);
+      }
+    } else if(direction === 'Next') {
       if(pageNum < (contactsDirectoriesDataLength/50)-1) {
         setPageNum(pageNum+1);
       }
@@ -59,17 +68,23 @@ const GetContactsDirectories = () => {
 
   return (
     <>
-      <button onClick={() => pageChangeHandler('Previous')}>Previous</button>
-      <button onClick={() => pageChangeHandler('Next')}>Next</button>
+      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {pageNum} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
+      <Tooltip title="Enter Page Number">
+        <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          pageChangeHandler("Select",parseInt(event.target.value));
+        }} 
+        sx={{ width: 150, background: 'white', marginLeft: '.5%', zIndex: 0}}
+        variant="filled" />
+      </Tooltip>
       <TextField label={"Contact Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setPersonName(event.target.value);
       }} 
-      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
+      sx={{ width: 250, background: 'white', marginLeft: '5%', zIndex: 0}}
       variant="filled" />
       <TextField label={"Directory Name"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         setDirectoryName(event.target.value);
       }} 
-      sx={{ width: 250, background: 'white', marginLeft: '5%'}}
+      sx={{ width: 250, background: 'white', marginLeft: '5%', zIndex: 0}}
       variant="filled" /> <br /><br />
       { contactsDirectoriesDataLength ?   
         <table style={{minWidth: '50%'}}>
@@ -96,8 +111,8 @@ const GetContactsDirectories = () => {
         </table> : <h2>LOADING...</h2>
       }
       <br />
-      <button onClick={() => pageChangeHandler('Previous')}>Previous</button>
-      <button onClick={() => pageChangeHandler('Next')}>Next</button>
+      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button>
+      <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
     </>
   );
 };
