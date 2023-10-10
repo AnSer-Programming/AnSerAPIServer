@@ -47,13 +47,15 @@ router.use('/CompletedCalls', completedCallsRoute);
 
 // Get Data Routes
 // Declare Variables
+const activeDIDRoute = require('./GetData/GetActiveDID');
 const clientRoutes = require('./GetData/GetClients');
 const clientsAndDirectoriesRoute = require('./GetData/GetClientsDirectories');
 const contactsDirectoriesRoutes = require('./GetData/GetContactsDirectories');
 
 // Set Routes
-router.use('/clients', clientRoutes);
-router.use('/clientsAndDirectories', clientsAndDirectoriesRoute);
-router.use('/contactsAndDirectories', contactsDirectoriesRoutes);
+router.use('/ActiveDID', activeDIDRoute);
+router.use('/Clients', clientRoutes);
+router.use('/ClientsAndDirectories', clientsAndDirectoriesRoute);
+router.use('/ContactsAndDirectories', contactsDirectoriesRoutes);
 
 module.exports = router;
