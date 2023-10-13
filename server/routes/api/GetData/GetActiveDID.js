@@ -1,18 +1,64 @@
 const router = require('express').Router();
 const config = require('../../../config/connectionProductionIS');
+const configAPI = require('../../../config/connection');
 const sql = require('mssql');
+
+async function secondDBCall(primaryResult) {
+    if(primaryResult) {
+        // console.log(result[0].Source);
+        let nextQuery = `SELECT [phone_number], [thinq], [pulsar], [nsight], [amtelco]
+            FROM [isapi].[dbo].[didSources]`;
+
+        console.log("Nested DB call!" + nextQuery);
+
+        try {
+            const seq = require('sequelize') ;
+            const compareResult = await configAPI.query(nextQuery, { type: seq.QueryTypes.SELECT }); 
+
+            return await compareResult;
+        } catch (err) {
+            // ... error checks
+            console.log(err);
+            res.send("catch block: " + err);
+        }
+    }
+}
 
 router.get('/', async(req, res) => {
     const query = `SELECT [Source], [ClientNumber], [ClientName]
         FROM [Intellegent].[dbo].[cltSources]
         LEFT JOIN [dbo].[cltClients] on [dbo].[cltSources].[cltId] = [dbo].[cltClients].[cltId]
         ORDER BY [ClientNumber] ASC`;
+
     (async function () {
         try {
+            let results;
             const seq = require('sequelize') ;
-            let result = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            results = primaryResult;
 
-            res.json(result);
+            const compareResult = await secondDBCall(primaryResult);
+
+            for(let x = 0; x < primaryResult.length; x++) {
+                for(let y = 0; y < compareResult.length; y++) {
+                    if(compareResult[y].phone_number==primaryResult[x].Source) {
+                        if(compareResult[y].thinq) {
+                            results[x].Provider = "ThinQ";
+                        } else if(compareResult[y].pulsar) {
+                            results[x].Provider = "Pulsar";
+                        } else if(compareResult[y].nsight) {
+                            results[x].Provider = "Nsight";                    
+                        } else if(compareResult[y].amtelco) {
+                            results[x].Provider = "Amtelco";                    
+                        }
+                        break;
+                    } else if(y===compareResult.length-1) {
+                        results[x].Provider = "Unknown"; 
+                    }
+                }
+            }
+
+            res.json(results);
         } catch (err) {
             // ... error checks
             console.log(err);
@@ -35,10 +81,33 @@ router.get('/ByAccountNum/:accountNum', async(req, res) => {
         ORDER BY [ClientNumber] ASC`;
     (async function () {
         try {
+            let results;
             const seq = require('sequelize') ;
-            let result = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            results = primaryResult;
 
-            res.json(result);
+            const compareResult = await secondDBCall(primaryResult);
+            
+            for(let x = 0; x < primaryResult.length; x++) {
+                for(let y = 0; y < compareResult.length; y++) {
+                    if(compareResult[y].phone_number==primaryResult[x].Source) {
+                        if(compareResult[y].thinq) {
+                            results[x].Provider = "ThinQ";
+                        } else if(compareResult[y].pulsar) {
+                            results[x].Provider = "Pulsar";
+                        } else if(compareResult[y].nsight) {
+                            results[x].Provider = "Nsight";                    
+                        } else if(compareResult[y].amtelco) {
+                            results[x].Provider = "Amtelco";                    
+                        }
+                        break;
+                    } else if(y===compareResult.length-1) {
+                        results[x].Provider = "Unknown"; 
+                    }
+                }
+            }
+
+            res.json(results);
         } catch (err) {
             // ... error checks
             console.log(err);
@@ -61,10 +130,33 @@ router.get('/ByAccountName/:accountName', async(req, res) => {
         ORDER BY [ClientNumber] ASC`;
     (async function () {
         try {
+            let results;
             const seq = require('sequelize') ;
-            let result = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            results = primaryResult;
 
-            res.json(result);
+            const compareResult = await secondDBCall(primaryResult);
+            
+            for(let x = 0; x < primaryResult.length; x++) {
+                for(let y = 0; y < compareResult.length; y++) {
+                    if(compareResult[y].phone_number==primaryResult[x].Source) {
+                        if(compareResult[y].thinq) {
+                            results[x].Provider = "ThinQ";
+                        } else if(compareResult[y].pulsar) {
+                            results[x].Provider = "Pulsar";
+                        } else if(compareResult[y].nsight) {
+                            results[x].Provider = "Nsight";                    
+                        } else if(compareResult[y].amtelco) {
+                            results[x].Provider = "Amtelco";                    
+                        }
+                        break;
+                    } else if(y===compareResult.length-1) {
+                        results[x].Provider = "Unknown"; 
+                    }
+                }
+            } 
+
+            res.json(results);
         } catch (err) {
             // ... error checks
             console.log(err);
@@ -87,10 +179,33 @@ router.get('/BySource/:sourceNum', async(req, res) => {
         ORDER BY [ClientNumber] ASC`;
     (async function () {
         try {
+            let results;
             const seq = require('sequelize') ;
-            let result = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT }); 
+            results = primaryResult;
 
-            res.json(result);
+            const compareResult = await secondDBCall(primaryResult);
+            
+            for(let x = 0; x < primaryResult.length; x++) {
+                for(let y = 0; y < compareResult.length; y++) {
+                    if(compareResult[y].phone_number==primaryResult[x].Source) {
+                        if(compareResult[y].thinq) {
+                            results[x].Provider = "ThinQ";
+                        } else if(compareResult[y].pulsar) {
+                            results[x].Provider = "Pulsar";
+                        } else if(compareResult[y].nsight) {
+                            results[x].Provider = "Nsight";                    
+                        } else if(compareResult[y].amtelco) {
+                            results[x].Provider = "Amtelco";                    
+                        }
+                        break;
+                    } else if(y===compareResult.length-1) {
+                        results[x].Provider = "Unknown"; 
+                    }
+                }
+            } 
+
+            res.json(results);
         } catch (err) {
             // ... error checks
             console.log(err);

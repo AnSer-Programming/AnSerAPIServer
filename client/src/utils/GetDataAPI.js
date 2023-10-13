@@ -8,6 +8,24 @@ export const getClients = () => {
   });
 };
 
+export const getClientsByNum = (accountNum) => {
+  return fetch(`/api/Clients/ByAccountNum/${accountNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getClientsByName = (accountName) => {
+  return fetch(`/api/Clients/ByAccountName/${accountName}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 // Used in GetClientsDirectories.tsx
 export const getClientsDirectories = () => {
   return fetch(`/api/ClientsAndDirectories`, {
