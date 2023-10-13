@@ -14,8 +14,8 @@ const Info = () => {
   }
 
   const option = [
-    {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetActiveDID', label: 'Get Active DIDs'},
+    {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'}
   ];

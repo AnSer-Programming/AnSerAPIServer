@@ -4,16 +4,16 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 
 const GetActiveDID = () => {
-  const [clientsDirectoriesData, setClientsDirectoriesData] = useState<any>({});
+  const [activeDIDData, setActiveDIDData] = useState<any>({});
   const [accountNum, setAccountNum] = useState<number>();
   const [accountName, setAccountName] = useState<String>();
   const [sourceNum, setSourceNum] = useState<String>();
 
   // use this to determine if `useEffect()` hook needs to run again
-  const clientsDirectoriesDataLength = Object.keys(clientsDirectoriesData).length;
+  const activeDIDDataLength = Object.keys(activeDIDData).length;
 
   useEffect(() => {
-    const getClientsDirectoriesData = async() => {
+    const getActiveDIDData = async() => {
       try {
         let response;
         if(accountNum) {
@@ -41,14 +41,16 @@ const GetActiveDID = () => {
 
         const data = await response.json();
 
-        setClientsDirectoriesData(data);
+        setActiveDIDData(data);
       } catch (err) {
         console.error(err);
       }
     };
 
-    getClientsDirectoriesData();
-  }, [clientsDirectoriesDataLength, accountNum, accountName, sourceNum]);
+    getActiveDIDData();
+  }, [activeDIDDataLength, accountNum, accountName, sourceNum]);
+
+  console.log(activeDIDData)
 
   return (
     <>
@@ -75,14 +77,15 @@ const GetActiveDID = () => {
         variant="filled" />
       </Tooltip> <br /><br />
       {
-        clientsDirectoriesDataLength ? 
+        activeDIDDataLength ? 
           <table>
             <tbody>
-              {Object.keys(clientsDirectoriesData).map((index) => (
+              {Object.keys(activeDIDData).map((index) => (
                 <tr key={`row${index}`}>
-                  <td style={{paddingRight: '25px'}}>Client Number: {clientsDirectoriesData[index].ClientNumber}</td>
-                  <td style={{paddingRight: '25px'}}>Client Name: {clientsDirectoriesData[index].ClientName}</td>
-                  <td style={{paddingRight: '25px'}}>DID Number: {clientsDirectoriesData[index].Source}</td>
+                  <td style={{paddingRight: '25px'}}>Client Number: {activeDIDData[index].ClientNumber}</td>
+                  <td style={{paddingRight: '25px'}}>Client Name: {activeDIDData[index].ClientName}</td>
+                  <td style={{paddingRight: '25px'}}>DID Number: {activeDIDData[index].Source}</td>
+                  <td style={{paddingRight: '25px'}}>Provider: {activeDIDData[index].Provider}</td>
                 </tr>
               ))}
             </tbody>

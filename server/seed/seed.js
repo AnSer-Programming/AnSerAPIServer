@@ -1,10 +1,10 @@
 try {
     const sequelize = require('../config/connection');
-    const { ContactDispatchTable } = require('../models');
-    const Accounts = require('./Accounts.json');
+    const { DIDTable } = require('../models');
+    const PhoneNumbers = require('./PhoneNumbers.json');
     const seedDatabase = async () => {
         await sequelize.sync({ force: true });   
-        await ContactDispatchTable.bulkCreate(Accounts.Accounts, {
+        await DIDTable.bulkCreate(PhoneNumbers.dataSet, {
             returning: true,
         });
         process.exit(0);
