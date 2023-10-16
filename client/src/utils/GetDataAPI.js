@@ -92,8 +92,8 @@ export const getContactsDirectoriesByDirectory = (directoryName) => {
 };
 
 // Used in GetActiveDID.tsx
-export const getActiveDID = () => {
-  return fetch(`/api/ActiveDID`, {
+export const getDID = () => {
+  return fetch(`/api/GetDID`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -101,8 +101,8 @@ export const getActiveDID = () => {
   });
 };
 
-export const getActiveDIDByAccountNum = (accountNum) => {
-  return fetch(`/api/ActiveDID/ByAccountNum/${accountNum}`, {
+export const getDIDByAccountNum = (accountNum) => {
+  return fetch(`/api/GetDID/ByAccountNum/${accountNum}`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -110,8 +110,8 @@ export const getActiveDIDByAccountNum = (accountNum) => {
   });
 };
 
-export const getActiveDIDByName = (accountName) => {
-  return fetch(`/api/ActiveDID/ByAccountName/${accountName}`, {
+export const getDIDByName = (accountName) => {
+  return fetch(`/api/GetDID/ByAccountName/${accountName}`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -119,8 +119,8 @@ export const getActiveDIDByName = (accountName) => {
   });
 };
 
-export const getActiveDIDBySource = (sourceNum) => {
-  return fetch(`/api/ActiveDID/BySource/${sourceNum}`, {
+export const getDIDBySource = (sourceNum) => {
+  return fetch(`/api/GetDID/BySource/${sourceNum}`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',

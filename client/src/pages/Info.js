@@ -1,5 +1,5 @@
 import {React, useState} from 'react';
-import GetActiveDID from '../components/GetData/GetActiveDID.tsx';
+import GetDID from '../components/GetData/GetDID.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
@@ -14,10 +14,10 @@ const Info = () => {
   }
 
   const option = [
-    {value: 'GetActiveDID', label: 'Get Active DIDs'},
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
-    {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'}
+    {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
+    {value: 'GetDID', label: 'Get DID'}
   ];
   
   return (
@@ -40,7 +40,7 @@ const Info = () => {
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
-            'GetActiveDID': <GetActiveDID />
+            'GetDID': <GetDID />
           }[content]
         }
       </div>
