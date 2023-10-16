@@ -39,7 +39,7 @@ const GetContactsDirectories = () => {
 
         setContactsDirectories(data);
       } catch (err) {
-        console.error(err);
+        console.error(`useEffect Error: ${err}`);
       }
     };
 
