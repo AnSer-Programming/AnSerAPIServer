@@ -112,14 +112,14 @@ const GetDID = () => {
 
   return (
     <>
-      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum}/${maxPages}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
+      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum +1} of ${maxPages +1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          pageChangeHandler("Select",parseInt(event.target.value));
-          activeDIDHandler();
-        }} 
-        sx={{ width: 150, background: 'white', marginLeft: '.5%', zIndex: 0}}
-        variant="filled" />
+            pageChangeHandler("Select",parseInt(event.target.value)-1);
+            activeDIDHandler();
+          }} 
+          sx={{ width: 150, background: 'white', marginLeft: '.5%', zIndex: 0}}
+          variant="filled" />
       </Tooltip>
       {
         activeDID ? 
@@ -153,16 +153,16 @@ const GetDID = () => {
         label="Toggle Active DID"
         labelPlacement="start"
         control={<Checkbox
-        onChange={(event) => {
-          if(event.target.checked) {
-            setActiveDID(true);
-          } else {
-            setActiveDID(false);
-          }
-          activeDIDHandler();
-        }} />}
-        sx={{ borderColor: 'white', marginLeft: '2.5%', zIndex: 0}}
-        defaultChecked /><br /><br />
+          defaultChecked
+          onChange={(event) => {
+            if(event.target.checked) {
+              setActiveDID(true);
+            } else {
+              setActiveDID(false);
+            }
+            activeDIDHandler();
+          }} />}
+        sx={{ borderColor: 'white', marginLeft: '2.5%', zIndex: 0}} /><br /><br />
       <table>
         <tbody>
           {
