@@ -76,12 +76,6 @@ const GetClientsDirecoties = () => {
   const maxPageSetter = () => {
     maxPages = (Math.ceil((clientsDirectoriesDataLength/50)-1));
   }
-  
-  if (!clientsDirectoriesDataLength) {
-    return <h2>LOADING...</h2>;
-  } else {
-    maxPageSetter();
-  }
 
   return (
     <>
