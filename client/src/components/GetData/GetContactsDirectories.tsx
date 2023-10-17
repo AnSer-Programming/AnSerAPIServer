@@ -70,15 +70,10 @@ const GetContactsDirectories = () => {
   const maxPageSetter = () => {
     maxPages = (Math.ceil((contactsDirectoriesDataLength/50)-1));
   }
-  
-  if (!contactsDirectoriesDataLength) {
-    return <h2>LOADING...</h2>;
-  } else {
-    maxPageSetter();
-  }
 
   return (
     <>
+      {maxPageSetter()}
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,28 +92,31 @@ const GetContactsDirectories = () => {
         }} 
         sx={{ width: 250, background: 'white', marginLeft: '5%', zIndex: 0}}
         variant="filled" /> <br /><br />
-      <table style={{minWidth: '50%'}}>
-        <tbody style={{minWidth: '100%'}}>
-          {(function(){   
-            let length:number = 50;
-            let start:number = length * pageNum;
-            let rows:any = [];
-            for (let i = 0; i < length; i++) {
-              if(contactsDirectoriesData[i+start] == undefined) {
-                break;
-              } else {
-                rows.push( 
-                  <tr key={i} style={{minWidth: '100%'}}>
-                    <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Name}</td>
-                    <td>{contactsDirectoriesData[i+start].Field}</td>
-                  </tr>
-                )
-              }
-            }
-            return rows;
-          })()}
-        </tbody>
-      </table>
+      {
+        contactsDirectoriesDataLength ? 
+          <table style={{minWidth: '50%'}}>
+            <tbody style={{minWidth: '100%'}}>
+              {(function(){
+                let length:number = 50;
+                let start:number = length * pageNum;
+                let rows:any = [];
+                for (let i = 0; i < length; i++) {
+                  if(contactsDirectoriesData[i+start] == undefined) {
+                    break;
+                  } else {
+                    rows.push( 
+                      <tr key={i} style={{minWidth: '100%'}}>
+                        <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Name}</td>
+                        <td>{contactsDirectoriesData[i+start].Field}</td>
+                      </tr>
+                    )
+                  }
+                }
+                return rows;
+              })()}
+            </tbody>
+          </table> : <h2>LOADING...</h2>
+      }
       <br />
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
     </>
