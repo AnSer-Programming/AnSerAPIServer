@@ -71,6 +71,62 @@ const GetClients = () => {
     maxPages = (Math.ceil((clientsDataLength/50)-1));
   }
 
+  const assignRegion = (accountNum:number) => {
+    if(accountNum > 0 && accountNum < 1000) { // GreenBay/GulfPort
+      return "GreenBay/GulfPort";
+    } else if(accountNum > 999 && accountNum < 3000) { // GreenBay, WI/non-AnsaVoice California(CA)
+      return "GreenBay, WI/non-AnsaVoice California(CA)";
+    } else if(accountNum > 2999 && accountNum < 3300) { // GreenBay, WI
+      return "GreenBay, WI";
+    } else if(accountNum > 3299 && accountNum < 3598) { // Oconomowoc, WI
+      return "Oconomowoc, WI";
+    } else if(accountNum > 3597 && accountNum < 4000) { // Kentucky(KY)
+      return "Kentucky(KY)";
+    } else if(accountNum > 3999 && accountNum < 5000) { // GreenBay(Mainly Operator Audio), WI/Michigan
+      return "GreenBay(Mainly Operator Audio), WI/Michigan";
+    } else if(accountNum > 4999 && accountNum < 5300) { // Green Bay, WI
+      return "Green Bay, WI";
+    } else if(accountNum > 5299 && accountNum < 5400) { // Janesville, WI
+      return "Janesville, WI";
+    } else if(accountNum > 5399 && accountNum < 5500) { // Rochester, NY
+      return "Rochester, NY";
+    } else if(accountNum > 5499 && accountNum < 5900) { // Montana(MT)
+      return "Montana(MT)";
+    } else if(accountNum > 5899 && accountNum < 6000) { // AnsaVoice - California(CA)
+      return "AnsaVoice - California(CA)";
+    } else if(accountNum > 5999 && accountNum < 6500) { // Baton Rouge, LA
+      return "Baton Rouge, LA";
+    } else if(accountNum > 6499 && accountNum < 8000) { // GreenBay, WI
+      return "GreenBay, WI";
+    } else if(accountNum > 7999 && accountNum < 9000) { // Gulfport, MS
+      return "Gulfport, MS";
+    } else if(accountNum > 8999 && accountNum < 9700) { // Internal Accounts
+      return "Internal Accounts";
+    } else if(accountNum > 9699 && accountNum < 10000) { // Janesville, WI
+      return "Janesville, WI";
+    } else if(accountNum > 9999 && accountNum < 11720) { // Internal/Sub-Accounts for any office
+      return "Internal/Sub-Accounts for any office";
+    } else if(accountNum > 11719 && accountNum < 20000) { // Appleton, WI
+      return "Appleton, WI";
+    } else if(accountNum > 19999  && accountNum < 25000) { // Baton Rouge, LA
+      return "Baton Rouge, LA";
+    } else if(accountNum > 24999 && accountNum < 30000) { // Utica, NY
+      return "Utica, NY";
+    } else if(accountNum > 29999 && accountNum < 40000) { // Sub-Accounts/Non-Live Accounts
+      return "Sub-Accounts/Non-Live Accounts";
+    } else if(accountNum > 39999 && accountNum < 50000) { // Eugene, OR
+      return "Eugene, OR";
+    } else if(accountNum > 49999 && accountNum < 60000) { // Chicago, IL
+      return "Chicago, IL";
+    } else if(accountNum > 59999 && accountNum < 70000) { // Des Moies, IA
+      return "Des Moies, IA";
+    } else if(accountNum > 89999 && accountNum < 100000) { // AnsaVoice - California(CA)
+      return "AnsaVoice - California(CA)";
+    } else {
+      return "Sub-Accounts/Operator Audio";
+    }
+  }
+
   return (
     <>
       {maxPageSetter()}
@@ -108,6 +164,7 @@ const GetClients = () => {
                         <tr key={i} style={{minWidth: '100%'}}>
                           <td style={{paddingRight: '25px'}}>Client Number: {clientsData[i+start].ClientNumber}</td>
                           <td style={{paddingRight: '25px'}}>Client: {clientsData[i+start].ClientName}</td>
+                          <td style={{paddingRight: '25px'}}>Region: {assignRegion(clientsData[i+start].ClientNumber)}</td>
                           <td style={{paddingRight: '25px'}}>Start Date: {(
                             function(){
                               let dateTime = clientsData[i+start].Stamp.split(" ");
