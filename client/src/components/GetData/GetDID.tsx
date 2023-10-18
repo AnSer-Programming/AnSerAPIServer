@@ -103,15 +103,10 @@ const GetDID = () => {
       }
     }
   }
-  
-  if (!didDataLength) {
-    return <h2>LOADING...</h2>;
-  } else {
-    activeDIDHandler();
-  }
 
   return (
     <>
+      {activeDIDHandler()}
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum +1} of ${maxPages +1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,50 +158,53 @@ const GetDID = () => {
             activeDIDHandler();
           }} />}
         sx={{ borderColor: 'white', marginLeft: '2.5%', zIndex: 0}} /><br /><br />
-      <table>
-        <tbody>
-          {
-            (function(){
-              let length:number = 50;
-              let start:number = length * pageNum;
-              let rows:any = [];
+      { 
+        didDataLength ?        
+          <table>
+            <tbody>
+              {
+                (function(){
+                  let length:number = 50;
+                  let start:number = length * pageNum;
+                  let rows:any = [];
 
-              if(activeDID) {
-                for(let i = 0; i < length; i++) {
-                  if(didData.ActiveDID[i+start] == undefined) {
-                    break;
+                  if(activeDID) {
+                    for(let i = 0; i < length; i++) {
+                      if(didData.ActiveDID[i+start] == undefined) {
+                        break;
+                      } else {
+                        rows.push( 
+                          <tr key={i} style={{minWidth: '100%'}}>
+                            <td style={{paddingRight: '25px'}}>Client Number: {didData.ActiveDID[i+start].ClientNumber}</td>
+                            <td style={{paddingRight: '25px'}}>Client Name: {didData.ActiveDID[i+start].ClientName}</td>
+                            <td style={{paddingRight: '25px'}}>DID Number: {didData.ActiveDID[i+start].Source}</td>
+                            <td style={{paddingRight: '25px'}}>Provider: {didData.ActiveDID[i+start].Provider}</td>
+                          </tr>
+                        )
+                      }                  
+                    }
                   } else {
-                    rows.push( 
-                      <tr key={i} style={{minWidth: '100%'}}>
-                        <td style={{paddingRight: '25px'}}>Client Number: {didData.ActiveDID[i+start].ClientNumber}</td>
-                        <td style={{paddingRight: '25px'}}>Client Name: {didData.ActiveDID[i+start].ClientName}</td>
-                        <td style={{paddingRight: '25px'}}>DID Number: {didData.ActiveDID[i+start].Source}</td>
-                        <td style={{paddingRight: '25px'}}>Provider: {didData.ActiveDID[i+start].Provider}</td>
-                      </tr>
-                    )
-                  }                  
+                    for(let i = 0; i < length; i++) {
+                      if(didData.NotActiveDID[i+start] == undefined) {
+                        break;
+                      } else {
+                        rows.push( 
+                          <tr key={i} style={{minWidth: '100%'}}>
+                            <td style={{paddingRight: '25px'}}>DID Number: {didData.NotActiveDID[i+start].phone_number}</td>
+                            <td style={{paddingRight: '25px'}}>Provider: {providerSelector(i+start)}</td>
+                          </tr>
+                        )
+                      }                  
+                    }
+                  }
+                  return rows;
                 }
-              } else {
-                for(let i = 0; i < length; i++) {
-                  if(didData.NotActiveDID[i+start] == undefined) {
-                    break;
-                  } else {
-                    rows.push( 
-                      <tr key={i} style={{minWidth: '100%'}}>
-                        <td style={{paddingRight: '25px'}}>DID Number: {didData.NotActiveDID[i+start].phone_number}</td>
-                        <td style={{paddingRight: '25px'}}>Provider: {providerSelector(i+start)}</td>
-                      </tr>
-                    )
-                  }                  
-                }
-              }
-              return rows;
-            }
-          )()}
-        </tbody>
-      </table> 
+              )()}
+            </tbody>
+          </table> : <h2>LOADING...</h2>
+      }
       <br />
-      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {` ${pageNum}/${maxPages} `} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
+      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum +1} of ${maxPages +1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
     </>
   );
 };

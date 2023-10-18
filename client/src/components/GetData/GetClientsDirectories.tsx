@@ -76,15 +76,10 @@ const GetClientsDirecoties = () => {
   const maxPageSetter = () => {
     maxPages = (Math.ceil((clientsDirectoriesDataLength/50)-1));
   }
-  
-  if (!clientsDirectoriesDataLength) {
-    return <h2>LOADING...</h2>;
-  } else {
-    maxPageSetter();
-  }
 
   return (
     <>
+      {maxPageSetter()}
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,29 +103,32 @@ const GetClientsDirecoties = () => {
         }} 
         sx={{ width: 250, background: 'white', marginLeft: '1.5%', zIndex: 0}}
         variant="filled" /> <br /><br />
-      <table style={{minWidth: '50%'}}>
-        <tbody style={{minWidth: '100%'}}>
-          {(function(){   
-            let length:number = 50;
-            let start:number = length * pageNum;
-            let rows:any = [];
-            for (let i = 0; i < length; i++) {
-              if(clientsDirectoriesData[i+start] == undefined) {
-                break;
-              } else {
-                rows.push( 
-                  <tr key={i} style={{minWidth: '100%'}}>
-                  <td style={{paddingRight: '25px'}}>Client Number: {clientsDirectoriesData[i+start].ClientNumber}</td>
-                  <td style={{paddingRight: '25px'}}>Client: {clientsDirectoriesData[i+start].ClientName}</td>
-                  <td style={{paddingRight: '25px'}}>Directory: {clientsDirectoriesData[i+start].Name}</td>
-                  </tr>
-                )
-              }
-            }
-            return rows;
-          })()}
-        </tbody>
-      </table> 
+      {
+        clientsDirectoriesDataLength ?
+          <table style={{minWidth: '50%'}}>
+            <tbody style={{minWidth: '100%'}}>
+              {(function(){   
+                let length:number = 50;
+                let start:number = length * pageNum;
+                let rows:any = [];
+                for (let i = 0; i < length; i++) {
+                  if(clientsDirectoriesData[i+start] == undefined) {
+                    break;
+                  } else {
+                    rows.push( 
+                      <tr key={i} style={{minWidth: '100%'}}>
+                      <td style={{paddingRight: '25px'}}>Client Number: {clientsDirectoriesData[i+start].ClientNumber}</td>
+                      <td style={{paddingRight: '25px'}}>Client: {clientsDirectoriesData[i+start].ClientName}</td>
+                      <td style={{paddingRight: '25px'}}>Directory: {clientsDirectoriesData[i+start].Name}</td>
+                      </tr>
+                    )
+                  }
+                }
+                return rows;
+              })()}
+            </tbody>
+          </table> : <h2>LOADING...</h2>
+      }
       <br />
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
     </>
