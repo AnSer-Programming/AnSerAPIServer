@@ -44,7 +44,7 @@ const SetDisconnectList = (data:any) => {
         } //list, blank, then Unlisted
     
         if(data.accountNum == 38 || data.accountNum == 6509) {
-          for(var i:number = list.DisconnectList.length-1; i > 0; i--) {
+          for(let i:number = list.DisconnectList.length-1; i > 0; i--) {
             if(list.DisconnectList[i].PropertyOwner == "Unlisted") {
               if(list.DisconnectList[i-1].PropertyOwner == " ") {
                 placeHolder = list.DisconnectList[i];

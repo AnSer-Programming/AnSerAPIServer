@@ -43,7 +43,7 @@ const completedCallsRoute = require('./Tracker/CallsCompleted');
 
 // Set Routes
 router.use('/ActiveAgentLog', agentLogRoute);
-router.use('/CompletedCalls', completedCallsRoute);
+router.use('/CompletedCalls', completedCallsRoute); 
 
 // Get Data Routes
 // Declare Variables

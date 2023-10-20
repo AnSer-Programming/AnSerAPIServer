@@ -1,12 +1,9 @@
 // try {
 //     const sequelize = require('../config/connection');
-//     const ContactDispatchTable = require('../models/ContactDispatchTable');
-//     const Account = require('./Accounts.json');
+//     const BellTowerResidentDirectoryTable = require('../models/BellTowerResidentDirectoryTable');
+//     // const Account = require('./Accounts.json');
 //     const seedDatabase = async () => {
 //         await sequelize.sync({ force: true });   
-//         await ContactDispatchTable.bulkCreate(Account.Accounts, {
-//             returning: true,
-//         });
 //         process.exit(0);
 //     };
     

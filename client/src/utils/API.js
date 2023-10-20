@@ -49,7 +49,7 @@ export const getGroupContactDispatchAPI = (groupNum) => {
 };
 
 export const setContactDispatchAPI = (data) => {
-  return fetch(`/api/ContactDispatch`, {
+  return fetch(`/api/ContactDispatch/updateClient`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
