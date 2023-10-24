@@ -75,6 +75,13 @@ export default function MenuAppBar(data:any) {
                 <strong>Web Tools</strong>
                 <MenuItem
                   onClick={(event: any) => {
+                    handleClose(event, 'Resident Directory');
+                    handleRoutes('/ResidentDirectory');
+                  }} >
+                  Resident Directory
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
                     handleClose(event, 'Disconnect List');
                     handleRoutes('/DisconnectList');
                   }} >
