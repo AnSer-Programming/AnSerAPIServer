@@ -80,7 +80,7 @@ export const setDisconnectListAPI = (accountNum, data) => {
 
 // Resident Directory API Call
 export const getResidentDirectoryAPI = (accountNum) => {
-  return featch(`/api/DisconnectList/${accountNum}`, {
+  return fetch(`/api/DisconnectList/${accountNum}`, {
     headers: {
       method: 'GET',
       'Content-Type': 'application/json',
