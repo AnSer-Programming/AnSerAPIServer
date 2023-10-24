@@ -15,6 +15,8 @@ const SetContactDispatch = (data:any) => {
   // use this to determine if `useEffect()` hook needs to run again
   const contactDispatchDataLength = Object.keys(contactDispatchData).length;
   const pages = Math.ceil(contactDispatchDataLength / 100)-1;
+
+  let updateContactDispatchData:any = [];
     
   useEffect(() => {
     const getContactDispatchData = async() => {
@@ -50,33 +52,34 @@ const SetContactDispatch = (data:any) => {
     );
   }
   
-  // const handleContactUpdate = async() => {
-  //   try {
-  //     const response = await setContactDispatchAPI(updateContactDispatchData);
+  const handleContactUpdate = async() => {
+    try {
+      const response = await setContactDispatchAPI(updateContactDispatchData);
 
-  //     if (!response.ok) {
-  //       throw new Error('something went wrong!');
-  //     }
+      if (!response.ok) {
+        throw new Error('something went wrong!');
+      }
 
-  //     const updatedContactDispatch = await response.json();
-  //     setContactDispatchData(updatedContactDispatch);
-  //   } catch (err) {
-  //     console.error(`Update Error: ${err}`);
-  //   }
-  // };
+      const updatedContactDispatch = await response;
+      setContactDispatchData(updatedContactDispatch);
+    } catch (err) {
+      console.error(`Update Error: ${err}`);
+    }
+  };
 
   const handleContactDispatchEdit = async(data:any) => {
-    console.log(`${data}`);
+    updateContactDispatchData = {data}
+    console.log(`${JSON.stringify(data)}`);
   }
 
-  // const saveBtn = {
-  //   display: 'flex',
-  //   position: 'fixed' as const,
-  //   right: '1%',
-  //   textAlign: 'center' as const,
-  //   bottom: '5%',
-  //   width: '12%',
-  // }
+  const saveBtn = {
+    display: 'flex',
+    position: 'fixed' as const,
+    right: '1%',
+    textAlign: 'center' as const,
+    bottom: '5%',
+    width: '12%',
+  }
 
   const tableStyles = {
     marginLeft: '1%',
@@ -91,7 +94,7 @@ const SetContactDispatch = (data:any) => {
   
   return (
     <>
-      {/* <button onClick={handleContactDispatchEdit} style={saveBtn}>Save All Edits</button> */}
+      <button onClick={handleContactUpdate} style={saveBtn}>Save All Edits</button>
       <div>
         <table style={tableStyles}>
           <tbody>
@@ -114,7 +117,10 @@ const SetContactDispatch = (data:any) => {
                         Status: 
                         <SetContactDispatchAccountStatus
                           status={contactDispatchData[i+modifier].status}
-                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
+                          updateHandler={(accountStatusData:any) => {
+                            let data = {account: contactDispatchData[i+modifier].account, status: accountStatusData};
+                            handleContactDispatchEdit(data);
+                          }}
                         /> 
                       </td>
                       <td style={tableField}>

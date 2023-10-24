@@ -2,8 +2,8 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/connection');
 
 try {
-  class ContactDispatchTable extends Model {}
-  ContactDispatchTable.init(
+  class BellTowerResidentDirectoryTable extends Model {}
+  BellTowerResidentDirectoryTable.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -11,21 +11,17 @@ try {
         primaryKey: true,
         autoIncrement: true,
       },
-      account: {
-        type: DataTypes.BIGINT,
+      resident_full_name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      resident_room_number: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      status: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      account_type: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      api: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      resident_phone_number: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
       },
     },
     {
@@ -33,11 +29,11 @@ try {
       timestamps: false,
       freezeTableName: true,
       underscored: true,
-      modelName: 'contactDispatch',
+      modelName: 'bellTowerResidentDirectory',
     }
   );
   
-  module.exports = ContactDispatchTable;
+  module.exports = BellTowerResidentDirectoryTable;
 } catch(err) {
   console.log(`Model Error: ${ err }`);
 }

@@ -11,7 +11,7 @@ export const onTimeData = () => {
 // Vessel API Calls
 export const getVesselsAPI = (accountNum) => {
   return fetch(`/api/Vessel/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -31,7 +31,7 @@ export const setVesselsAPI = (accountNum, data) => {
 // Contact Dispatch List Calls
 export const getContactDispatchAPI = () => {
   return fetch(`/api/ContactDispatch`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -41,7 +41,7 @@ export const getContactDispatchAPI = () => {
 export const getGroupContactDispatchAPI = (groupNum) => {
   console.log(groupNum)
   return fetch(`/api/ContactDispatch/${groupNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -49,7 +49,7 @@ export const getGroupContactDispatchAPI = (groupNum) => {
 };
 
 export const setContactDispatchAPI = (data) => {
-  return fetch(`/api/ContactDispatch`, {
+  return fetch(`/api/ContactDispatch/updateClient`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export const setContactDispatchAPI = (data) => {
 // Disconnect List API Calls
 export const getDisconnectListAPI = (accountNum) => {
   return fetch(`/api/DisconnectList/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -69,6 +69,26 @@ export const getDisconnectListAPI = (accountNum) => {
 };
 
 export const setDisconnectListAPI = (accountNum, data) => {
+  return fetch(`/api/DisconnectList/${accountNum}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Resident Directory API Call
+export const getResidentDirectoryAPI = (accountNum) => {
+  return featch(`/api/DisconnectList/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setResidentDirectoryAPI = (accountNum, data) => {
   return fetch(`/api/DisconnectList/${accountNum}`, {
     method: 'POST',
     headers: {

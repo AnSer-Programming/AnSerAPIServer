@@ -17,6 +17,7 @@
     "express": "^4.17.1",
     "flatted": "^3.2.7",
     "mssql": "^9.1.1",
+    "nodemailer": "^6.9.6",
     "sequelize": "^6.32.1",
     "tedious": "^16.1.0"
   },

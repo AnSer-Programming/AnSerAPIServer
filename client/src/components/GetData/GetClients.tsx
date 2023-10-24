@@ -120,6 +120,8 @@ const GetClients = () => {
       return "Chicago, IL";
     } else if(accountNum > 59999 && accountNum < 70000) { // Des Moies, IA
       return "Des Moies, IA";
+    } else if(accountNum > 79999 && accountNum < 90000) { // Wausau, WI
+      return "Wausau, WI";
     } else if(accountNum > 89999 && accountNum < 100000) { // AnsaVoice - California(CA)
       return "AnsaVoice - California(CA)";
     } else {
