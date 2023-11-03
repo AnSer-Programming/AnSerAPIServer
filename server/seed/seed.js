@@ -1,6 +1,6 @@
 // try {
 //     const sequelize = require('../config/connection');
-//     const BellTowerResidentDirectoryTable = require('../models/BellTowerResidentDirectoryTable');
+//     const ResidentDirectoryTable = require('../models/ResidentDirectoryTable');
 //     // const Account = require('./Accounts.json');
 //     const seedDatabase = async () => {
 //         await sequelize.sync({ force: true });   

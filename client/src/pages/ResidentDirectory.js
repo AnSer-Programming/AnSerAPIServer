@@ -1,15 +1,47 @@
-import {React, useState} from 'react';
+import {React, useState, useEffect} from 'react';
 import GetResidentDirectory from '../components/GetResidentDirectory.tsx';
 import SetResidentDirectory from '../components/SetResidentDirectory.tsx';
 // import ResidentDirectoryWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
+import { getResidentDirectoryAPI } from '../utils/API';
+let accountNumPlaceHolder = null;
 
 const ResidentDirectory = () => {
   const [isEdit, setIsEdit] = useState(false);
+  const [residentDirectoryData, setResidentDirectoryData] = useState({});
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
+
+  // use this to determine if `useEffect()` hook needs to run again
+  const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;
+  
+  useEffect(() => {
+    const getResidentDirectoryData = async() => {
+      try {
+        accountNumPlaceHolder = accountNum;
+        const response = await getResidentDirectoryAPI(accountNum);
+
+        if (!response.ok) {
+          throw new Error('something went wrong!');
+        }
+
+        let residentData = await response.json();
+        
+        setResidentDirectoryData(residentData);
+        setIsEdit(false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getResidentDirectoryData();
+  }, [residentDirectoryDataLength, accountNum]);
+  
+  // if (!residentDirectoryDataLength) {
+  //   return <h2>LOADING...</h2>;
+  // }
 
 //   const residentDirectoryDisplay = () => {
 //     return(<ResidentDirectoryWalkThrough />);
@@ -31,11 +63,11 @@ const ResidentDirectory = () => {
         </div>
         {
           isEdit ? 
-          <SetResidentDirectory 
-            accountNum={accountNum}
-            setEdit={(editBoolean) => setIsEdit(editBoolean)}/> : 
-          <GetResidentDirectory
-            accountNum={accountNum} />    
+            <SetResidentDirectory 
+              accountData={residentDirectoryData}
+              setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
+            <GetResidentDirectory
+              accountData={residentDirectoryData} /> 
         } 
       </>
     )
@@ -62,7 +94,7 @@ const ResidentDirectory = () => {
   return (
     <>
       <Menu 
-        page="Vessel API" />
+        page="Resident Directory" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select

@@ -177,7 +177,6 @@ const GetClients = () => {
                                   }
                                 }
                               }
-                              console.log(dateTime);
                               return `${dateTime[0]} ${dateTime[1]} ${dateTime[2]}`
                             }())}
                           </td>
