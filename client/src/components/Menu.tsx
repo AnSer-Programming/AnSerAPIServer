@@ -88,6 +88,13 @@ export default function MenuAppBar(data:any) {
                   Resident Directory
                 </MenuItem>
                 <MenuItem
+                  onClick={(event: any) => {
+                    handleClose(event, 'Scheduler Tool');
+                    handleRoutes('/Scheduler');
+                  }} >
+                  Scheduler Tool
+                </MenuItem>
+                <MenuItem
                   href="/Vessels" 
                   onClick={(event: any) => {
                     handleClose(event, 'Vessel API');
