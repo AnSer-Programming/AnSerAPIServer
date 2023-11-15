@@ -17,7 +17,7 @@ const Scheduler = () => {
   const schedulerDataLength = Object.keys(schedulerData).length;
   
   useEffect(() => {
-    const getResidentDirectoryData = async() => {
+    const getSchedulerData = async() => {
       try {
         const response = await getSchedulerAPI(accountNum);
 
@@ -25,16 +25,17 @@ const Scheduler = () => {
           throw new Error('something went wrong!');
         }
 
-        let residentData = await response.json();
+        let data = await response.json();
         
-        setSchedulerData(residentData);
+        setSchedulerData(data);
+        console.log(data);
         setIsEdit(false);
       } catch (err) {
         console.error(err);
       }
     };
 
-    getResidentDirectoryData();
+    getSchedulerData();
   }, [schedulerDataLength, accountNum]);
 
   const walkThroughDisplay = () => {

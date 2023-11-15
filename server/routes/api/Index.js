@@ -53,11 +53,13 @@ const getDIDRoute = require('./GetData/GetDID');
 const clientRoutes = require('./GetData/GetClients');
 const clientsAndDirectoriesRoute = require('./GetData/GetClientsDirectories');
 const contactsDirectoriesRoutes = require('./GetData/GetContactsDirectories');
+const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAndInfoCards');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
 router.use('/Clients', clientRoutes);
 router.use('/ClientsAndDirectories', clientsAndDirectoriesRoute);
 router.use('/ContactsAndDirectories', contactsDirectoriesRoutes);
+router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 
 module.exports = router;

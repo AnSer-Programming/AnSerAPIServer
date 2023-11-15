@@ -127,7 +127,7 @@ router.put('/:account', async(req, res) => {
 //Read from the accounts JSON file
 //  Use async and await to force the code to wait for results rather than letting it continue reading lines.
 router.get('/:account', async(req, res) => {
-    pastDateChecker(req.params.account)
+    // pastDateChecker(req.params.account);
     const data = await schedulerReader(req.params.account);
     res.send(JSON.parse(data));
 });

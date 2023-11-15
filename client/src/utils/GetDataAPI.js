@@ -1,4 +1,4 @@
-// Used in GetClients.tsx
+// Used in GetClients.tsx, GetDirectoryContactsAndInfoCards.tsx
 export const getClients = () => {
   return fetch(`/api/Clients`, {
     headeres: {
@@ -8,6 +8,7 @@ export const getClients = () => {
   });
 };
 
+// Used in GetClients.tsx
 export const getClientsByNum = (accountNum) => {
   return fetch(`/api/Clients/ByAccountNum/${accountNum}`, {
     headeres: {
@@ -121,6 +122,16 @@ export const getDIDByName = (accountName) => {
 
 export const getDIDBySource = (sourceNum) => {
   return fetch(`/api/GetDID/BySource/${sourceNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+// Used in Get DirectoryContactsAndInfoCards.tsx
+export const getDirectoryContactsAndInfoCards = (accountNum) => {
+  return fetch(`/api/DirectoryContactsAndInfoCards/${accountNum}`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',
