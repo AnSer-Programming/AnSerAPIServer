@@ -40,8 +40,20 @@ const GetDirectoryContactsAndInfoCards = () => {
           }
   
           let data = await response.json();
+          let placeHolder:string[] = Object.keys(data[0]);
           setData(data);
-          setHeaders(Object.keys(data[0]));
+          console.log(placeHolder);
+          for(let i = 0; i < placeHolder.length; i++) {
+            console.log(placeHolder);
+            if(placeHolder[i] == "null") {
+              placeHolder.splice(i, 1);
+            }
+            if(placeHolder[i] == "InfoCard" && i != placeHolder.length-1) {
+              placeHolder[i] = placeHolder[i+1];
+              placeHolder[i+1] = "InfoCard";
+            }
+          }
+          setHeaders(placeHolder);
         }
       } catch (err) {
         console.error(err);
@@ -54,12 +66,6 @@ const GetDirectoryContactsAndInfoCards = () => {
   if(!clientsDataLength) {
     <h2>LOADING...</h2>
   }
-
-  const updateHandler = (input:any) => {
-    setAccountNum(parseInt(input));
-  }
-
-  console.log(directoryData);
 
   return (
     <>
@@ -97,15 +103,21 @@ const GetDirectoryContactsAndInfoCards = () => {
             <tbody>
               {(function(){
                 let rows:any = [];
-                for (let i = 0; i < directoryData.length; i++) {
-                  if(directoryData[i] == undefined) {
+                for (let x = 0; x < directoryData.length; x++) {
+                  if(directoryData[x] == undefined) {
                     break;
                   } else {
                     rows.push( 
-                      <tr key={i} style={{minWidth: '100%'}}>
-                        <td style={{paddingRight: '25px'}}>{directoryData[i][columnHeaders[0]]}</td>
-                        <td style={{paddingRight: '25px'}}>{directoryData[i][columnHeaders[1]]}</td>
-                        <td style={{paddingRight: '25px'}}>{directoryData[i][columnHeaders[2]]}</td>
+                      <tr key={x} style={{minWidth: '100%', borderBottom: '1px solid'}}>
+                        {(function(){
+                          let elements:any = [];
+                          for(let y = 0; y < columnHeaders.length; y++) {
+                            elements.push(
+                              <td style={{paddingRight: '25px'}}>{directoryData[x][columnHeaders[y]]}</td>
+                            )
+                          }
+                          return elements;
+                        })()}
                       </tr>
                     )
                   }

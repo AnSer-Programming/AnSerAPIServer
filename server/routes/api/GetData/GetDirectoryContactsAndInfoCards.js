@@ -5,7 +5,7 @@ const sql = require('mssql');
 router.get('/:accountNum', async(req, res) => {
     let newObj;
     let accountNum = req.params.accountNum;
-    let result;
+    let result = new Array;
     let counter = 0;
     let query = `SELECT [subId]
         FROM [dbo].[cltClients]
@@ -26,7 +26,7 @@ router.get('/:accountNum', async(req, res) => {
     }
 
     result = await runQuery();
-    if(typeof result[0] != undefined) {
+    if(result[0]) {
         if(result[0].subId == null) {
             res.json("Unavailable");
         } else {
