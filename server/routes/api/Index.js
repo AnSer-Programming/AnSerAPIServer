@@ -26,12 +26,14 @@ router.use('/ContactDispatch', contactDispatch);
 // API Routes
 // Declare variables
 const disconnectListRoute = require('./DisconnectList');
+const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
 const timeConverterRoute = require('./TimeConverter');
 const vesselRoute = require('./Vessel');
 
 // Set Routes
 router.use('/DisconnectList', disconnectListRoute);
+router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);
 router.use('/timeConverter', timeConverterRoute);
 router.use('/Vessel', vesselRoute);
@@ -51,11 +53,13 @@ const getDIDRoute = require('./GetData/GetDID');
 const clientRoutes = require('./GetData/GetClients');
 const clientsAndDirectoriesRoute = require('./GetData/GetClientsDirectories');
 const contactsDirectoriesRoutes = require('./GetData/GetContactsDirectories');
+const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAndInfoCards');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
 router.use('/Clients', clientRoutes);
 router.use('/ClientsAndDirectories', clientsAndDirectoriesRoute);
 router.use('/ContactsAndDirectories', contactsDirectoriesRoutes);
+router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 
 module.exports = router;

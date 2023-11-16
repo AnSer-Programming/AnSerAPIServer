@@ -1,51 +1,46 @@
 import {React, useState, useEffect} from 'react';
-import GetResidentDirectory from '../components/GetResidentDirectory.tsx';
-import SetResidentDirectory from '../components/SetResidentDirectory.tsx';
-// import ResidentDirectoryWalkThrough from '../components/WalkThrough/VesselList.tsx';
+import GetScheduler from '../components/GetScheduler.tsx';
+import SetScheduler from '../components/SetScheduler.tsx';
+// import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
-import { getResidentDirectoryAPI } from '../utils/API';
-let accountNumPlaceHolder = null;
+import { getSchedulerAPI } from '../utils/API';
 
-const ResidentDirectory = () => {
+const Scheduler = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [residentDirectoryData, setResidentDirectoryData] = useState({});
+  const [schedulerData, setSchedulerData] = useState({});
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
 
   // use this to determine if `useEffect()` hook needs to run again
-  const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;
+  const schedulerDataLength = Object.keys(schedulerData).length;
   
   useEffect(() => {
-    const getResidentDirectoryData = async() => {
+    const getSchedulerData = async() => {
       try {
-        accountNumPlaceHolder = accountNum;
-        const response = await getResidentDirectoryAPI(accountNum);
+        const response = await getSchedulerAPI(accountNum);
 
         if (!response.ok) {
           throw new Error('something went wrong!');
         }
 
-        let residentData = await response.json();
+        let data = await response.json();
         
-        setResidentDirectoryData(residentData);
+        setSchedulerData(data);
+        console.log(data);
         setIsEdit(false);
       } catch (err) {
         console.error(err);
       }
     };
 
-    getResidentDirectoryData();
-  }, [residentDirectoryDataLength, accountNum]);
-  
-  // if (!residentDirectoryDataLength) {
-  //   return <h2>LOADING...</h2>;
-  // }
+    getSchedulerData();
+  }, [schedulerDataLength, accountNum]);
 
-//   const residentDirectoryDisplay = () => {
-//     return(<ResidentDirectoryWalkThrough />);
-//   }
+  const walkThroughDisplay = () => {
+    // return(<VesselListWalkThrough />);
+  }
 
   const editDisplay = () => {
     return(
@@ -63,11 +58,11 @@ const ResidentDirectory = () => {
         </div>
         {
           isEdit ? 
-            <SetResidentDirectory 
-              accountData={residentDirectoryData}
+            <SetScheduler 
+              accountData={schedulerData}
               setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
-            <GetResidentDirectory
-              accountData={residentDirectoryData} /> 
+            <GetScheduler
+              accountData={schedulerData} /> 
         } 
       </>
     )
@@ -88,13 +83,13 @@ const ResidentDirectory = () => {
   const option = [
     {value: '0', label: 'Walk-Through'},
     {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '87712', label: 'Account 87712: Bell Tower Assisted Living'}
+    {value: '52054', label: 'Account 52054: Dr Michael Byrnes'}
   ];
 
   return (
     <>
       <Menu 
-        page="Resident Directory" />
+        page="Scheduler Tool" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
@@ -106,11 +101,11 @@ const ResidentDirectory = () => {
             defaultValue={{value: '0', label: 'Walk-Through'}}
           /> <br />
         </div>
-        { accountNum != 0 ? editDisplay() : <p>Walk Through coming soon!</p>/*walkThroughDisplay()*/ }
+        { accountNum != 0 ? editDisplay() : walkThroughDisplay() }
         <br />
       </div> 
     </>
   );
 };
 
-export default ResidentDirectory;
+export default Scheduler;

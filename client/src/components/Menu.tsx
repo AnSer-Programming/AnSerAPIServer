@@ -75,6 +75,13 @@ export default function MenuAppBar(data:any) {
                 <strong>Web Tools</strong>
                 <MenuItem
                   onClick={(event: any) => {
+                    handleClose(event, 'Disconnect List');
+                    handleRoutes('/DisconnectList');
+                  }} >
+                  Disconnect List
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
                     handleClose(event, 'Resident Directory');
                     handleRoutes('/ResidentDirectory');
                   }} >
@@ -82,10 +89,10 @@ export default function MenuAppBar(data:any) {
                 </MenuItem>
                 <MenuItem
                   onClick={(event: any) => {
-                    handleClose(event, 'Disconnect List');
-                    handleRoutes('/DisconnectList');
+                    handleClose(event, 'Scheduler Tool');
+                    handleRoutes('/Scheduler');
                   }} >
-                  Disconnect List
+                  Scheduler Tool
                 </MenuItem>
                 <MenuItem
                   href="/Vessels" 

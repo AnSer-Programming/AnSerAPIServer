@@ -80,7 +80,7 @@ export const setDisconnectListAPI = (accountNum, data) => {
 
 // Resident Directory API Call
 export const getResidentDirectoryAPI = (accountNum) => {
-  return fetch(`/api/DisconnectList/${accountNum}`, {
+  return fetch(`/api/ResidentDirectory/${accountNum}`, {
     headers: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -89,7 +89,27 @@ export const getResidentDirectoryAPI = (accountNum) => {
 };
 
 export const setResidentDirectoryAPI = (accountNum, data) => {
-  return fetch(`/api/DisconnectList/${accountNum}`, {
+  return fetch(`/api/ResidentDirectory/${accountNum}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Resident Directory API Call
+export const getSchedulerAPI = (accountNum) => {
+  return fetch(`/api/Scheduler/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setSchedulerAPI = (accountNum, data) => {
+  return fetch(`/api/Scheduler/${accountNum}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

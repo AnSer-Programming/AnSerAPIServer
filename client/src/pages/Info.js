@@ -3,6 +3,7 @@ import GetDID from '../components/GetData/GetDID.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
+import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -17,7 +18,8 @@ const Info = () => {
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
-    {value: 'GetDID', label: 'Get DID'}
+    {value: 'GetDID', label: 'Get DID'},
+    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'}
   ];
   
   return (
@@ -36,11 +38,12 @@ const Info = () => {
           /> <br />
         </div>
         {
-          {
+          {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
-            'GetDID': <GetDID />
+            'GetDID': <GetDID />,
+            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />
           }[content]
         }
       </div>

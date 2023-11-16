@@ -1,38 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getResidentDirectoryAPI } from '../utils/API';
-
-let accountNumPlaceHolder = null;
 
 const GetResidentDirectory = (data:any) => {
   const [residentDirectoryData, setResidentDirectoryData] = useState<any>({});
-
-  // use this to determine if `useEffect()` hook needs to run again
-  const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;
-  let placeHolder:{};
-  
   useEffect(() => {
-    const getResidentDirectoryData = async() => {
-      try {
-        accountNumPlaceHolder = data.accountNum;
-        const response = await getResidentDirectoryAPI(data.accountNum);
-
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        let vessel = await response.json();
-        setResidentDirectoryData(vessel.VesselsOwners);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    getResidentDirectoryData();
-  }, [residentDirectoryDataLength, data.accountNum]);
-  
-  if (!residentDirectoryDataLength) {
-    return <h2>LOADING...</h2>;
-  }
+    setResidentDirectoryData(data.accountData);
+  }, [data.accountData])
 
   return (
     <>
@@ -40,8 +12,9 @@ const GetResidentDirectory = (data:any) => {
         <tbody>
           {Object.keys(residentDirectoryData).map((index) => (
             <tr key={`row${index}`}>
-              <td key={residentDirectoryData[index].Vessel} style={{paddingRight: '25px'}}>Vessel: {residentDirectoryData[index].Vessel}</td>
-              <td key={residentDirectoryData[index].Person} >Contact: {residentDirectoryData[index].Person}</td>
+              <td key={residentDirectoryData[index].resident_full_name} style={{paddingRight: '25px'}}>Resident Name: {residentDirectoryData[index].resident_full_name}</td>
+              <td key={residentDirectoryData[index].resident_room_number} style={{paddingRight: '25px'}}>Resident Room Number: {residentDirectoryData[index].resident_room_number}</td>
+              <td key={residentDirectoryData[index].resident_phone_number}>Resident Phone Number: {residentDirectoryData[index].resident_phone_number}</td>
             </tr>
           ))}
         </tbody>
