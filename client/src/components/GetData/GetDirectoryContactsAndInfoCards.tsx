@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getClients, getDirectoryContactsAndInfoCards } from '../../utils/GetDataAPI';
+import { toCSV } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -9,6 +10,7 @@ const GetDirectoryContactsAndInfoCards = () => {
   const [columnHeaders, setHeaders] = useState<any[]>([]);
   const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [accountNum, setAccountNum] = useState<number>(0);
+  const [accountName, setAccountName] = useState<string>("");
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDataLength = Object.keys(clientsData).length;
@@ -30,7 +32,6 @@ const GetDirectoryContactsAndInfoCards = () => {
           for(let i = 0; i < data.length; i ++) {
             numbers[i] = `${data[i].ClientNumber}`;
           }
-          // console.log(numbers);
           setAccountNumbers(numbers);
         } else {
           const response = await getDirectoryContactsAndInfoCards(accountNum);
@@ -42,15 +43,19 @@ const GetDirectoryContactsAndInfoCards = () => {
           let data = await response.json();
           let placeHolder:string[] = Object.keys(data[0]);
           setData(data);
-          console.log(placeHolder);
           for(let i = 0; i < placeHolder.length; i++) {
-            console.log(placeHolder);
-            if(placeHolder[i] == "null") {
+            if(placeHolder[i] == 'listID') {
               placeHolder.splice(i, 1);
             }
             if(placeHolder[i] == "InfoCard" && i != placeHolder.length-1) {
               placeHolder[i] = placeHolder[i+1];
               placeHolder[i+1] = "InfoCard";
+            }
+          }
+
+          for(let i = 0; i < clientsDataLength; i++) {
+            if(clientsData[i].ClientNumber == accountNum) {
+              setAccountName(clientsData[i].ClientName);
             }
           }
           setHeaders(placeHolder);
@@ -65,6 +70,28 @@ const GetDirectoryContactsAndInfoCards = () => {
 
   if(!clientsDataLength) {
     <h2>LOADING...</h2>
+  }
+
+  function downloadHandler() {
+    let fileData:String = "";
+    let fileName:string = `${accountName} Directory Information.csv`;
+    for(let i = 0; i < columnHeaders.length; i++) {
+        if(i===0) {
+            fileData = columnHeaders[i];
+        } else {
+            fileData +=`,${columnHeaders[i]}`;
+        }
+    }
+    for(let x = 0; x < directoryData.length; x++) {
+      for(let y = 0; y < columnHeaders.length; y++) {
+        if(y === 0) {
+          fileData +=`\n"${directoryData[x][columnHeaders[y]]}"`;
+        } else {
+          fileData +=`,"${directoryData[x][columnHeaders[y]]}"`;
+        }
+      }
+    }
+    toCSV(fileData, fileName);
   }
 
   return (
@@ -127,6 +154,10 @@ const GetDirectoryContactsAndInfoCards = () => {
           </tbody>
         </table>
       } <br />
+      
+      <button onClick={downloadHandler} id="downloadCSV" value="download">
+        <i className="fas fa-download"/>Click Here to Download
+      </button>
     </>
   );
 };
