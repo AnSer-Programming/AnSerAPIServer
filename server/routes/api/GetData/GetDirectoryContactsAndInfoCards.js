@@ -29,7 +29,7 @@ router.get('/:accountNum', async(req, res) => {
     if(result[0]) {
         if(result[0].subId == null) {
             res.json("Unavailable");
-        } else {
+        } else {            
             query = `SELECT [id]
                         ,[Intellegent].[dbo].[dirListingFields].[listId]
                         ,[Intellegent].[dbo].[dirListingFields].[subfieldId]
@@ -44,24 +44,19 @@ router.get('/:accountNum', async(req, res) => {
             placeHolder = await runQuery();
     
             for(let i = 0; i < placeHolder.length; i++) {
+                query = `SELECT [info]
+                    FROM [Intellegent].[dbo].[dirListings]
+                    WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
+                info = await runQuery();
+                info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                 if(!newObj) {
                     newObj = [{}];
-                    query = `SELECT [info]
-                        FROM [Intellegent].[dbo].[dirListings]
-                        WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
-                    info = await runQuery();
-                    info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                     newObj[0].listID = placeHolder[i].listId;
                     newObj[0].InfoCard = info[0].info;
                     newObj[0][placeHolder[i].Title] = placeHolder[i].searchField;
                 } else if(newObj[counter].listID != placeHolder[i].listId) {
                     counter++;
                     newObj[counter] = {};
-                    query = `SELECT [info]
-                        FROM [Intellegent].[dbo].[dirListings]
-                        WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
-                    info = await runQuery();
-                    info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                     newObj[counter].listID = placeHolder[i].listId;
                     newObj[counter].InfoCard = info[0].info;
                     newObj[counter][placeHolder[i].Title] = placeHolder[i].searchField;
@@ -72,8 +67,7 @@ router.get('/:accountNum', async(req, res) => {
             res.json(newObj);
         }
     }
-    
-    
+
     sql.on('error', err => {
         // ... error handler
         res.send("sql on: " + err);

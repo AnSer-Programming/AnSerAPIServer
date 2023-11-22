@@ -14,6 +14,12 @@ const GetDirectoryContactsAndInfoCards = () => {
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDataLength = Object.keys(clientsData).length;
+  const columnHeadersLength = Object.keys(columnHeaders).length;
+
+  let index:number = 0;
+  let maxProperties:number = 0;
+  let isDone:boolean = false;
+  let counter:number = 0;
   
   useEffect(() => {
     const getClientsData = async() => {
@@ -29,20 +35,40 @@ const GetDirectoryContactsAndInfoCards = () => {
           let data = await response.json();
   
           setClientsData(data);
+
+          for(let i = 0; i < clientsDataLength; i++) {
+            if(clientsData[i].ClientNumber == accountNum) {
+              setAccountName(clientsData[i].ClientName);
+            }
+          }
+
           for(let i = 0; i < data.length; i ++) {
             numbers[i] = `${data[i].ClientNumber}`;
           }
           setAccountNumbers(numbers);
         } else {
           const response = await getDirectoryContactsAndInfoCards(accountNum);
+
+          for(let i = 0; i < clientsDataLength; i++) {
+            if(clientsData[i].ClientNumber == accountNum) {
+              setAccountName(clientsData[i].ClientName);
+            }
+          }
   
           if (!response.ok) {
             throw new Error('something went wrong!');
           }
   
           let data = await response.json();
-          let placeHolder:string[] = Object.keys(data[0]);
-          setData(data);
+
+          for(let i = 0; i < data.length; i++) {
+            if(Object.keys(data[i]).length > maxProperties) {
+              index = i;
+              maxProperties = Object.keys(data[i]).length;
+            }
+          }
+
+          let placeHolder:string[] = Object.keys(data[index]);
           for(let i = 0; i < placeHolder.length; i++) {
             if(placeHolder[i] == 'listID') {
               placeHolder.splice(i, 1);
@@ -52,13 +78,45 @@ const GetDirectoryContactsAndInfoCards = () => {
               placeHolder[i+1] = "InfoCard";
             }
           }
+          setHeaders(placeHolder);
 
-          for(let i = 0; i < clientsDataLength; i++) {
-            if(clientsData[i].ClientNumber == accountNum) {
-              setAccountName(clientsData[i].ClientName);
+          for(let x = 0; x < data.length; x++) {
+            for(let y = 0; y < data.length; y++) {
+              if(!data[x][columnHeaders[y]]) {
+                data[x][columnHeaders[y]] = '';
+              } else {
+                data[x][columnHeaders[y]] = data[x][columnHeaders[y]].trim();
+              }
             }
           }
-          setHeaders(placeHolder);
+
+          let objHolder:any;
+          while(!isDone) {
+            for(let x = 0; x < data.length-1; x++) {
+              if(data[x][columnHeaders[0]][0] > data[x+1][columnHeaders[0]][0]) {
+                objHolder = await data[x];
+                data[x] = await data[x+1];
+                data[x+1] = await objHolder;
+              } else if(data[x][columnHeaders[0]][0] == data[x+1][columnHeaders[0]][0]) {
+                for(let y = 1; y < data[x][columnHeaders[0]].length; y++) {
+                  if(data[x][columnHeaders[0]][y] > data[x+1][columnHeaders[0]][y]) {
+                    objHolder = await data[x];
+                    data[x] = await data[x+1];
+                    data[x+1] = await objHolder;
+                    break;
+                  } else if(data[x][columnHeaders[0]][y] < data[x+1][columnHeaders[0]][y]) {
+                    break;
+                  }
+                }
+              }
+            }
+            counter++;
+            if(counter > data.length) {
+              isDone = true;
+            }
+          }
+
+          setData(data);
         }
       } catch (err) {
         console.error(err);
@@ -108,6 +166,12 @@ const GetDirectoryContactsAndInfoCards = () => {
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{zIndex: 0}} />}
       /> <br />
       {
+        columnHeadersLength ? 
+        <button onClick={downloadHandler} id="downloadCSV" value="download">
+          <i className="fas fa-download"/>Click Here to Download
+        </button> : <h2>Select An Account</h2>
+      } <br /> <br />
+      {
         directoryData == "Unavailable" ? <p>The directory is not yet in IS</p> :
           <table>
             <thead>
@@ -153,11 +217,7 @@ const GetDirectoryContactsAndInfoCards = () => {
               })()}
           </tbody>
         </table>
-      } <br />
-      
-      <button onClick={downloadHandler} id="downloadCSV" value="download">
-        <i className="fas fa-download"/>Click Here to Download
-      </button>
+      }
     </>
   );
 };
