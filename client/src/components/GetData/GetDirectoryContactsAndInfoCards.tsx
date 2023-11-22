@@ -3,6 +3,8 @@ import { getClients, getDirectoryContactsAndInfoCards } from '../../utils/GetDat
 import { toCSV } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const GetDirectoryContactsAndInfoCards = () => {
   const [clientsData, setClientsData] = useState<any>({});
@@ -47,6 +49,7 @@ const GetDirectoryContactsAndInfoCards = () => {
           }
           setAccountNumbers(numbers);
         } else {
+          setHeaders([null]);
           const response = await getDirectoryContactsAndInfoCards(accountNum);
 
           for(let i = 0; i < clientsDataLength; i++) {
@@ -130,6 +133,29 @@ const GetDirectoryContactsAndInfoCards = () => {
     <h2>LOADING...</h2>
   }
 
+  if(!columnHeadersLength) {
+    <h2>LOADING...</h2>
+  } else {
+    console.log(columnHeadersLength);
+  }
+
+  const headerHandler = () => {
+    if(!columnHeadersLength) {
+      return (<h2>Select An Account</h2>);
+    } else if(columnHeadersLength > 1) {
+      return(
+        <button onClick={downloadHandler} id="downloadCSV" value="download">
+          <i className="fas fa-download"/>Click Here to Download
+        </button>
+      );
+    }
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress color="secondary" disableShrink />
+      </Box>
+    );
+  }
+
   function downloadHandler() {
     let fileData:String = "";
     let fileName:string = `${accountName} Directory Information.csv`;
@@ -165,12 +191,7 @@ const GetDirectoryContactsAndInfoCards = () => {
         sx={{background: 'white', width: '50%', minWidth: '150px', zIndex: 0}}
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{zIndex: 0}} />}
       /> <br />
-      {
-        columnHeadersLength ? 
-        <button onClick={downloadHandler} id="downloadCSV" value="download">
-          <i className="fas fa-download"/>Click Here to Download
-        </button> : <h2>Select An Account</h2>
-      } <br /> <br />
+      {headerHandler()} <br /> <br />
       {
         directoryData == "Unavailable" ? <p>The directory is not yet in IS</p> :
           <table>
