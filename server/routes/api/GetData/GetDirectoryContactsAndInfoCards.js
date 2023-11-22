@@ -44,17 +44,22 @@ router.get('/:accountNum', async(req, res) => {
             placeHolder = await runQuery();
     
             for(let i = 0; i < placeHolder.length; i++) {
-                query = `SELECT [info]
-                    FROM [Intellegent].[dbo].[dirListings]
-                    WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
-                info = await runQuery();
-                info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                 if(!newObj) {
+                    query = `SELECT [info]
+                        FROM [Intellegent].[dbo].[dirListings]
+                        WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
+                    info = await runQuery();
+                    info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                     newObj = [{}];
                     newObj[0].listID = placeHolder[i].listId;
                     newObj[0].InfoCard = info[0].info;
                     newObj[0][placeHolder[i].Title] = placeHolder[i].searchField;
                 } else if(newObj[counter].listID != placeHolder[i].listId) {
+                    query = `SELECT [info]
+                        FROM [Intellegent].[dbo].[dirListings]
+                        WHERE [Intellegent].[dbo].[dirListings].[listId] = ${placeHolder[i].listId}`;
+                    info = await runQuery();
+                    info[0].info = info[0].info.replace(/\n/g, " ").replace(/\r/g, "").replace(/\t/g, "").replace(/\v/g, "");
                     counter++;
                     newObj[counter] = {};
                     newObj[counter].listID = placeHolder[i].listId;
