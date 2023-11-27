@@ -149,9 +149,7 @@ const GetDirectoryContactsAndInfoCards = () => {
 
   if(!columnHeadersLength) {
     <h2>LOADING...</h2>
-  } else {
-    console.log(columnHeadersLength);
-  }
+  } 
 
   const headerHandler = () => {
     if(!columnHeadersLength) {
