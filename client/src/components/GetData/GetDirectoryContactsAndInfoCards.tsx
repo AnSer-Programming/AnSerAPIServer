@@ -147,10 +147,6 @@ const GetDirectoryContactsAndInfoCards = () => {
     <h2>LOADING...</h2>
   }
 
-  if(!columnHeadersLength) {
-    <h2>LOADING...</h2>
-  } 
-
   const headerHandler = () => {
     if(!columnHeadersLength) {
       return (<h2>Select An Account</h2>);
@@ -160,6 +156,8 @@ const GetDirectoryContactsAndInfoCards = () => {
           <i className="fas fa-download"/>Click Here to Download
         </button>
       );
+    } else if(columnHeaders[0] < 1) {
+      return(<p>No directory in IS</p>)
     }
     return (
       <Box sx={{ display: 'flex' }}>
