@@ -72,6 +72,7 @@ const GetDirectoryContactsAndInfoCards = () => {
           }
 
           let placeHolder:string[] = Object.keys(data[index]);
+          let valueHolder:string;
           for(let i = 0; i < placeHolder.length; i++) {
             if(placeHolder[i] == 'listID') {
               placeHolder.splice(i, 1);
@@ -79,6 +80,19 @@ const GetDirectoryContactsAndInfoCards = () => {
             if(placeHolder[i] == "InfoCard" && i != placeHolder.length-1) {
               placeHolder[i] = placeHolder[i+1];
               placeHolder[i+1] = "InfoCard";
+            }
+            if(placeHolder[i] == "Name" && i != 0) {
+              for(let x = i; x > 0; x--) {
+                placeHolder[x] = placeHolder[x-1];
+              }
+              placeHolder[0] = "Name";
+            }
+            if(placeHolder[i].includes("Account") && i != 1) {
+              valueHolder = placeHolder[i]
+              for(let x = i; x > 1; x--) {
+                placeHolder[x] = placeHolder[x-1];
+              }
+              placeHolder[1] = valueHolder;
             }
           }
           setHeaders(placeHolder);
@@ -194,50 +208,53 @@ const GetDirectoryContactsAndInfoCards = () => {
       {headerHandler()} <br /> <br />
       {
         directoryData == "Unavailable" ? <p>The directory is not yet in IS</p> :
-          <table>
-            <thead>
-              <tr key={"columnHeaderRow"}>
-                {(function(){
-                    let rows:any = [];
-                    for (let i = 0; i < columnHeaders.length; i++) {
-                      if(columnHeaders[i] == undefined) {
-                        break;
-                      } else {
-                        rows.push( 
-                          <th style={{paddingRight: '25px'}}>{columnHeaders[i]}</th>
-                        )
+          <div style={{overflow: "auto", height: '75vh'}}>
+            <p><strong>Note:</strong> find and delete the word undefined from the CSV document. There is currently a bug that is causing this word to populate in some fields. If the word "undefined" pops up there is no data for that field.</p>
+            <table>
+              <thead>
+                <tr key={"columnHeaderRow"}>
+                  {(function(){
+                      let rows:any = [];
+                      for (let i = 0; i < columnHeaders.length; i++) {
+                        if(columnHeaders[i] == undefined) {
+                          break;
+                        } else {
+                          rows.push( 
+                            <th style={{paddingRight: '25px'}}>{columnHeaders[i]}</th>
+                          )
+                        }
                       }
+                    return rows;
+                  })()}
+                </tr>
+              </thead>
+              <tbody>
+                {(function(){
+                  let rows:any = [];
+                  for (let x = 0; x < directoryData.length; x++) {
+                    if(directoryData[x] == undefined) {
+                      break;
+                    } else {
+                      rows.push( 
+                        <tr key={x} style={{minWidth: '100%', borderBottom: '1px solid'}}>
+                          {(function(){
+                            let elements:any = [];
+                            for(let y = 0; y < columnHeaders.length; y++) {
+                              elements.push(
+                                <td style={{paddingRight: '25px', minWidth: '250px'}}>{directoryData[x][columnHeaders[y]]}</td>
+                              )
+                            }
+                            return elements;
+                          })()}
+                        </tr>
+                      )
                     }
+                  }
                   return rows;
                 })()}
-              </tr>
-            </thead>
-            <tbody>
-              {(function(){
-                let rows:any = [];
-                for (let x = 0; x < directoryData.length; x++) {
-                  if(directoryData[x] == undefined) {
-                    break;
-                  } else {
-                    rows.push( 
-                      <tr key={x} style={{minWidth: '100%', borderBottom: '1px solid'}}>
-                        {(function(){
-                          let elements:any = [];
-                          for(let y = 0; y < columnHeaders.length; y++) {
-                            elements.push(
-                              <td style={{paddingRight: '25px'}}>{directoryData[x][columnHeaders[y]]}</td>
-                            )
-                          }
-                          return elements;
-                        })()}
-                      </tr>
-                    )
-                  }
-                }
-                return rows;
-              })()}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       }
     </>
   );
