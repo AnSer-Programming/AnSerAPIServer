@@ -4,6 +4,7 @@ import GetClientsDirectories from '../components/GetData/GetClientsDirectories.t
 import GetClients from '../components/GetData/GetClients.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
+import GetInfoPages from '../components/GetData/GetInfoPages.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -19,7 +20,8 @@ const Info = () => {
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
     {value: 'GetDID', label: 'Get DID'},
-    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'}
+    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'},
+    {value: 'GetInfoPages', label: 'Get Info Pages'}
   ];
   
   return (
@@ -43,7 +45,8 @@ const Info = () => {
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
             'GetDID': <GetDID />,
-            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />
+            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />,
+            'GetInfoPages': <GetInfoPages />
           }[content]
         }
       </div>
