@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getClients, getInfoPages } from '../../utils/GetDataAPI';
-import { toCSV } from '../Utility/DownloadHelper';
+import { toPDF } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -9,13 +9,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 const GetInfoPages = () => {
   const [clientsData, setClientsData] = useState<any>({});
   const [infoPages, setData] = useState<any>({});
-  const [columnHeaders, setHeaders] = useState<any[]>([]);
+  const [maxPage, setMaxPage] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [accountNum, setAccountNum] = useState<number>(0);
   const [accountName, setAccountName] = useState<string>("");
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDataLength = Object.keys(clientsData).length;
+  const infoPagesLength = Object.keys(infoPages).length;
+
+  let page:any;
   
   useEffect(() => {
     const getClientsData = async() => {
@@ -46,9 +50,14 @@ const GetInfoPages = () => {
   
           let data = await response.json();
 
-          // console.log(data);
+          for(let i = 0; i < clientsDataLength; i++) {
+            if(clientsData[i].ClientNumber == accountNum) {
+              setAccountName(clientsData[i].ClientName);
+            }
+          }
 
           setData(data);
+          setMaxPage((data.length-1));
         }
       } catch (err) {
         console.error(err);
@@ -63,28 +72,29 @@ const GetInfoPages = () => {
   }
 
   function downloadHandler() {
-    // let fileData:String = "";
-    // let fileName:string = `${accountName} Directory Information.csv`;
-    // for(let i = 0; i < columnHeaders.length; i++) {
-    //     if(i===0) {
-    //         fileData = columnHeaders[i];
-    //     } else {
-    //         fileData +=`,${columnHeaders[i]}`;
-    //     }
-    // }
-    // for(let x = 0; x < directoryData.length; x++) {
-    //   for(let y = 0; y < columnHeaders.length; y++) {
-    //     if(y === 0) {
-    //       fileData +=`\n"${directoryData[x][columnHeaders[y]]}"`;
-    //     } else {
-    //       fileData +=`,"${directoryData[x][columnHeaders[y]]}"`;
-    //     }
-    //   }
-    // }
-    // toCSV(fileData, fileName);
+    let fileData:string[] = [];
+    let fileName:string = `${accountName} Info Pages`;
+    for(let i = 0; i < infoPages.length; i++) {
+      fileData[i] = infoPages[i].Info;
+    }
+    toPDF(fileData, fileName);
   }
 
-  console.log(infoPages[0]);
+  const pageHandler = (direction:string) => {
+    if(direction === "previous") {
+      if(currentPage === 0) {
+        setCurrentPage(maxPage);
+      } else {
+        setCurrentPage(currentPage-1);
+      }
+    } else if (direction === "next") {
+      if(currentPage === maxPage) {
+        setCurrentPage(0);
+      } else {
+        setCurrentPage(currentPage+1);
+      }
+    }
+  }
 
   return (
     <>
@@ -99,7 +109,19 @@ const GetInfoPages = () => {
         sx={{background: 'white', width: '50%', minWidth: '150px', zIndex: 0}}
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{zIndex: 0}} />}
       /> <br />
-      <div style={{backgroundColor: 'white', color: 'black'}} className="content" dangerouslySetInnerHTML={{__html: (infoPages[2].Info)}}></div>
+      {
+      infoPagesLength ?  
+        <div>
+          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage} <button onClick={() => pageHandler("next")}>Next</button> <br /><br />
+          <button onClick={downloadHandler} id="downloadCSV" value="download">
+            <i className="fas fa-download"/>Click Here to Download
+          </button> <br /><br />
+          <div style={{backgroundColor: 'white', color: 'black'}} className="content" dangerouslySetInnerHTML={{__html: (infoPages[currentPage].Info)}}>
+          </div>
+          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage} <button onClick={() => pageHandler("next")}>Next</button> 
+        </div>:
+        <h2>Select an Account to continue</h2>
+      }
     </>
   );
 };
