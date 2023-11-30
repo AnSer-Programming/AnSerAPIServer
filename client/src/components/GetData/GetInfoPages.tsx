@@ -14,12 +14,11 @@ const GetInfoPages = () => {
   const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [accountNum, setAccountNum] = useState<number>(0);
   const [accountName, setAccountName] = useState<string>("");
+  let regex:RegExp;
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDataLength = Object.keys(clientsData).length;
   const infoPagesLength = Object.keys(infoPages).length;
-
-  let page:any;
   
   useEffect(() => {
     const getClientsData = async() => {
@@ -56,8 +55,20 @@ const GetInfoPages = () => {
             }
           }
 
-          setData(data);
-          setMaxPage((data.length-1));
+          for(let x = 0; x < data[1].length; x++) {
+            regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${data[1][x].cltfieldID}\]`);
+            for(let y = 0; y < data[0].length; y++) {
+              if(data[0][y].Info.match(regex)) {
+                data[0][y].Info = data[0][y].Info.replace(regex, data[1][x].Field);
+                console.log(`Match found at ${y} for ${data[1][x].Field}`);
+              } else {
+                console.log(`No Match found at ${y} for ${data[1][x].Field}`);
+              }
+            }
+          }
+
+          setData(data[0]);
+          setMaxPage((data[0].length-1));
         }
       } catch (err) {
         console.error(err);
