@@ -12,6 +12,7 @@
     "@types/react": "^18.2.19",
     "bootstrap": "^5.2.3",
     "chart.js": "^4.0.0",
+    "jspdf": "^2.5.1",
     "react": "^16.13.1",
     "react-bootstrap": "^2.7.0",
     "react-chartjs-2": "^5.0.0",
