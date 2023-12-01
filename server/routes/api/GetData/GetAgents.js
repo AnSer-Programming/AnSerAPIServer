@@ -3,9 +3,9 @@ const config = require('../../../config/connectionProductionIS');
 const sql = require('mssql');
 
 router.get('/', async (req, res) => {
-  const query = `SELECT [ClientNumber], [ClientName], CONVERT(varchar, [Stamp]) as "Stamp", [AnswerPhrase]
-        FROM [dbo].[cltClients]
-        ORDER BY [ClientNumber] ASC`;
+  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
+        FROM [dbo].[agtAgents]
+        ORDER BY [agtId] ASC`;
   (async function () {
     try {
       const seq = require('sequelize');
@@ -25,12 +25,12 @@ router.get('/', async (req, res) => {
   })
 });
 
-router.get('/ByAccountNum/:accountNum', async (req, res) => {
-  let accountNum = req.params.accountNum;
-  const query = `SELECT [ClientNumber], [ClientName], CONVERT(varchar, [Stamp]) as "Stamp", [AnswerPhrase]
-        FROM [dbo].[cltClients]
-        WHERE [ClientNumber] LIKE '${accountNum}%'
-        ORDER BY [ClientNumber] ASC`;
+router.get('/ByAgentID/:agtID', async (req, res) => {
+  let agtID = req.params.agtID;
+  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
+        FROM [dbo].[agtAgents]
+        WHERE [agtId] = '${agtID}'
+        ORDER BY [agtId] ASC`;
 
   (async function () {
     try {
@@ -51,12 +51,12 @@ router.get('/ByAccountNum/:accountNum', async (req, res) => {
   })
 });
 
-router.get('/ByAccountName/:accountName', async (req, res) => {
-  let accountName = req.params.accountName;
-  const query = `SELECT [ClientNumber], [ClientName], CONVERT(varchar, [Stamp]) as "Stamp", [AnswerPhrase]
-        FROM [dbo].[cltClients]
-        WHERE [ClientName] LIKE '%${accountName}%'
-        ORDER BY [ClientNumber] ASC`;
+router.get('/ByAgentName/:agtName', async (req, res) => {
+  let agtName = req.params.agtName;
+  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
+        FROM [dbo].[agtAgents]
+        WHERE [Name] LIKE '%${agtName}%'
+        ORDER BY [agtId] ASC`;
   (async function () {
     try {
       const seq = require('sequelize');
