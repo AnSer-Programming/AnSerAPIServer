@@ -15,6 +15,7 @@ const GetInfoPages = () => {
   const [accountNum, setAccountNum] = useState<number>(0);
   const [accountName, setAccountName] = useState<string>("");
   let regex:RegExp;
+  let isDone:boolean = false;
 
   // use this to determine if `useEffect()` hook needs to run again
   const clientsDataLength = Object.keys(clientsData).length;
@@ -58,11 +59,13 @@ const GetInfoPages = () => {
           for(let x = 0; x < data[1].length; x++) {
             regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${data[1][x].cltfieldID}\]`);
             for(let y = 0; y < data[0].length; y++) {
-              if(data[0][y].Info.match(regex)) {
-                data[0][y].Info = data[0][y].Info.replace(regex, data[1][x].Field);
-                console.log(`Match found at ${y} for ${data[1][x].Field}`);
-              } else {
-                console.log(`No Match found at ${y} for ${data[1][x].Field}`);
+              isDone = false;
+              while(!isDone) {
+                if(data[0][y].Info.match(regex)) {
+                  data[0][y].Info = data[0][y].Info.replace(regex, data[1][x].Field);
+                } else {
+                  isDone = true;
+                }
               }
             }
           }
@@ -123,13 +126,13 @@ const GetInfoPages = () => {
       {
       infoPagesLength ?  
         <div>
-          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage} <button onClick={() => pageHandler("next")}>Next</button> <br /><br />
+          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage+1} <button onClick={() => pageHandler("next")}>Next</button> <br /><br />
           <button onClick={downloadHandler} id="downloadCSV" value="download">
             <i className="fas fa-download"/>Click Here to Download
           </button> <br /><br />
           <div style={{backgroundColor: 'white', color: 'black'}} className="content" dangerouslySetInnerHTML={{__html: (infoPages[currentPage].Info)}}>
           </div>
-          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage} <button onClick={() => pageHandler("next")}>Next</button> 
+          <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage+1} <button onClick={() => pageHandler("next")}>Next</button> 
         </div>:
         <h2>Select an Account to continue</h2>
       }
