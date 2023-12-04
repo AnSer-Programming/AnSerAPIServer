@@ -38,12 +38,12 @@ export const toPDF = async(data: any, fileName: string) => {
   });
 }
 
-export const toMSWord = (data: any, fileName: string) => {
-  let fileType = 'text/csv;charset=utf-8;';
+export const toMSWord = async(data: any, fileName: string) => {
+  let fileType = 'application/msword';
   let blob = new Blob([data as BlobPart], { type: fileType });
   const element = document.createElement("a");
   element.href = URL.createObjectURL(blob);
-  element.download = fileName;// simulate link click
+  element.download = `${fileName}.doc`;// simulate link click
   document.body.appendChild(element); // Required for this to work in FireFox
   element.click();
 }

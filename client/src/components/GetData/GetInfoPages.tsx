@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getClients, getInfoPages } from '../../utils/GetDataAPI';
-import { toPDF } from '../Utility/DownloadHelper';
+import { toPDF, toMSWord } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -85,13 +85,88 @@ const GetInfoPages = () => {
     <h2>LOADING...</h2>
   }
 
-  function downloadHandler() {
-    let fileData:string[] = [];
-    let fileName:string = `${accountName} Info Pages`;
-    for(let i = 0; i < infoPages.length; i++) {
-      fileData[i] = infoPages[i].Info;
+  function findIndex(index:number, input:any):number[] {
+    const regexStartHead:RegExp = /<head>/;
+    const regexEndHead:RegExp = /<\/head>/;
+    const regexHTMLStart:RegExp = /<html>/;
+    const regexHTMLEnd:RegExp = /<\/html>/;
+    const regexBodyStart:RegExp = /<BODY>/;
+    const regexBodyEnd:RegExp = /<\/BODY>/;
+    let indexArray:number[] = new Array();
+    switch(index) {
+      case 0:
+        indexArray[0] = -1;
+        indexArray[1] = -1;
+        indexArray[2] = -1;
+        indexArray[3] = input.search(regexHTMLEnd);
+        indexArray[4] = -1;
+        indexArray[5] = input.search(regexBodyEnd);
+        break;
+      case infoPages.length-1:
+        indexArray[0] = input.search(regexStartHead);
+        indexArray[1] = input.search(regexEndHead);
+        indexArray[2] = input.search(regexHTMLStart);
+        indexArray[3] = -1;
+        indexArray[4] = input.search(regexBodyStart);
+        indexArray[5] = -1;
+        break;
+      default:
+        indexArray[0] = input.search(regexStartHead);
+        indexArray[1] = input.search(regexEndHead);
+        indexArray[2] = input.search(regexHTMLStart);
+        indexArray[3] = input.search(regexHTMLEnd);
+        indexArray[4] = input.search(regexBodyStart);
+        indexArray[5] = input.search(regexBodyEnd);
     }
-    toPDF(fileData, fileName);
+    
+    return indexArray;
+  }
+
+  function purgeImages(data:string):string {
+    const regexImg:RegExp = /<IMG alt=CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.[0-9]+ src="C:\\Users\\custservice2\\AppData\\Local\\Temp\\DialStrPhone\.GIF" align=left>/;
+    let isDone:boolean = false;
+    // console.log(data.search(regexImg));
+    while(!isDone) {
+      if(data.search(regexImg) !== -1) {
+        data = data.replace(regexImg, "");
+      } else {
+        isDone = true;
+      }
+    }
+    return data;
+  }
+
+  async function downloadHandler() {
+    let fileData:string = " ";
+    let fileName:string = `${accountName} Info Pages`;
+    let placeHolder:string;
+    for(let i = 0; i < infoPages.length; i++) {
+      let indexArray:number[] = await findIndex(i, infoPages[i].Info);
+      placeHolder = await infoPages[i].Info;
+      if(indexArray[3] !== -1) {
+        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[3], indexArray[3]+7), "");
+      }
+      if(indexArray[5] !== -1) {
+        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[5], indexArray[5]+7), "");
+      }
+      if(indexArray[4] !== -1) {
+        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[4], indexArray[4]+6), `<br style="page-break-before: always">`);
+      }
+      if(indexArray[0] !== -1 && indexArray[1] !== -1) {
+        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[0], indexArray[1]+7), "");
+      }
+      if(indexArray[2] !== -1) {
+        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[2], indexArray[2]+6), "");
+      }
+      placeHolder = purgeImages(placeHolder);
+      if(i === 0) {
+        fileData = await placeHolder;
+      } else {
+        fileData += await placeHolder;
+      }
+      // console.log(placeHolder);
+    }
+    await toMSWord(fileData, fileName);
   }
 
   const pageHandler = (direction:string) => {
