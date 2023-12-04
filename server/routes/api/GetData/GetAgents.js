@@ -1,10 +1,10 @@
 const router = require('express').Router();
-const config = require('../../../config/connectionProductionIS');
+const config = require('../../../config/connectionProductionCustom');
 const sql = require('mssql');
 
 router.get('/', async (req, res) => {
-  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
-        FROM [dbo].[agtAgents]
+  const query = `SELECT [agtId], [Agent_Name], CONVERT(varchar, [StartStamp]) as "Stamp", [Agent_Login], [Initials]
+        FROM [dbo].[02_Agents]
         ORDER BY [agtId] ASC`;
   (async function () {
     try {
@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
 
 router.get('/ByAgentID/:agtID', async (req, res) => {
   let agtID = req.params.agtID;
-  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
-        FROM [dbo].[agtAgents]
+  const query = `SELECT [agtId], [Agent_Name], CONVERT(varchar, [StartStamp]) as "Stamp", [Agent_Login], [Initials]
+        FROM [dbo].[02_Agents]
         WHERE [agtId] = '${agtID}'
         ORDER BY [agtId] ASC`;
 
@@ -53,8 +53,8 @@ router.get('/ByAgentID/:agtID', async (req, res) => {
 
 router.get('/ByAgentName/:agtName', async (req, res) => {
   let agtName = req.params.agtName;
-  const query = `SELECT [agtId], [Name], CONVERT(varchar, [Stamp]) as "Stamp", [Initials]
-        FROM [dbo].[agtAgents]
+  const query = `SELECT [agtId], [Agent_Name], CONVERT(varchar, [StartStamp]) as "Stamp", [Agent_Login], [Initials]
+        FROM [dbo].[02_Agents]
         WHERE [Name] LIKE '%${agtName}%'
         ORDER BY [agtId] ASC`;
   (async function () {
