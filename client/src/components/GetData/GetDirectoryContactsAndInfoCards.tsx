@@ -168,7 +168,7 @@ const GetDirectoryContactsAndInfoCards = () => {
 
   function downloadHandler() {
     let fileData:String = "";
-    let fileName:string = `${accountName} Directory Information.csv`;
+    let fileName:string = `${accountNum} ${accountName} Directory Information.csv`;
     for(let i = 0; i < columnHeaders.length; i++) {
         if(i===0) {
             fileData = columnHeaders[i];
