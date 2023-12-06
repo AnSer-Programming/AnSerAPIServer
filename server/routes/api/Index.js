@@ -66,4 +66,11 @@ router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 router.use('/InfoPages', infoPages);
 router.use('/AgentInfo', agentInfo);
 
+// Call monitoring API
+// Declare Variables
+const callInfo = require('./Speech-To-Text-API/CallInfo');
+
+// Set Routes
+router.use('/CallInfo', callInfo);
+
 module.exports = router;
