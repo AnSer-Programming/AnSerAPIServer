@@ -24,6 +24,7 @@ const GetInfoPages = () => {
   useEffect(() => {
     const getClientsData = async() => {
       try {
+        setCurrentPage(0);
         if(accountNum === 0) {
           const response = await getClients(); 
           let numbers:any[] = new Array; 
@@ -86,12 +87,12 @@ const GetInfoPages = () => {
   }
 
   function findIndex(index:number, input:any):number[] {
-    const regexStartHead:RegExp = /<head>/;
-    const regexEndHead:RegExp = /<\/head>/;
-    const regexHTMLStart:RegExp = /<html>/;
-    const regexHTMLEnd:RegExp = /<\/html>/;
-    const regexBodyStart:RegExp = /<BODY>/;
-    const regexBodyEnd:RegExp = /<\/BODY>/;
+    const regexStartHead:RegExp = /<(head|HEAD)>/;
+    const regexEndHead:RegExp = /<\/(head|HEAD)>/;
+    const regexHTMLStart:RegExp = /<(html|HTML)>/;
+    const regexHTMLEnd:RegExp = /<\/(html|HTML)>/;
+    const regexBodyStart:RegExp = /<(BODY|body)>/;
+    const regexBodyEnd:RegExp = /<\/(BODY|body)>/;
     let indexArray:number[] = new Array();
     switch(index) {
       case 0:
@@ -123,12 +124,23 @@ const GetInfoPages = () => {
   }
 
   function purgeImages(data:string):string {
-    const regexImg:RegExp = /<IMG alt=CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.[0-9]+ src="C:\\Users\\custservice2\\AppData\\Local\\Temp\\DialStrPhone\.GIF" align=left>/;
+    const regexImg:RegExp = /<(IMG|img) alt=CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.[0-9]+ src="C:\\([A-Za-z0-9]+(\\[A-Za-z0-9]+)+)\.GIF" align=left>/;
+    const regexImgWithFile:RegExp = /<(IMG|img) alt=([0-9]+(-[0-9]+)+) src="file:\/\/C:\\([A-Za-z0-9]+(\\[A-Za-z0-9]+)+)\.GIF" align=left>/;
+    const regexImgWithAlt:RegExp = /<(IMG|img) alt=([0-9]+(-[0-9]+)+) src="C:\\([A-Za-z0-9]+(\\[A-Za-z0-9]+)+)\.GIF" align=left>/;    
+    const regexImgWithAltCue:RegExp = /<(IMG|img) alt="[0-9]+<([0-9]+(-[0-9]+)+)" src="C:\\([A-Za-z0-9]+(\\[A-Za-z0-9]+)+)\.GIF" align=left(| \/)>/;    
+    const regexImgWithEmptyAlt:RegExp = /<(IMG|img) alt="" src="C:\\([A-Za-z0-9]+(\\[A-Za-z0-9]+)+)\.GIF" align=left>/;   
     let isDone:boolean = false;
-    // console.log(data.search(regexImg));
     while(!isDone) {
       if(data.search(regexImg) !== -1) {
         data = data.replace(regexImg, "");
+      } else if(data.search(regexImgWithAlt) !== -1) {
+        data = data.replace(regexImgWithAlt, "");        
+      } else if(data.search(regexImgWithAltCue) !== -1) {
+        data = data.replace(regexImgWithAltCue, "");        
+      } else if(data.search(regexImgWithEmptyAlt) !== -1) {
+        data = data.replace(regexImgWithEmptyAlt, "");        
+      } else if(data.search(regexImgWithFile) !== -1) {
+        data = data.replace(regexImgWithFile, "");        
       } else {
         isDone = true;
       }
@@ -138,11 +150,13 @@ const GetInfoPages = () => {
 
   async function downloadHandler() {
     let fileData:string = " ";
-    let fileName:string = `${accountName} Info Pages`;
+    let fileName:string = `${accountNum} ${accountName} Info Pages`;
     let placeHolder:string;
     for(let i = 0; i < infoPages.length; i++) {
       let indexArray:number[] = await findIndex(i, infoPages[i].Info);
       placeHolder = await infoPages[i].Info;
+      placeHolder.trim();
+      placeHolder.replace(/\n/g, "");
       if(indexArray[3] !== -1) {
         placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[3], indexArray[3]+7), "");
       }
@@ -164,7 +178,7 @@ const GetInfoPages = () => {
       } else {
         fileData += await placeHolder;
       }
-      // console.log(placeHolder);
+      console.log(placeHolder);
     }
     await toMSWord(fileData, fileName);
   }
