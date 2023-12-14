@@ -11,10 +11,10 @@ router.get('/:fileName', async (req, res) => {
 
     callID = fileName.slice(fileName.length-8, fileName.length);
 
-    const query = `SELECT [ID], [agtId], [cltId], [Call], [Account], [OrgAccount], [Client], [MDR].[dbo].[mCallSegment].[Initials], [Agent_Name]
-          FROM [MDR].[dbo].[mCallSegment]
-          LEFT JOIN [Accounts].[dbo].[02_Agents] ON [MDR].[dbo].[mCallSegment].[Initials] = [Accounts].[dbo].[02_Agents].[Initials]
-          LEFT JOIN [Intellegent].[dbo].[cltClients] ON [MDR].[dbo].[mCallSegment].[Account] = [Intellegent].[dbo].[cltClients].[ClientNumber]
+    const query = `SELECT [ID], [agtId], [cltId], [Call], [Account], [OrgAccount], [Client], t1.[Initials], [Agent_Name], format(DATEADD(MINUTE, [Timestamp],'12/31/1899'), 'MM/dd/yyyy HH:mm:ss') as "TimeStamp"
+          FROM [MDR].[dbo].[mCallSegment] t1
+          LEFT JOIN [Accounts].[dbo].[02_Agents] ON t1.[Initials] = [Accounts].[dbo].[02_Agents].[Initials]
+          LEFT JOIN [Intellegent].[dbo].[cltClients] ON t1.[Account] = [Intellegent].[dbo].[cltClients].[ClientNumber]
           WHERE [Call] = '${callID}'`; 
 
     async function runQuery(query) {

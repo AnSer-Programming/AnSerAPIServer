@@ -71,6 +71,8 @@ const GetContactsDirectories = () => {
     maxPages = (Math.ceil((contactsDirectoriesDataLength/50)-1));
   }
 
+  console.log(contactsDirectoriesData);
+
   return (
     <>
       {maxPageSetter()}
@@ -100,7 +102,7 @@ const GetContactsDirectories = () => {
                 let length:number = 50;
                 let start:number = length * pageNum;
                 let rows:any = [];
-                for (let i = 0; i < length; i++) {
+                for (let i = 1; i < length; i++) {
                   if(contactsDirectoriesData[i+start] == undefined) {
                     break;
                   } else {
@@ -108,6 +110,7 @@ const GetContactsDirectories = () => {
                       <tr key={i} style={{minWidth: '100%'}}>
                         <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Name}</td>
                         <td>{contactsDirectoriesData[i+start].Field}</td>
+                        <td>{contactsDirectoriesData[i+start].Status.Default ? contactsDirectoriesData[i+start].Status.Default.Status : `No Status Set`}</td>
                       </tr>
                     )
                   }
