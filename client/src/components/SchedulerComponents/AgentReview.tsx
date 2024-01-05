@@ -3,28 +3,35 @@ import { setSchedulerAPI } from '../../utils/API';
 
 const AgentReview = (data:any) => {
   const [jsonData, setJSONData] = useState<any>(data.jsonData);
-  let isComplete:boolean = false;
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+
+  useEffect(()=>{
+    const setState = async() => {
+      setJSONData(data.jsonData);
+    }
+    setState();
+  },[isComplete])
 
   const cancelHandler = () => {
-    for(let i = 0; i < jsonData[data.date].length; i++) {
-      if(jsonData[data.date][i].Time === data.time) {
+    for(let i = 0; i < data.jsonData[data.date].length; i++) {
+      if(data.jsonData[data.date][i].Time === data.time) {
         data.setReviewFunction(true);
-        setJSONData(jsonData[data.date][i].Availability = "Available");
+        setJSONData(data.jsonData[data.date][i].Availability = "Available");
       }
     }
-    setSchedulerAPI(data.accountNum, jsonData);
+    setSchedulerAPI(data.accountNum, data.jsonData);
     data.setReviewFunction(false);
   }
 
   const confirmHandler = () => {
-    for(let i = 0; i < jsonData[data.date].length; i++) {
-      if(jsonData[data.date][i].Time === data.time) {
+    for(let i = 0; i < data.jsonData[data.date].length; i++) {
+      if(data.jsonData[data.date][i].Time === data.time) {
         data.setReviewFunction(true);
-        setJSONData(jsonData[data.date][i].Availability = "Unavailable");
+        setJSONData(data.jsonData[data.date][i].Availability = "Unavailable");
       }
     }
-    setSchedulerAPI(data.accountNum, jsonData);
-    isComplete = true;
+    setSchedulerAPI(data.accountNum, data.jsonData);
+    setIsComplete(true); 
   }
 
   return (

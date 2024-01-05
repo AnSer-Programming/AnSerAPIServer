@@ -42,7 +42,7 @@ const AgentSchedulerSelect = (data:any) => {
     }
 
     getSchedulerData();
-  }, [data.accountData, schedulerData, data.date]);
+  }, [data.accountData, schedulerData, data.date, hasChange]);
   
   if (!schedulerDataLength) {
     return <h2>LOADING...</h2>;
@@ -50,13 +50,13 @@ const AgentSchedulerSelect = (data:any) => {
   Object.keys(schedulerData).map((keys:string) => option.push({value: `${keys}`, label: `${keys}`}));
 
   const bookAnAppointmentHandler = (time:string) => {
-    for(let i = 0; i < schedulerData[date].length; i++) {
-      if(placeHolderData[date][i].Time === time) {
+    for(let i = 0; i < schedulerData[data.date].length; i++) {
+      if(placeHolderData[data.date][i].Time === time) {
         data.setTimeFunction(time);
         data.setSchedulerDataFunction(schedulerData);
         setHasChange(true);
         data.setReviewFunction(true);
-        placeHolderData[date][i].Availability = "Unavailable";
+        placeHolderData[data.date][i].Availability = "Unavailable";
       }
     }
     setSchedulerData(setSchedulerAPI(data.accountData, placeHolderData));
