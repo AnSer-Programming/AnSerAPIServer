@@ -9,7 +9,8 @@ import Calendar from './pages/Calendar';
 import Tracker from './pages/TrackerPages';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
-import Scheduler from './pages/Scheduler';
+import SchedulerSupervisor from './pages/SchedulerSupervisor';
+import SchedulerAgent from './pages/SchedulerAgent';
 
 function App() {
   return (
@@ -26,7 +27,8 @@ function App() {
             <Route exact path='/StatTracker' component={Tracker} />
             <Route exact path='/Info' component={Info} />
             <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
-            <Route exact path='/Scheduler' component={Scheduler} />
+            <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
+            <Route exact path='/Scheduler' component={SchedulerAgent} />
             <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
           </Switch>
         </div>

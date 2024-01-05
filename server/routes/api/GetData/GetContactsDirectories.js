@@ -39,36 +39,36 @@ async function dataConverter(data) {
         xmlArray[i] = await xmlArray[i].trim();
     
         if(xmlArray[i].match(regexXMLRules.xmlSelfClose)) { // Identify tags that close immediately. Example: <Overrides />
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`); // Replace the opening <
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlSelfCloseCloseTag, `": "null"`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`).trim(); // Replace the opening <
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlSelfCloseCloseTag, `": "null"`).trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlStatusOverride)) {
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlStatusOverrideOpen, ', "'); 
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlStatusOverrideClose, '": {'); 
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlStatusOverrideOpen, ', "').trim(); 
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlStatusOverrideClose, '": {').trim(); 
         } else if(xmlArray[i].match(regexXMLRules.xmlKeyWithValue)) { // Identify Keys that have Values. Example: <ID>21132</ID>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, `"`);
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`); // Replace the opening <
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": "`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, `"`).trim();
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`).trim(); // Replace the opening <
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": "`).trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlExceptionsOpen)) { // Identify specific tag for array support. XML Tag: <Exceptions>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`); // Replace the opening <
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": [`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`).trim(); // Replace the opening <
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": [`).trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlExceptionsClosing)) { // Identify specific tag for array support. XML Tag: </Exceptions>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, ']');
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, ']').trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlStatusExceptionsOpen)) { // Identify specific tag for array support. XML Tag: <cmnStatusException>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `{"`); // Replace the opening <
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": {`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `{"`).trim(); // Replace the opening <
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": {`).trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlStatusExceptionsClosing)) { // Identify specific tag for array support. XML Tag: </cmnStatusException>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}}');
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}}').trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlOverrideTagOpen)) { // Identify specific tag for array support. XML Tag: <cmnStatusOverride>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOverrideTagOpen, `"cmnStatusOverride": {`); 
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOverrideTagOpen, `"cmnStatusOverride": {`).trim(); 
         } else if(xmlArray[i].match(regexXMLRules.xmlOverrideTagClose)) { // Identify specific tag for array support. XML Tag: </cmnStatusOverride>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}');
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}').trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlKeyOpenerOnly)) { // Identify tags that hold an object. Example: <Default> <tag>value</tag> </Default>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`); // Replace the opening <
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": {`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlOpeningTag, `"`).trim(); // Replace the opening <
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlClosingTag, `": {`).trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlKeyCloserOnly)) { // Identify tags that hold an object. Example: <Default> <tag>value</tag> </Default>
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}');
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlKeyCloserOnly, '}').trim();
         } else if(xmlArray[i].match(regexXMLRules.xmlDefaultWithProperty)) {
-          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlDefaultWithProperty, `"Default": {`);
+          xmlArray[i] = await xmlArray[i].replace(regexXMLRules.xmlDefaultWithProperty, `"Default": {`).trim();
         }
         
         if(i>0) {
@@ -126,17 +126,17 @@ async function dataConverter(data) {
                 startTime = `${startTimeHour}:${startTimeMinute}:${startTimeSecond}`;
                 endTime = `${endTimeHour}:${endTimeMinute}:${endTimeSecond}`;
               }
-              console.log(`${startTime} ${endTime}`);
               jsonData.Exceptions[i].cmnStatusException.Start = startTime;
               jsonData.Exceptions[i].cmnStatusException.End = endTime;
             }
           }
         }
       }
+      return jsonData;
     }
     
-    jsonData = xmlToJSON(data);
-    timeConverter();
+    jsonData = await xmlToJSON(data);
+    jsonData = await timeConverter();
   
     return await jsonData;
   } else {
@@ -163,7 +163,7 @@ router.get('/', async (req, res) => {
         result[i].Status = await dataConverter(result[i].Status); 
       }
 
-      console.log(result);
+      result.splice(0, 1);
 
       res.json(result);
     } catch (err) {
@@ -224,7 +224,6 @@ router.get('/ByPersonName/:personName', async (req, res) => {
       let result = await config.query(query, { type: seq.QueryTypes.SELECT });
 
       for(let i = 0; i<result.length; i++) {
-        console.log(result[i].Status);
         result[i].Status = await dataConverter(result[i].Status);
       }
 
