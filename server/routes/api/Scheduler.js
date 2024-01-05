@@ -33,7 +33,7 @@ async function pastDateChecker(accountNum) {
 }
 
 async function schedulerWrite(accountNum, data) {
-  pastDateChecker(accountNum);
+  // pastDateChecker(accountNum);
   filePath = `../../schedulerJSON/Account${accountNum}.json`;
 
   await fsp.writeFile((path.join(__dirname, filePath)), JSON.stringify(data), (errFile) => {
@@ -47,7 +47,7 @@ async function schedulerWrite(accountNum, data) {
 }
 
 async function schedulerAppend(accountNum, data) {
-  pastDateChecker(accountNum);
+  // pastDateChecker(accountNum);
   filePath = `../../schedulerJSON/Account${accountNum}.json`;
   time = data.Time.substr(0, data.Time.length - 2); // everything that is in the string before the last two characters will be stored in the time variable
   meridiem = data.Time.substr(data.Time.length - 2); // remove the meridiem from the time string
