@@ -90,7 +90,7 @@ export default function MenuAppBar(data:any) {
                 <MenuItem
                   onClick={(event: any) => {
                     handleClose(event, 'Scheduler Tool');
-                    handleRoutes('/Scheduler');
+                    handleRoutes('/SchedulerSupervisor');
                   }} >
                   Scheduler Tool
                 </MenuItem>

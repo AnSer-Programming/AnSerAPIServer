@@ -23,7 +23,7 @@ const SchedulerAgent = () => {
     return (
       <>
         <GetScheduler
-        accountData={accountNumber} />
+          accountData={accountNumber} />
       </>
     )
   }
