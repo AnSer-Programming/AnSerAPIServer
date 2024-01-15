@@ -1,5 +1,5 @@
 import {React, useState, useEffect} from 'react';
-import GetScheduler from '../components/GetScheduler.tsx';
+import GetScheduler from '../components/SchedulerComponents/SupervisorGetScheduler.tsx';
 import SetScheduler from '../components/SetScheduler.tsx';
 // import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
@@ -28,7 +28,6 @@ const SchedulerSupervisor = () => {
         let data = await response.json();
         
         setSchedulerData(data);
-        console.log(data);
         setIsEdit(false);
       } catch (err) {
         console.error(err);

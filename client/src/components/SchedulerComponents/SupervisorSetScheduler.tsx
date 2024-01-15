@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { setResidentDirectoryAPI } from '../../utils/API';
 import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
 
 const SetResidentDirectory = (data:any) => {
   const [schedulerData, setSchedulerData] = useState<any>(data.accountData);
+  const [headerData, setHeaderData] = useState<any>([]);
+  let updateSchedulerData:any;
   
   // use this to determine if `useEffect()` hook needs to run again
   const schedulerDataLength = Object.keys(schedulerData).length;
-
-  let updateSchedulerData:any = schedulerData;
+  useEffect(() => {
+    setSchedulerData(data.accountData); 
+    setHeaderData(Object.keys(data.accountData));
+  }, [data.accountData, schedulerData])
   let placeHolder:number;
   
   if (!schedulerDataLength) {
@@ -31,24 +36,24 @@ const SetResidentDirectory = (data:any) => {
   };
   
   const handleSchedulerEdit = async(index:any, newValue:any, valueType:String) => {
-    if(valueType == "resident_full_name") {
-      updateSchedulerData[index] = {"resident_full_name": `${newValue}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
-    } else if(valueType == "resident_phone_number") {
-      updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`,  "resident_phone_number": `${newValue}`};
-    } else if(valueType == "resident_room_number") {
-      updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${newValue}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
-    }
-    updateSchedulerData = JSON.parse(updateSchedulerData);
-    setSchedulerData(updateSchedulerData);
+    // if(valueType == "resident_full_name") {
+    //   updateSchedulerData[index] = {"resident_full_name": `${newValue}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
+    // } else if(valueType == "resident_phone_number") {
+    //   updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`,  "resident_phone_number": `${newValue}`};
+    // } else if(valueType == "resident_room_number") {
+    //   updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${newValue}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
+    // }
+    // updateSchedulerData = JSON.parse(updateSchedulerData);
+    // setSchedulerData(updateSchedulerData);
   } 
   
   const handleAddRow = async() => {
-    updateSchedulerData[schedulerDataLength] = {resident_full_name: null, resident_room_number: null, resident_phone_number: null};
+    updateSchedulerData.newData[updateSchedulerData.newData.length] = {newDate: [{Time: null, Availability: null}]};
     await setSchedulerData(updateSchedulerData);
   }
   
-  const deleteRowHandler = (index:number) => {
-    updateSchedulerData.splice(index, 1);
+  const deleteRowHandler = (date:string, index:number) => {
+    updateSchedulerData[date].splice(index, 1);
   }
 
   const saveAll = () => {
@@ -109,7 +114,7 @@ const SetResidentDirectory = (data:any) => {
                             variant="filled" />
                         </td>
                         <td style={fieldStyles}>
-                          <br /><button onClick={() => deleteRowHandler(index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
+                          <br /><button onClick={() => deleteRowHandler("", index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
                         </td>
                       </tr>
                     )
@@ -141,7 +146,7 @@ const SetResidentDirectory = (data:any) => {
                             variant="filled" />
                         </td>
                         <td style={fieldStyles}>
-                          <br /><button onClick={() => deleteRowHandler(index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
+                          <br /><button onClick={() => deleteRowHandler("", index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
                         </td>
                       </tr>
                     )

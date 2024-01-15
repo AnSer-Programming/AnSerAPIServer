@@ -21,7 +21,6 @@ const GetScheduler = (data:any) => {
   useEffect(() => {
     const getSchedulerData = async() => {
       try {
-        console.log(date);
         const response = await getSchedulerAPI(data.accountData);
 
         if (!response.ok) {
@@ -43,7 +42,7 @@ const GetScheduler = (data:any) => {
     return <h2>LOADING...</h2>;
   }
 
-  const handlerChangeAccount = (event:any) => {
+  const handlerChangeDate = (event:any) => {
     setDate(event.value);
   }
 
@@ -68,7 +67,7 @@ const GetScheduler = (data:any) => {
               name="Account List"
               getOptionLabel={(option: Option) => option.label}
               getOptionValue={(option: Option) => option.value}
-              onChange={handlerChangeAccount}
+              onChange={handlerChangeDate}
               options={option}
               defaultValue={date ? {value: 'Null', label: 'Select A Date'} : {value: `${date}`, label: `${date}`}}
             /> <br />
