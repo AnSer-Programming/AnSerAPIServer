@@ -1,69 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { setResidentDirectoryAPI } from '../../utils/API';
+import { setSchedulerAPI, getSchedulerAPI } from '../../utils/API';
+import { pink, green } from '@mui/material/colors';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 
-const SetResidentDirectory = (data:any) => {
-  const [schedulerData, setSchedulerData] = useState<any>(data.accountData);
+interface placeHolder {
+  Date: string;
+  Time: string;
+  Availability: string;
+}
+
+const SetScheduler = (data:any) => {
+  const [schedulerData, setSchedulerData] = useState<any>({});
   const [headerData, setHeaderData] = useState<any>([]);
-  let updateSchedulerData:any;
+  const [arrayData, setArrayData] = useState<placeHolder[]>([]);
   
   // use this to determine if `useEffect()` hook needs to run again
   const schedulerDataLength = Object.keys(schedulerData).length;
   useEffect(() => {
-    setSchedulerData(data.accountData); 
-    setHeaderData(Object.keys(data.accountData));
-  }, [data.accountData, schedulerData])
-  let placeHolder:number;
+    const getSchedulerData = async() => {
+      try {
+        const response = await getSchedulerAPI(data.accountNum);
+
+        if (!response.ok) {
+          throw new Error('something went wrong!');
+        }
+
+        let responseData = await response.json();
+        
+        setSchedulerData(responseData);
+        setHeaderData(Object.keys(responseData));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getSchedulerData();
+  }, [arrayData.length, data.accountNum])
   
   if (!schedulerDataLength) {
     return <h2>LOADING...</h2>;
   }
 
-  const handleDirectoryUpdate = async() => {
-    // try {
-    //   const response = await setResidentDirectoryAPI(data.accountNum, updateResidentDirectoryData);
+  if(arrayData.length < 1) {
+    for(let x = 0; x < headerData.length; x++) {
+      for(let y = 0; y < schedulerData[headerData[x]].length; y++) {
+        arrayData.push({Date: headerData[x], Time: `${schedulerData[headerData[x]][y].Time}`, Availability: `${schedulerData[headerData[x]][y].Availability}`});
+      }
+    }
+  }
+
+  const handleSchedulerUpdate = async() => {
+    let updateSchedulerData:any = {};
+    let date:string = "0";
+    arrayData.sort((a:any, b:any) => (a.Date < b.Date ? -1 : 1));
+    for(let i = 0; i < arrayData.length; i++) {
+      if(date != arrayData[i].Date) {
+        date = arrayData[i].Date;
+        updateSchedulerData[date] = [{Time: `${arrayData[i].Time}`, Availability: `${arrayData[i].Availability}`}];
+      } else {
+        updateSchedulerData[date][updateSchedulerData[date].length] = {Time: `${arrayData[i].Time}`, Availability: `${arrayData[i].Availability}`};
+      }
+    }
+    Object.keys(updateSchedulerData).map(async(dates) => (await updateSchedulerData[dates].sort((a:any, b:any) => (a.Time < b.Time ? -1 : 1))));
+    try {
+      const response = await setSchedulerAPI(data.accountNum, updateSchedulerData);
   
-    //   if (!response.ok) {
-    //     throw new Error('something went wrong!');
-    //   }
+      if (!response.ok) {
+        throw new Error('something went wrong!');
+      }
   
-    //   const updatedVessels = await response.json();
-    //   setResidentDirectoryData(updatedVessels);
-    // } catch (err) {
-    //   console.error(err);
-    // }
-  };
+      const updatedSchedulerData = await response.json();
+      setSchedulerData(updatedSchedulerData);
+    } catch (err) {
+      console.error(err);
+    }
+  }
   
   const handleSchedulerEdit = async(index:any, newValue:any, valueType:String) => {
-    // if(valueType == "resident_full_name") {
-    //   updateSchedulerData[index] = {"resident_full_name": `${newValue}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
-    // } else if(valueType == "resident_phone_number") {
-    //   updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${schedulerData[index]['resident_room_number']}`,  "resident_phone_number": `${newValue}`};
-    // } else if(valueType == "resident_room_number") {
-    //   updateSchedulerData[index] = {"resident_full_name": `${schedulerData[index]['resident_full_name']}`, "resident_room_number": `${newValue}`, "resident_phone_number": `${schedulerData[index]['resident_phone_number']}`};
-    // }
-    // updateSchedulerData = JSON.parse(updateSchedulerData);
-    // setSchedulerData(updateSchedulerData);
+    switch(valueType) {
+      case "Date": {
+        arrayData[index].Date = newValue;
+        break;
+      }
+      case "Time": {
+        arrayData[index].Time = newValue;
+        break;
+      }
+      case "Availability": {
+        if(arrayData[index].Availability === "Available") {
+          arrayData[index].Availability = "Unavailable";
+        } else {
+          arrayData[index].Availability = "Available";
+        }
+        break;
+      }
+    }
+    setSchedulerData(arrayData);
   } 
   
   const handleAddRow = async() => {
-    updateSchedulerData.newData[updateSchedulerData.newData.length] = {newDate: [{Time: null, Availability: null}]};
-    await setSchedulerData(updateSchedulerData);
+    arrayData.push({Date: ``, Time: ``, Availability: `Available`});
+    setSchedulerData(arrayData);
   }
   
-  const deleteRowHandler = (date:string, index:number) => {
-    updateSchedulerData[date].splice(index, 1);
+  const deleteRowHandler = (index:number) => {
+    arrayData.splice(index, 1);
+    setSchedulerData(arrayData);
   }
 
   const saveAll = () => {
-    handleDirectoryUpdate(); 
+    handleSchedulerUpdate(); 
     data.setEdit(false);
   }
 
   const rowStyles = {
     height: '100%',
-    width: '75%',
+    minWidth: '25%',
+    width: '30%',
   }
 
   const fieldStyles = {
@@ -71,92 +125,97 @@ const SetResidentDirectory = (data:any) => {
     width: '25%',
   }
 
+  const checkBoxFieldStyles = {
+    height: '75%',
+    width: '25%',
+  }
+
+  const tableBuilder = () => {
+    let rows:any = [];
+    for(let i = 0; i < arrayData.length; i++) {
+      if(typeof(arrayData[i]) != "undefined") {
+        if(arrayData[i].Availability === "Available") {
+          rows.push(
+            <tr style={rowStyles}>
+              <td style={fieldStyles}>
+                <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Date");
+                  }} 
+                  label={arrayData[i].Date}
+                  sx={{background:'white'}} />
+              </td>
+              <td style={fieldStyles}>
+                <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Time");
+                  }} 
+                  label={arrayData[i].Time.toString()}
+                  sx={{background:'white'}} />
+              </td>
+              <td style={checkBoxFieldStyles} className='text-center'>
+                <Checkbox onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Availability");
+                  }} 
+                  sx={{
+                    background:'white',
+                    color: green[400],
+                    '&.Mui-checked': {
+                      color: pink[400],
+                    }, 
+                  }} />
+              </td>
+              <td style={fieldStyles}>
+                <button onClick={() => deleteRowHandler(i)} id={`${i}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
+              </td>
+            </tr>
+          );
+        } else {
+          rows.push(
+            <tr style={rowStyles}>
+              <td style={fieldStyles}>
+                <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Date");
+                  }} 
+                  label={arrayData[i].Date}
+                  sx={{background:'white'}} />
+              </td>
+              <td style={fieldStyles}>
+                <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Time");
+                  }} 
+                  label={arrayData[i].Time.toString()}
+                  sx={{background:'white'}} />
+              </td>
+              <td style={checkBoxFieldStyles} className='text-center'>
+                <Checkbox defaultChecked onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    handleSchedulerEdit(i, event.target.value, "Availability");
+                  }} 
+                  sx={{
+                    background:'white',
+                    color: green[400],
+                    '&.Mui-checked': {
+                      color: pink[400],
+                    },
+                  }} />
+              </td>
+              <td style={fieldStyles}>
+                <button onClick={() => deleteRowHandler(i)} id={`${i}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
+              </td>
+            </tr>
+          );
+        }
+      }
+    }
+    
+    return <><table style={{width: '30%'}}><tbody>{rows}</tbody></table></>;
+  }
+
   return (
     <>
       <div>
-        <table>
-          <tbody>
-            {(
-              function(){
-                let rows:any = [];
-                let length = 0;
-                if(schedulerDataLength > 2){
-                  length = schedulerDataLength;
-                } else {
-                  length = 3;
-                }
-                for (let index = 0; index < length; index++) { 
-                  if(schedulerData[index] == undefined) {
-                    rows.push(
-                      <tr key={`blankRow${index}`} style={rowStyles}>
-                        <td key={`blankName${index}`} style={fieldStyles}>
-                          Resident Name: <br />
-                          <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            handleSchedulerEdit(index, event.target.value, "Name");
-                          }} 
-                          sx={{ width: 250, background: 'white', zIndex: 0 }}
-                          variant="filled" />
-                        </td>
-                        <td key={`blankRoom${index}`} style={fieldStyles}>
-                          Resident Room Number: <br />
-                          <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              handleSchedulerEdit(index, event.target.value, "RoomNum");
-                            }} 
-                            sx={{ width: 250, background: 'white', zIndex: 0 }}
-                            variant="filled" />
-                        </td>
-                        <td key={`blankPhone${index}`} style={fieldStyles}>
-                          Resident Phone Number: <br />
-                          <TextField onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              handleSchedulerEdit(index, event.target.value, "PhoneNum");
-                            }} 
-                            sx={{ width: 250, background: 'white', zIndex: 0 }}
-                            variant="filled" />
-                        </td>
-                        <td style={fieldStyles}>
-                          <br /><button onClick={() => deleteRowHandler("", index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
-                        </td>
-                      </tr>
-                    )
-                  } else {
-                    rows.push(
-                      <tr key={`row${index}`} style={rowStyles}>
-                        <td key={schedulerData[index].resident_full_name} style={fieldStyles}>
-                          Resident Name: <br />
-                          <TextField label={schedulerData[index].resident_full_name} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            handleSchedulerEdit(index, event.target.value, "Name");
-                          }} 
-                          sx={{ width: 250, background: 'white', zIndex: 0 }}
-                          variant="filled" />
-                        </td>
-                        <td key={schedulerData[index].resident_room_number} style={fieldStyles}>
-                          Resident Room Number: <br />
-                          <TextField label={schedulerData[index].resident_room_number} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              handleSchedulerEdit(index, event.target.value, "RoomNum");
-                            }} 
-                            sx={{ width: 250, background: 'white', zIndex: 0 }}
-                            variant="filled" />
-                        </td>
-                        <td key={schedulerData[index].resident_phone_number} style={fieldStyles}>
-                          Resident Room Number: <br />
-                          <TextField label={schedulerData[index].resident_phone_number} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                              handleSchedulerEdit(index, event.target.value, "PhoneNum");
-                            }} 
-                            sx={{ width: 250, background: 'white', zIndex: 0 }}
-                            variant="filled" />
-                        </td>
-                        <td style={fieldStyles}>
-                          <br /><button onClick={() => deleteRowHandler("", index)} id={`${index}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
-                        </td>
-                      </tr>
-                    )
-                  }
-                }
-                return rows;
-              } ()
-            )}
-          </tbody>
-        </table> <br />
+        Use the check box to set if the date and time are available.<br />
+        Checked = Unavailable&emsp;<Checkbox defaultChecked disabled sx={{ color: green[400], '&.Mui-checked': { color: pink[400], }, background: 'white' }} /> &emsp;
+        Unchecked = Available&emsp;<Checkbox disabled color="default" sx={{ color: green[400], '&.Mui-checked': { color: pink[400], }, background: 'white' }} /><br /><br />
+        {tableBuilder()} <br />
         <button onClick={handleAddRow} id="newRow">Add A Blank Row</button>
         <button onClick={saveAll} id="saveBtn">Save and View</button>
       </div>
@@ -164,4 +223,4 @@ const SetResidentDirectory = (data:any) => {
   );
 };
 
-export default SetResidentDirectory;
+export default SetScheduler;

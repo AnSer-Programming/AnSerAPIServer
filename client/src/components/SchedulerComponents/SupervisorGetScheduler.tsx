@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getSchedulerAPI } from '../../utils/API';
 
 const GetScheduler = (data:any) => {
   const [schedulerData, setSchedulerData] = useState<any>({});
@@ -8,9 +9,25 @@ const GetScheduler = (data:any) => {
   
   const schedulerDataLength = Object.keys(schedulerData).length;
   useEffect(() => {
-    setSchedulerData(data.accountData); 
-    setHeaderData(Object.keys(data.accountData));
-  }, [data.accountData, filterDateData])
+    const getSchedulerData = async() => {
+      try {
+        const response = await getSchedulerAPI(data.accountNum);
+
+        if (!response.ok) {
+          throw new Error('something went wrong!');
+        }
+
+        let responseData = await response.json();
+        
+        setSchedulerData(responseData);
+        setHeaderData(Object.keys(responseData));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    getSchedulerData();
+  }, [schedulerDataLength, filterDateData, data.accountNum])
   
   if (!schedulerDataLength) {
     return <h2>LOADING...</h2>;
@@ -64,7 +81,6 @@ const GetScheduler = (data:any) => {
   }
 
   const tableBuilder = () => {
-    let headers:any = [];
     let rows:any = [];
     if(filterAvailabilityData !== "None") {
       for(let x = 0; x < headerData.length; x++) {
@@ -132,7 +148,7 @@ const GetScheduler = (data:any) => {
       }
     }
     
-    return <><table style={{width: '100%'}}><tbody><tr>{headers}</tr><tr>{rows}</tr></tbody></table></>;
+    return <><table style={{width: '30%'}}><tbody>{rows}</tbody></table></>;
   }
 
   return (
