@@ -1,41 +1,15 @@
 import {React, useState, useEffect} from 'react';
 import GetScheduler from '../components/SchedulerComponents/SupervisorGetScheduler.tsx';
-import SetScheduler from '../components/SetScheduler.tsx';
+import SetScheduler from '../components/SchedulerComponents/SupervisorSetScheduler.tsx';
 // import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
-import { getSchedulerAPI } from '../utils/API';
 
 const SchedulerSupervisor = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [schedulerData, setSchedulerData] = useState({});
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
-
-  // use this to determine if `useEffect()` hook needs to run again
-  const schedulerDataLength = Object.keys(schedulerData).length;
-  
-  useEffect(() => {
-    const getSchedulerData = async() => {
-      try {
-        const response = await getSchedulerAPI(accountNum);
-
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        let data = await response.json();
-        
-        setSchedulerData(data);
-        setIsEdit(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    getSchedulerData();
-  }, [schedulerDataLength, accountNum]);
 
   const walkThroughDisplay = () => {
     // return(<VesselListWalkThrough />);
@@ -58,10 +32,10 @@ const SchedulerSupervisor = () => {
         {
           isEdit ? 
             <SetScheduler 
-              accountData={schedulerData}
+              accountNum={accountNum}
               setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
             <GetScheduler
-              accountData={schedulerData} /> 
+              accountNum={accountNum} /> 
         } 
       </>
     )
