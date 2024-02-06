@@ -30,7 +30,7 @@ const Info = () => {
     <>
       <Menu 
         page="Info" />
-      <div style={{width: '100%', padding: '.5%', overflow: 'hidden'}}>
+      <div style={{height: '100vh', width: '100%', padding: '.5%', overflow: 'hidden'}}>
         <div style={{width: '50%'}}>
           <Select
             className='text-dark'
