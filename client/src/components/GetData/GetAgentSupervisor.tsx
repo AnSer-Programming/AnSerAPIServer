@@ -33,6 +33,81 @@ const GetClients = () => {
     getClientsData();
   }, [agentSupervisorDataLength, agentName, supervisorName]);
 
+  const maxPageSetter = (pageCount:number) => {
+    maxPages = Math.ceil((agentSupervisorDataLength/25)-1);
+  }
+
+  const tableBuilder = () => {
+    let length:number = 25;
+    let start:number = length * pageNum;
+    let rows:any = [];
+    let count:number = 0;
+    for(let i = 0; i < agentSupervisorDataLength; i++) {
+      if(agentSupervisorData[i+start] == undefined) {
+        break;
+      } else {
+        if(agentName) {
+          if(agentSupervisorData[i+start].Agent.includes(agentName)) {
+            count++; 
+          }
+        } else if(supervisorName) {
+          if(agentSupervisorData[i+start].Supervisor) {
+            if(agentSupervisorData[i+start].Supervisor.includes(supervisorName)) {
+              count++; 
+            }
+          }
+        } else {
+          count = 0;
+        }
+      }
+    }
+    if(agentName) {
+      for(let i = 0; i < agentSupervisorDataLength; i++) {
+        if(agentSupervisorData[i].Agent.includes(agentName)) {
+          rows.push( 
+            <tr key={i} style={{minWidth: '100%'}}>
+              <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i].Agent}</td>
+              <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i].Supervisor}</td>
+              <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i].Office}</td>
+            </tr>
+          )  
+        }
+      }
+    } else if(supervisorName) {
+      for(let i = 0; i < agentSupervisorDataLength; i++) {
+        if(agentSupervisorData[i].Supervisor) {
+          if(agentSupervisorData[i].Supervisor.includes(supervisorName)) {
+            rows.push( 
+              <tr key={i} style={{minWidth: '100%'}}>
+                <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i].Agent}</td>
+                <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i].Supervisor}</td>
+                <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i].Office}</td>
+              </tr>
+            )  
+          }
+        }
+      }     
+    } else {
+      for(let i = 0; i < length; i++) {
+        if(agentSupervisorData[i+start] == undefined) {
+          break;
+        } else {
+          rows.push( 
+            <tr key={i} style={{minWidth: '100%'}}>
+              <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i+start].Agent}</td>
+              <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i+start].Supervisor}</td>
+              <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i+start].Office}</td>
+            </tr>
+          )
+        }
+      }
+    }
+    maxPageSetter(count);
+    // console.log(rows.length);
+    // console.log(maxPages);
+    return rows;
+  }
+
   const pageChangeHandler = (direction:String, input:number) => {
     if(direction==="Select"){
       if(input > maxPages) {
@@ -53,58 +128,9 @@ const GetClients = () => {
     }
   }
 
-  const maxPageSetter = () => {
-    maxPages = (Math.ceil((agentSupervisorDataLength/25)-1));
-  }
-
-  const tableBuilder = () => {
-    let length:number = 25;
-    let start:number = length * pageNum;
-    let rows:any = [];
-    for(let i = 0; i < length; i++) {
-      if(agentSupervisorData[i+start] == undefined) {
-        break;
-      } else {
-        if(agentName) {
-          if(agentSupervisorData[i+start].Agent.includes(agentName)) {
-            rows.push( 
-              <tr key={i} style={{minWidth: '100%'}}>
-                <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i+start].Agent}</td>
-                <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i+start].Supervisor}</td>
-                <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i+start].Office}</td>
-              </tr>
-            )  
-          }
-        } else if(supervisorName) {
-          if(agentSupervisorData[i+start].Supervisor) {
-            if(agentSupervisorData[i+start].Supervisor.includes(supervisorName)) {
-              rows.push( 
-                <tr key={i} style={{minWidth: '100%'}}>
-                  <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i+start].Agent}</td>
-                  <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i+start].Supervisor}</td>
-                <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i+start].Office}</td>
-                </tr>
-              )  
-            }
-          }
-        } else {
-          rows.push( 
-            <tr key={i} style={{minWidth: '100%'}}>
-              <td style={{paddingRight: '25px'}}>Agent Name: {agentSupervisorData[i+start].Agent}</td>
-              <td style={{paddingRight: '25px'}}>Supervisor Name: {agentSupervisorData[i+start].Supervisor}</td>
-              <td style={{paddingRight: '25px'}}>Office: {agentSupervisorData[i+start].Office}</td>
-            </tr>
-          )
-        }
-      }
-    }
-    return rows;
-  }
-
   return (
     <>
-      {maxPageSetter()}
-      <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
+      {/* <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button> */}
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           pageChangeHandler("Select", parseInt(event.target.value)-1);
