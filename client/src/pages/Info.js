@@ -1,4 +1,5 @@
 import {React, useState} from 'react';
+import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
 import GetDID from '../components/GetData/GetDID.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
@@ -16,6 +17,7 @@ const Info = () => {
   }
 
   const option = [
+    {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
@@ -41,6 +43,7 @@ const Info = () => {
         </div>
         {
           {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/
+            'GetAgentSupervisor': <GetAgentSupervisor />,
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,

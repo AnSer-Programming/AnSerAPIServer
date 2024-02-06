@@ -56,6 +56,7 @@ const contactsDirectoriesRoutes = require('./GetData/GetContactsDirectories');
 const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAndInfoCards');
 const infoPages = require('./GetData/GetInfoPages');
 const agentInfo = require('./GetData/GetAgents');
+const agentSupervisor = require('./GetData/GetAgentsSupervisors');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
@@ -65,6 +66,7 @@ router.use('/ContactsAndDirectories', contactsDirectoriesRoutes);
 router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 router.use('/InfoPages', infoPages);
 router.use('/AgentInfo', agentInfo);
+router.use('/AgentSupervisor', agentSupervisor);
 
 // Call monitoring API
 // Declare Variables

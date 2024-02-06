@@ -148,3 +148,13 @@ export const getInfoPages = (accountNum) => {
     },
   });
 };
+
+// Used in GetAgentSupervisor.tsx
+export const getAgentSupervisor = () => {
+  return fetch(`/api/AgentSupervisor`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
