@@ -1,6 +1,6 @@
 import {React, useState, useEffect} from 'react';
-import GetResidentDirectory from '../components/GetResidentDirectory.tsx';
-import SetResidentDirectory from '../components/SetResidentDirectory.tsx';
+import GetResidentDirectory from '../components/ResidentDirectoryComponents/GetResidentDirectory.tsx';
+import SetResidentDirectory from '../components/ResidentDirectoryComponents/SetResidentDirectory.tsx';
 // import ResidentDirectoryWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';

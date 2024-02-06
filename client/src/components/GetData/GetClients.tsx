@@ -96,7 +96,11 @@ const GetClients = () => {
       return "AnsaVoice - California(CA)";
     } else if(accountNum > 5999 && accountNum < 6500) { // Baton Rouge, LA
       return "Baton Rouge, LA";
-    } else if(accountNum > 6499 && accountNum < 8000) { // GreenBay, WI
+    } else if(accountNum > 6499 && accountNum < 6700) { // GreenBay, WI
+      return "GreenBay, WI";
+    } else if(accountNum > 6699 && accountNum < 6800) { // GreenBay, WI
+      return "West Virginia";
+    } else if(accountNum > 6799 && accountNum < 8000) { // GreenBay, WI
       return "GreenBay, WI";
     } else if(accountNum > 7999 && accountNum < 9000) { // Gulfport, MS
       return "Gulfport, MS";
