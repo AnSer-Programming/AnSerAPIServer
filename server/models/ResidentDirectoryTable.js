@@ -11,16 +11,20 @@ try {
         primaryKey: true,
         autoIncrement: true,
       },
+      status: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+      },
       resident_full_name: {
         type: DataTypes.STRING,
         allowNull: true,
       },
       resident_room_number: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       resident_phone_number: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       account_number: {
