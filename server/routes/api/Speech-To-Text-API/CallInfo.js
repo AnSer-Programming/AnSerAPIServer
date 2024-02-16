@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const config = require('../../../config/connectionProductionLegacy');
+const configCustom = require('../../../config/connectionProductionCustom');
 const sql = require('mssql');
 
 router.get('/:fileName', async (req, res) => {
@@ -21,8 +22,14 @@ router.get('/:fileName', async (req, res) => {
       try {
         const seq = require('sequelize');
         let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+        let procedureResult = await configCustom.query("spAIGenerateFileInfo", { type: seq.QueryTypes.SELECT });
+
+        const combined = {
+          query: result,
+          storedProcedure: procedureResult,
+        }
     
-        res.json(result);
+        res.json(combined);
       } catch (err) {
         // ... error checks
         console.log(err);
