@@ -13,11 +13,11 @@ try {
       },
       vessel_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       contact_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       account_num: {
         type: DataTypes.BIGINT,

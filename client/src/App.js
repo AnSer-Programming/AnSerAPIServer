@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import Vessels from './pages/Vessels';
+import VesselsList from './pages/VesselList';
 import DisconnectList from './pages/DisconnectList';
 import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
@@ -20,6 +21,7 @@ function App() {
           <Switch>
             <Route exact path='/' component={Index} />
             <Route exact path='/Vessels' component={Vessels} />
+            <Route exact path='/VesselsList' component={VesselsList} />
             <Route exact path='/DisconnectList' component={DisconnectList} />
             <Route exact path='/ContactDispatch' component={ContactDispatch} />
             <Route exact path='/Calendar' component={Calendar} />

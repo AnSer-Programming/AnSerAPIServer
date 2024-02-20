@@ -28,6 +28,54 @@ export const setVesselsAPI = (accountNum, data) => {
   });
 };
 
+export const getVesselsDBAPI = (accountNum) => {
+  return fetch(`/api/VesselDB/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setVesselsDBAPI = (data) => {
+  return fetch(`/api/VesselDB`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const getSingleVesselContactDB = (index) => {
+  return fetch(`/api/VesselDB/ByIndex/${index}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const updateVesselsDBAPI = (index, data) => {
+  return fetch(`/api/VesselDB/ByIndex/${index}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteVesselsDBAPI = (index, data) => {
+  return fetch(`/api/VesselDB/ByIndex/${index}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
 // Contact Dispatch List Calls
 export const getContactDispatchAPI = () => {
   return fetch(`/api/ContactDispatch`, {
