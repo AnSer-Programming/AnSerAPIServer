@@ -30,6 +30,7 @@ const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
 const timeConverterRoute = require('./TimeConverter');
 const vesselRoute = require('./Vessel');
+const vesselRouteDB = require('./VesselListDB');
 
 // Set Routes
 router.use('/DisconnectList', disconnectListRoute);
@@ -37,6 +38,7 @@ router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);
 router.use('/timeConverter', timeConverterRoute);
 router.use('/Vessel', vesselRoute);
+router.use('/VesselDB', vesselRouteDB);
 
 // Data Tracker Routes
 // Declare Variables
