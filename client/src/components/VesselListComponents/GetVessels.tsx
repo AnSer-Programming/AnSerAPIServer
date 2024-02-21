@@ -21,7 +21,6 @@ const GetVessels = (data:any) => {
         }
 
         let vessel = await response.json();
-        console.log(vessel);
         vessel = vessel.sort(((a:any, b:any) =>  a.contact_name.localeCompare(b.contact_name))).reverse();
     
         if(data.accountNum == 38 || data.accountNum == 6071) {

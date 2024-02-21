@@ -22,7 +22,9 @@ router.get('/:fileName', async (req, res) => {
       try {
         const seq = require('sequelize');
         let result = await config.query(query, { type: seq.QueryTypes.SELECT });
-        let procedureResult = await configCustom.query("spAIGenerateFileInfo", { type: seq.QueryTypes.SELECT });
+        let procedureResult = await configCustom.query(`EXEC spAIGenerateFileInfo :Filename`, {
+            replacements: {Filename: fileName}
+          });
 
         const combined = {
           query: result,

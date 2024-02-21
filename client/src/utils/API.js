@@ -9,25 +9,6 @@ export const onTimeData = () => {
 };
 
 // Vessel API Calls
-export const getVesselsAPI = (accountNum) => {
-  return fetch(`/api/Vessel/${accountNum}`, {
-    headers: {
-      method: 'GET',
-      'Content-Type': 'application/json',
-    },
-  });
-};
-
-export const setVesselsAPI = (accountNum, data) => {
-  return fetch(`/api/Vessel/${accountNum}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-};
-
 export const getVesselsDBAPI = (accountNum) => {
   return fetch(`/api/VesselDB/${accountNum}`, {
     headers: {
