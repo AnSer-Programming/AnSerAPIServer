@@ -1,6 +1,7 @@
 import React from 'react'; 
 import { useState, useEffect } from 'react';
 import { getVesselsDBAPI, setVesselsDBAPI, updateVesselsDBAPI, deleteVesselsDBAPI } from '../../utils/API';
+import VesselContact from './VesselContact';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 
@@ -97,14 +98,10 @@ const SetVessels = (data:any) => {
     for(let i = 0; i < vesselDataLength; i++) {
       rows.push(
         <tr key={`row${i}`} style={rowStyles}>
-          <td key={vesselData[i].vessel_name} style={fieldStyles}>
-            Vessel: <br />
-            <TextField label={vesselData[i].vessel_name} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              handleVesselEdit(i, event.target.value, "vessel_name");
-            }} 
-            sx={{ width: 250, background: 'white', zIndex: 0 }}
-            variant="filled" />
-          </td>
+          <VesselContact
+            i = {i}
+            vessel_name = {vesselData[i].vessel_name}
+            vesselEdit={(i:number, value:string) => handleVesselEdit(i, value, "vessel_name")} />
           <td key={vesselData[i].contact_name} style={fieldStyles}>
             Contact: <br />
             <Autocomplete
@@ -150,7 +147,6 @@ const SetVessels = (data:any) => {
   const deleteRowHandler = (index:number) => {
     deleteVesselsDBAPI(index);
     getVesselData();
-    tableBuilder();
   }
 
   const saveAll = () => {

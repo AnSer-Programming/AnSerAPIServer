@@ -1,17 +1,3 @@
-// const router = require('express').Router();
-// const {
-//   getVesselList,
-//   getSingleVesselContact,
-//   createVesselContact,
-//   updateVesselContact,
-//   deleteVesselContact,
-// } = require('../../controllers/VesseListController');
-
-// router.route('/:accountNum').get(getVesselList).post(createVesselContact);
-// router.route('/ByIndex/:index').get(getSingleVesselContact).put(updateVesselContact).delete(deleteVesselContact);
-
-// module.exports = router;
-
 const router = require('express').Router();
 const { VesselListTable } = require('../../models');
 
@@ -37,6 +23,13 @@ router.get('/:accountNum', async (req, res) => {
       res.status(404).json({ message: 'No vessels found for that account!' });
       return;
     }
+
+    if(vesselListData.length < 1) {
+      const vesselListData = await VesselListTable.create({vessel_name: "Unlisted", contact_name: "Misc", account_num: `${req.params.accountNum}`});
+      res.status(200).json(vesselListData);
+    }
+
+    console.log(vesselListData);
 
     res.status(200).json(vesselListData);
   } catch (err) {
@@ -80,7 +73,7 @@ router.delete('/ByIndex/:index', async (req, res) => {
       }
     });
     if(!vesselListData) {
-      res.status(404).json({ message: `No category with that id!` });
+      res.status(404).json({ message: `Index Error!` });
       return;
     }
     res.status(200).json(vesselListData);
