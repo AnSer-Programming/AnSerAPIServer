@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { setResidentDirectoryAPI } from '../utils/API';
+import { setResidentDirectoryAPI } from '../../utils/API';
 import TextField from '@mui/material/TextField';
 
 const SetResidentDirectory = (data:any) => {
   const [residentDirectoryData, setResidentDirectoryData] = useState<any>(data.accountData);
+  const phoneNumberRegex:RegExp = /(\d{3})+-(\d{3})+-(\d{4})/;
   
   // use this to determine if `useEffect()` hook needs to run again
   const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;

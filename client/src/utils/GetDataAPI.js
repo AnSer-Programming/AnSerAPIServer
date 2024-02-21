@@ -129,9 +129,29 @@ export const getDIDBySource = (sourceNum) => {
   });
 };
 
-// Used in Get DirectoryContactsAndInfoCards.tsx
+// Used in GetDirectoryContactsAndInfoCards.tsx
 export const getDirectoryContactsAndInfoCards = (accountNum) => {
   return fetch(`/api/DirectoryContactsAndInfoCards/${accountNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+// Used in GetInfoPages.tsx
+export const getInfoPages = (accountNum) => {
+  return fetch(`/api/InfoPages/${accountNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+// Used in GetAgentSupervisor.tsx
+export const getAgentSupervisor = () => {
+  return fetch(`/api/AgentSupervisor`, {
     headeres: {
       method: 'GET',
       'Content-Type': 'application/json',

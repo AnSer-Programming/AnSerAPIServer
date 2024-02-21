@@ -2,46 +2,38 @@ const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/connection');
 
 try {
-  class ResidentDirectoryTable extends Model {}
-  ResidentDirectoryTable.init(
+  class VesselListTable extends Model {}
+  VesselListTable.init(
     {
-      id: {
+      index: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,
       },
-      status: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-      },
-      resident_full_name: {
+      vessel_name: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      resident_room_number: {
+      contact_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
-      resident_phone_number: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      account_number: {
+      account_num: {
         type: DataTypes.BIGINT,
         allowNull: false,
-      },
+      }
     },
     {
       sequelize,
       timestamps: false,
       freezeTableName: true,
       underscored: true,
-      modelName: 'residentDirectory',
+      modelName: 'vesselList',
     }
   );
   
-  module.exports = ResidentDirectoryTable;
+  module.exports = VesselListTable;
 } catch(err) {
   console.log(`Model Error: ${ err }`);
 }

@@ -19,7 +19,8 @@
     "mssql": "^9.1.1",
     "nodemailer": "^6.9.6",
     "sequelize": "^6.32.1",
-    "tedious": "^16.1.0"
+    "tedious": "^16.1.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.3"

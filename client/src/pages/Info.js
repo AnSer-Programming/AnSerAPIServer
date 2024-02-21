@@ -1,9 +1,11 @@
 import {React, useState} from 'react';
+import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
 import GetDID from '../components/GetData/GetDID.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
+import GetInfoPages from '../components/GetData/GetInfoPages.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -15,18 +17,20 @@ const Info = () => {
   }
 
   const option = [
+    {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
     {value: 'GetDID', label: 'Get DID'},
-    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'}
+    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'},
+    {value: 'GetInfoPages', label: 'Get Info Pages'}
   ];
   
   return (
     <>
       <Menu 
         page="Info" />
-      <div style={{padding: '.5%'}}>
+      <div style={{height: '90vh', width: '100%', padding: '.5%', overflow: 'hidden'}}>
         <div style={{width: '50%'}}>
           <Select
             className='text-dark'
@@ -39,11 +43,13 @@ const Info = () => {
         </div>
         {
           {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/
+            'GetAgentSupervisor': <GetAgentSupervisor />,
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
             'GetDID': <GetDID />,
-            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />
+            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />,
+            'GetInfoPages': <GetInfoPages />
           }[content]
         }
       </div>

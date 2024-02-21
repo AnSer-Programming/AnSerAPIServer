@@ -71,13 +71,37 @@ const GetContactsDirectories = () => {
     maxPages = (Math.ceil((contactsDirectoriesDataLength/50)-1));
   }
 
+  const exceptionString = (data:any) => {
+    let formattedData:string = `No Exceptions`;
+    console.log(data);
+    if(data.Exceptions) {
+      if(data.Exceptions.length > 1 && data.Exceptions != "null") {
+        console.log(data.Exceptions);
+        for(let i = 0; i < data.Exceptions.length; i++) {
+          console.log(data.Exceptions[i]);
+          if(i === 0) {
+            formattedData = `Status: ${data.Exceptions[i].cmnStatusException.Status.Status} | Starts: ${data.Exceptions[i].cmnStatusException.Start} | Ends: ${data.Exceptions[i].cmnStatusException.End} | Days: ${data.Exceptions[i].cmnStatusException.Days}`;
+          } else {
+            formattedData += `\nStatus: ${data.Exceptions[i].cmnStatusException.Status.Status} | Starts: ${data.Exceptions[i].cmnStatusException.Start} | Ends: ${data.Exceptions[i].cmnStatusException.End} | Days: ${data.Exceptions[i].cmnStatusException.Days}`;
+          }
+          
+        }
+      } else {
+        formattedData = `No Exceptions`;
+      }
+    } else {
+      formattedData = `No Exceptions`;
+    }
+    return formattedData;
+  }
+
   return (
     <>
       {maxPageSetter()}
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum+1} of ${maxPages+1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
       <Tooltip title="Enter Page Number">
         <TextField label={"Page Number"} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            pageChangeHandler("Select",parseInt(event.target.value)-1);
+            pageChangeHandler("Select", parseInt(event.target.value)-1);
           }} 
           sx={{ width: 150, background: 'white', marginLeft: '.5%', zIndex: 0}}
           variant="filled" />
@@ -94,7 +118,15 @@ const GetContactsDirectories = () => {
         variant="filled" /> <br /><br />
       {
         contactsDirectoriesDataLength ? 
-          <table style={{minWidth: '50%'}}>
+          <table style={{minWidth: '50%', width: '90%', tableLayout: 'fixed'}}>
+            <thead>
+              <tr key={"HeaderRow"} style={{borderBottom: '1px solid', fontSize: '24px'}}>
+                <td style={{marginRight: '5%', width: '15%'}}>Directory Name</td>
+                <td style={{marginRight: '5%', width: '15%'}}>Contact Name</td>
+                <td style={{marginRight: '5%', width: '15%'}}>Status</td>
+                <td style={{marginRight: '5%'}}>Scheduled Status Changes</td>
+              </tr>
+            </thead>
             <tbody style={{minWidth: '100%'}}>
               {(function(){
                 let length:number = 50;
@@ -106,8 +138,10 @@ const GetContactsDirectories = () => {
                   } else {
                     rows.push( 
                       <tr key={i} style={{minWidth: '100%'}}>
-                        <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Name}</td>
-                        <td>{contactsDirectoriesData[i+start].Field}</td>
+                        <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Name.trim()}</td>
+                        <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Field.trim()}</td>
+                        <td style={{marginRight: '5%'}}>{contactsDirectoriesData[i+start].Status.Default ? contactsDirectoriesData[i+start].Status.Default.Status.trim() : `No Status Set`}</td>
+                        <td style={{whiteSpace: 'pre-wrap', marginRight: '5%'}}>{exceptionString(contactsDirectoriesData[i+start].Status)}</td>
                       </tr>
                     )
                   }

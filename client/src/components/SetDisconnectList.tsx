@@ -24,7 +24,7 @@ const SetDisconnectList = (data:any) => {
         }
 
         let list = await response.json();
-        list.DisconnectList = list.DisconnectList.sort(((a:any, b:any) =>  a.PropertyOwner.localeCompare(b.PropertyOwner))).reverse();
+        list.DisconnectList.sort((a:any, b:any) => (a.PropertyOwner < b.PropertyOwner ? -1 : 1));
     
         if(data.accountNum == 38 || data.accountNum == 6509) {
             for(var i:number = 0; i < list.DisconnectList.length; i++) {

@@ -1,11 +1,11 @@
 import {React, useState} from 'react';
-import GetVessels from '../components/GetVessels.tsx';
-import SetVessels from '../components/SetVessels.tsx';
+import GetVessels from '../components/VesselListComponents/GetVessels.tsx';
+import SetVessels from '../components/VesselListComponents/SetVessels.tsx';
 import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 
-const Vessels = () => {
+const VesselsList = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
@@ -81,4 +81,4 @@ const Vessels = () => {
   );
 };
 
-export default Vessels;
+export default VesselsList;

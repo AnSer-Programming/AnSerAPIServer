@@ -1,51 +1,19 @@
 import {React, useState, useEffect} from 'react';
-import GetResidentDirectory from '../components/ResidentDirectoryComponents/GetResidentDirectory.tsx';
-import SetResidentDirectory from '../components/ResidentDirectoryComponents/SetResidentDirectory.tsx';
-// import ResidentDirectoryWalkThrough from '../components/WalkThrough/VesselList.tsx';
+import GetScheduler from '../components/SchedulerComponents/SupervisorGetScheduler.tsx';
+import SetScheduler from '../components/SchedulerComponents/SupervisorSetScheduler.tsx';
+// import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
-import { getResidentDirectoryAPI } from '../utils/API';
-let accountNumPlaceHolder = null;
 
-const ResidentDirectory = () => {
+const SchedulerSupervisor = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [residentDirectoryData, setResidentDirectoryData] = useState({});
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
 
-  // use this to determine if `useEffect()` hook needs to run again
-  const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;
-  
-  useEffect(() => {
-    const getResidentDirectoryData = async() => {
-      try {
-        accountNumPlaceHolder = accountNum;
-        const response = await getResidentDirectoryAPI(accountNum);
-
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        let residentData = await response.json();
-        
-        setResidentDirectoryData(residentData);
-        setIsEdit(false);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    getResidentDirectoryData();
-  }, [residentDirectoryDataLength, accountNum]);
-  
-  // if (!residentDirectoryDataLength) {
-  //   return <h2>LOADING...</h2>;
-  // }
-
-//   const residentDirectoryDisplay = () => {
-//     return(<ResidentDirectoryWalkThrough />);
-//   }
+  const walkThroughDisplay = () => {
+    // return(<VesselListWalkThrough />);
+  }
 
   const editDisplay = () => {
     return(
@@ -63,11 +31,11 @@ const ResidentDirectory = () => {
         </div>
         {
           isEdit ? 
-            <SetResidentDirectory 
-              accountData={residentDirectoryData}
+            <SetScheduler 
+              accountNum={accountNum}
               setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
-            <GetResidentDirectory
-              accountData={residentDirectoryData} /> 
+            <GetScheduler
+              accountNum={accountNum} /> 
         } 
       </>
     )
@@ -88,13 +56,13 @@ const ResidentDirectory = () => {
   const option = [
     {value: '0', label: 'Walk-Through'},
     {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '87712', label: 'Account 87712: Bell Tower Assisted Living'}
+    {value: '52054', label: 'Account 52054: Dr Michael Byrnes'}
   ];
 
   return (
     <>
       <Menu 
-        page="Resident Directory" />
+        page="Scheduler Tool" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
@@ -106,11 +74,11 @@ const ResidentDirectory = () => {
             defaultValue={{value: '0', label: 'Walk-Through'}}
           /> <br />
         </div>
-        { accountNum != 0 ? editDisplay() : <p>Walk Through coming soon!</p>/*walkThroughDisplay()*/ }
+        { accountNum != 0 ? editDisplay() : walkThroughDisplay() }
         <br />
       </div> 
     </>
   );
 };
 
-export default ResidentDirectory;
+export default SchedulerSupervisor;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Index from './pages/Index';
-import Vessels from './pages/Vessels';
+import VesselsList from './pages/VesselList';
 import DisconnectList from './pages/DisconnectList';
 import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
@@ -9,7 +9,8 @@ import Calendar from './pages/Calendar';
 import Tracker from './pages/TrackerPages';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
-import Scheduler from './pages/Scheduler';
+import SchedulerSupervisor from './pages/SchedulerSupervisor';
+import SchedulerAgent from './pages/SchedulerAgent';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <div className='text-light bg-dark' style={{minHeight: '100vh'}}>
           <Switch>
             <Route exact path='/' component={Index} />
-            <Route exact path='/Vessels' component={Vessels} />
+            <Route exact path='/Vessels' component={VesselsList} />
             <Route exact path='/DisconnectList' component={DisconnectList} />
             <Route exact path='/ContactDispatch' component={ContactDispatch} />
             <Route exact path='/Calendar' component={Calendar} />
@@ -26,7 +27,8 @@ function App() {
             <Route exact path='/StatTracker' component={Tracker} />
             <Route exact path='/Info' component={Info} />
             <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
-            <Route exact path='/Scheduler' component={Scheduler} />
+            <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
+            <Route exact path='/Scheduler' component={SchedulerAgent} />
             <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
           </Switch>
         </div>

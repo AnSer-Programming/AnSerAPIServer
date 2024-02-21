@@ -1,9 +1,12 @@
 // try {
 //     const sequelize = require('../config/connection');
-//     const ResidentDirectoryTable = require('../models/ResidentDirectoryTable');
-//     // const Account = require('./Accounts.json');
+//     const VesselListTable = require('../models/VesselListTable');
+//     const CurrentVessels = require('./Account6071.json');
 //     const seedDatabase = async () => {
 //         await sequelize.sync({ force: true });   
+//                 await VesselListTable.bulkCreate(CurrentVessels.dataSet, {
+//                     returning: true,
+//                 }); 
 //         process.exit(0);
 //     };
     
@@ -14,11 +17,11 @@
 
 // try {
 //     const sequelize = require('../config/connection');
-//     const { DIDTable } = require('../models');
-//     const PhoneNumbers = require('./PhoneNumbers.json');
+//     const VesselListTable = require('../models/VesselListTable');
+//     const CurrentVessels = require('./Account6071.json');
 //     const seedDatabase = async () => {
 //         await sequelize.sync({ force: true });   
-//         await DIDTable.bulkCreate(PhoneNumbers.dataSet, {
+//         await VesselListTable.bulkCreate(CurrentVessels.dataSet, {
 //             returning: true,
 //         });
 //         process.exit(0);
