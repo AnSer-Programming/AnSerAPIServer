@@ -1,9 +1,8 @@
 import React from 'react'; 
 import { useState, useEffect } from 'react';
 import { getVesselsDBAPI, setVesselsDBAPI, updateVesselsDBAPI, deleteVesselsDBAPI } from '../../utils/API';
+import VesselName from './VesselName';
 import VesselContact from './VesselContact';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 
 const SetVessels = (data:any) => {
   const [vesselData, setVesselData] = useState<any>({});
@@ -24,23 +23,24 @@ const SetVessels = (data:any) => {
       vessel = vessel.sort(((a:any, b:any) =>  a.contact_name.localeCompare(b.contact_name))).reverse();
   
       if(data.accountNum == 38 || data.accountNum == 6071) {
-          for(var i:number = 0; i < vessel.length; i++) {
-              if(vessel[i].vessel_name == "Unlisted") {
-                  if(vessel[i].contact_name != "Misc") {
-                    vessel[i].contact_name = "Misc";
-                  }
-                  if(i < vessel.length) {
-                      placeHolder = vessel[i];
-                      vessel.splice(i, 1);
-                      vessel[vessel.length] = placeHolder;
-                  }
-                  break;
-              } else {
-                  if(vessel.length == i) {
-                    vessel[i] = {vessel_name: "Unlisted", contact_name: "Misc", account_num: `${data.accountNum}`};
-                  }
-              }
-          }
+        let unlistedFound = false;
+        for(var i:number = 0; i < vessel.length; i++) {
+          if(vessel[i].vessel_name == "Unlisted") {
+            unlistedFound = true;
+            if(vessel[i].contact_name != "Misc") {
+              vessel[i].contact_name = "Misc";
+            }
+            if(i < vessel.length) {
+              placeHolder = vessel[i];
+              vessel.splice(i, 1);
+              vessel[vessel.length] = placeHolder;
+            }
+            break;
+          } 
+        }
+        if(!unlistedFound) {
+          setVesselsDBAPI({vessel_name: "Unlisted", contact_name: "Misc", account_num: `${data.accountNum}`});
+        }
       } //list, blank, then Unlisted
   
       if(data.accountNum == 38 || data.accountNum == 6071) {
@@ -98,24 +98,15 @@ const SetVessels = (data:any) => {
     for(let i = 0; i < vesselDataLength; i++) {
       rows.push(
         <tr key={`row${i}`} style={rowStyles}>
-          <VesselContact
+          <VesselName
             i = {i}
             vessel_name = {vesselData[i].vessel_name}
             vesselEdit={(i:number, value:string) => handleVesselEdit(i, value, "vessel_name")} />
-          <td key={vesselData[i].contact_name} style={fieldStyles}>
-            Contact: <br />
-            <Autocomplete
-              id={"vesselInput"}
-              disablePortal
-              onChange={(event, newInputValue) => {
-                handleVesselEdit(i, newInputValue, "contact_name");
-              }}
-              options={option}
-              sx={{ width: 250, background: 'white', zIndex: 0 }}
-              renderInput={(params) => <TextField {...params} label={vesselData[i].contact_name} 
-              variant="filled"/>}
-            /> 
-          </td>
+          <VesselContact
+            i = {i}
+            contact_name = {vesselData[i].contact_name}
+            vesselEdit = {(i:number, value:string) => handleVesselEdit(i, value, "contact_name")}
+            options = {option} />
           <td style={fieldStyles}>
             <br /><button onClick={() => deleteRowHandler(parseInt(vesselData[i].index))} id={`${i}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
           </td>
@@ -139,8 +130,6 @@ const SetVessels = (data:any) => {
   const handleAddRow = async() => {
     const newObj = {"vessel_name": "Null", "contact_name": "Null", "account_num": `${data.accountNum}`};
     setVesselsDBAPI(newObj);
-    // updateVesselDataLength +=1;
-    // updateVesselData.push(newObj);
     getVesselData();
   }
   

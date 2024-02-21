@@ -20,7 +20,7 @@ function App() {
         <div className='text-light bg-dark' style={{minHeight: '100vh'}}>
           <Switch>
             <Route exact path='/' component={Index} />
-            <Route exact path='/Vessels' component={Vessels} />
+            <Route exact path='/Vessels' component={VesselsList} />
             <Route exact path='/VesselsList' component={VesselsList} />
             <Route exact path='/DisconnectList' component={DisconnectList} />
             <Route exact path='/ContactDispatch' component={ContactDispatch} />
