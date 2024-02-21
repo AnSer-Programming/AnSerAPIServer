@@ -25,11 +25,13 @@ router.get('/:accountNum', async (req, res) => {
     }
 
     if(vesselListData.length < 1) {
-      const vesselListData = await VesselListTable.create({vessel_name: "Unlisted", contact_name: "Misc", account_num: `${req.params.accountNum}`});
-      res.status(200).json(vesselListData);
+      try {
+        const vesselListData = await VesselListTable.create({vessel_name: "Unlisted", contact_name: "Misc", account_num: `${req.params.accountNum}`});
+        res.status(200).json(vesselListData);
+      } catch(err) {
+        res.status(500).json(err);
+      }
     }
-
-    console.log(vesselListData);
 
     res.status(200).json(vesselListData);
   } catch (err) {

@@ -1,3 +1,4 @@
+import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
 const VesselContact = (data:any) => {
@@ -7,14 +8,20 @@ const VesselContact = (data:any) => {
   }
 
   return (
-    <td key={data.vessel_name} style={fieldStyles}>
-      Vessel: <br />
-      <TextField label={data.vessel_name} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          data.vesselEdit(data.i, event.target.value);
-        }} 
+    <td key={data.contact_name} style={fieldStyles}>
+      Contact: <br />
+      <Autocomplete
+        id={"vesselInput"}
+        disablePortal
+        onChange={(event, newInputValue) => {
+          data.vesselEdit(data.i, newInputValue, );
+        }}
+        options={data.options}
         sx={{ width: 250, background: 'white', zIndex: 0 }}
-        variant="filled" />
-    </td> 
+        renderInput={(params) => <TextField {...params} label={data.contact_name} 
+        variant="filled"/>}
+      /> 
+    </td>
   )
 }
 
