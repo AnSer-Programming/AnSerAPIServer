@@ -71,7 +71,12 @@ const GetVessels = (data:any) => {
     <>
       <table>
         <tbody>
-          {Object.keys(vesselData).map((index) => (<tr key={`row${index}`}><td key={vesselData[index].Vessel} style={{paddingRight: '25px'}}>Vessel: {vesselData[index].Vessel}</td><td key={vesselData[index].Person} >Contact: {vesselData[index].Person}</td></tr>))}
+          {Object.keys(vesselData).map((index) => (
+            <tr key={`row${index}`}>
+              <td key={vesselData[index].Vessel} style={{paddingRight: '25px'}}>Vessel: {vesselData[index].Vessel}</td>
+              <td key={vesselData[index].Person} >Contact: {vesselData[index].Person}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </>

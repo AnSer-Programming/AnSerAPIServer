@@ -12,6 +12,7 @@ async function vesselWrite(accountNum, data) {
     filePath = `../../vesselJSON/Account${ accountNum }.json`;
     data.VesselsOwners = data.VesselsOwners.sort(((a, b) =>  a.Vessel.localeCompare(b.Vessel)));
     
+    // Force the unlisted row for the accounts declared in the if statement
     if(accountNum == 38 || accountNum == 6071) {
         for(var i = 0; i < data.VesselsOwners.length; i++) {
             if(data.VesselsOwners[i].Vessel == "Unlisted") {
@@ -32,6 +33,7 @@ async function vesselWrite(accountNum, data) {
         }
     }
 
+    // Set the index column for each row
     for(let i = 0; i < data.VesselsOwners.length; i++) {
         data.VesselsOwners[i].index = i;
     }

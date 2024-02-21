@@ -12,7 +12,7 @@ try {
         autoIncrement: true,
       },
       account: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
       },
       status: {

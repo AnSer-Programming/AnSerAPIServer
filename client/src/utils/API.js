@@ -1,4 +1,5 @@
-export const graphData = () => {
+// Get Data For the OnTime Graph
+export const onTimeData = () => {
   return fetch('/api/OnTime', {
     headers: {
       method: 'GET',
@@ -7,9 +8,10 @@ export const graphData = () => {
   });
 };
 
+// Vessel API Calls
 export const getVesselsAPI = (accountNum) => {
   return fetch(`/api/Vessel/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -26,9 +28,10 @@ export const setVesselsAPI = (accountNum, data) => {
   });
 };
 
+// Contact Dispatch List Calls
 export const getContactDispatchAPI = () => {
   return fetch(`/api/ContactDispatch`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -38,7 +41,7 @@ export const getContactDispatchAPI = () => {
 export const getGroupContactDispatchAPI = (groupNum) => {
   console.log(groupNum)
   return fetch(`/api/ContactDispatch/${groupNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -46,8 +49,68 @@ export const getGroupContactDispatchAPI = (groupNum) => {
 };
 
 export const setContactDispatchAPI = (data) => {
-  return fetch(`/api/ContactDispatch`, {
+  return fetch(`/api/ContactDispatch/updateClient`, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Disconnect List API Calls
+export const getDisconnectListAPI = (accountNum) => {
+  return fetch(`/api/DisconnectList/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setDisconnectListAPI = (accountNum, data) => {
+  return fetch(`/api/DisconnectList/${accountNum}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Resident Directory API Call
+export const getResidentDirectoryAPI = (accountNum) => {
+  return fetch(`/api/ResidentDirectory/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setResidentDirectoryAPI = (accountNum, data) => {
+  return fetch(`/api/ResidentDirectory/${accountNum}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Resident Directory API Call
+export const getSchedulerAPI = (accountNum) => {
+  return fetch(`/api/Scheduler/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const setSchedulerAPI = (accountNum, data) => {
+  return fetch(`/api/Scheduler/${accountNum}`, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },

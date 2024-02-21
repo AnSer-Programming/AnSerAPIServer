@@ -3,6 +3,7 @@ const https =require('https');
 const fs = require('fs');
 const path = require('path');
 const routes = require('./routes/Index');
+const scheduledEvents = require('./scheduled-events');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const PORT = process.env.PORT || 3001;
@@ -16,12 +17,13 @@ if(process.env.PRODUCTION === 'True') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 } 
 
+// scheduledEvents;
 app.use(routes);
 
 if(PORT==443) {
   const httpsOptions = {
-    cert: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023.crt')),
-    key: fs.readFileSync(path.join(__dirname,'../anser-wildcard-2023-decrypted.key'))
+    cert: fs.readFileSync(path.join(__dirname,'../anser-2024.crt')),
+    key: fs.readFileSync(path.join(__dirname,'../anser-decrypted-2024.key'))
   }
   
   https.createServer(httpsOptions, app).listen(PORT, function() {

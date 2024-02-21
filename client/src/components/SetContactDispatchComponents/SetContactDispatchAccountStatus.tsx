@@ -8,16 +8,18 @@ const SetContactDispatchAccountStatus = (data:any) => {
     setStatus((["Contact Dispatch", "Delivery Screen", "System Script", "Agent Account", "Client Off Service", "Cue"]).sort());
   }, []);
 
+  console.log(data);
+
   return (
     <>
       <Autocomplete
-        disablePortal
+        disablePortal 
         onChange={(event, newInputValue) => {
           data.updateHandler(newInputValue);
-        }}
+        }}      
         options={statusOptions}
         sx={{background: 'white', width: '75%'}}
-        renderInput={(params) => <TextField {...params} value={data.status} />}
+        renderInput={(params) => <TextField {...params} value={data.status} label={data.status}  />}
       /> 
     </>
   );
