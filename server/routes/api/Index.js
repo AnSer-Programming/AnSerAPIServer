@@ -71,8 +71,10 @@ router.use('/AgentSupervisor', agentSupervisor);
 // Call monitoring API
 // Declare Variables
 const callInfo = require('./Speech-To-Text-API/CallInfo');
+const callList = require('./Speech-To-Text-API/CallList');
 
 // Set Routes
 router.use('/CallInfo', callInfo);
+router.use('/CallList', callList);
 
 module.exports = router;
