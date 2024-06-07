@@ -1,6 +1,7 @@
 import {React, useState, useEffect} from 'react';
 import GetScheduler from '../components/SchedulerComponents/SupervisorGetScheduler.tsx';
-import SetScheduler from '../components/SchedulerComponents/SupervisorSetScheduler.tsx';
+// import SetScheduler from '../components/SchedulerComponents/SupervisorSetScheduler.tsx';
+import SetScheduler from '../components/SetScheduler';
 // import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
@@ -32,8 +33,9 @@ const SchedulerSupervisor = () => {
         {
           isEdit ? 
             <SetScheduler 
-              accountNum={accountNum}
-              setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
+              // accountNum={accountNum}
+              // setEdit={(editBoolean) => setIsEdit(editBoolean)} /> 
+              />: 
             <GetScheduler
               accountNum={accountNum} /> 
         } 

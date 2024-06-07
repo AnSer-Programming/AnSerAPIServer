@@ -78,3 +78,12 @@ router.use('/CallInfo', callInfo);
 router.use('/CallList', callList);
 
 module.exports = router;
+
+// Training Tools
+// Declare Variables
+const indexRandomizer = require('./Training/IndexRandomizer');
+
+// Set Routes
+router.use('/IndexRandomizer', indexRandomizer);
+
+module.exports = router;
