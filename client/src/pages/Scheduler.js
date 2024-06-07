@@ -1,6 +1,6 @@
 import {React, useState, useEffect} from 'react';
 import GetScheduler from '../components/GetScheduler.tsx';
-import SetScheduler from '../components/SetScheduler.tsx';
+import SetScheduler from '../components/SetScheduler';
 // import VesselListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
