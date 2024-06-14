@@ -38,7 +38,7 @@ const Days = (data:any) => {
   return (
     <>
       <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', flexWrap: 'wrap'}}>
-        {displayHandler()}
+        {/* {displayHandler()} */}
       </div>
     </>
   );

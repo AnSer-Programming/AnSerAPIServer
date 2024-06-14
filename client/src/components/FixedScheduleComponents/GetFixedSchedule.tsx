@@ -36,17 +36,6 @@ const GetContactDispatch = (data:any) => {
   //     </Box>
   //   );
   // }
-
-  const tableStyles = {
-    marginLeft: '1%',
-    width: '90%'
-  }
-
-  const tableField = {
-    borderBottom: 'solid 1px',
-    fontSize: '18px',
-    width: '25%'
-  }
   
   return (
     <>

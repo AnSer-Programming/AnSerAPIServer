@@ -3,10 +3,11 @@ import TextField from '@mui/material/TextField';
 
 const Contact = (data:any) => {
   let options = data.options;
-  console.log(options);
   if(options) {
-    options[options.length] = "Auto-Email";
-    options[options.length] = "Hold";
+    if(options[options.length-1] != "Hold") {
+      options[options.length] = "Auto-Email";
+      options[options.length] = "Hold";
+    }
   }
 
   return (

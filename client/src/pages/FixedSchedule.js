@@ -20,8 +20,7 @@ const FixedSchedule = () => {
         {
           isEdit ?
             <div>
-              <p><span className='text-warning'>*</span>If the fields turn <span className='bg-warning text-dark'>Orange</span> then you need to fill in at least one of the <span className='bg-warning text-dark'>Orange</span> fields in the group.<br />
-              <span className='text-danger'>*</span>If the fields turn <span className='bg-danger text-white'>Red</span> then you need to fill in that field.</p>
+              <p>You can only add and delete entries at this time.</p>
             </div> :
             <div>
               <p>*If your updates don't appear right away, please refresh the page.<br /> 
@@ -58,7 +57,7 @@ const FixedSchedule = () => {
   const option = [
     {value: '0', label: 'Walk-Through'},
     {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '6509', label: 'Account 6509: Plymouth Utilities'}
+    {value: '52128', label: 'Account 52128: Pulmonary Exchange, LTD'}
   ]
 
   return (

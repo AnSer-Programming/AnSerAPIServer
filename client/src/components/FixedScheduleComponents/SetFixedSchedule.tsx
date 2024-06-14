@@ -16,7 +16,7 @@ const GetContactDispatch = (data:any) => {
   const [start, setStartTime] = useState<any>('Error');
   const [end, setEndTime] = useState<any>('Error');
   const [contact, setContact] = useState<any>('--');
-  const [option, setOptions] = useState<any>('--');
+  const [option, setOptions] = useState<any>('');
   
   useEffect(() => {
     const setTimeData = async() => {
@@ -87,11 +87,11 @@ const GetContactDispatch = (data:any) => {
   
   return (
     <>
-      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+      <div style={{padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px'}}>
         <h1>Monday</h1>
         <div style={{display: 'flex', color: 'black', flexDirection: 'row'}}>
           <Box>
-            <FormControl>
+            <FormControl variant="filled">
               <InputLabel id="startTimeLabel" style={{ color: 'black' }}>Start Time</InputLabel>
               <Select
                 labelId="startTimeLabel"
@@ -107,7 +107,7 @@ const GetContactDispatch = (data:any) => {
           </Box>
           <span style={{width: '1%'}}></span>
           <Box>
-            <FormControl>
+            <FormControl variant="filled">
               <InputLabel id="endTimeLabel" style={{ color: 'black' }}>End Time</InputLabel>
               <Select
                 labelId="endTimeLabel"
@@ -126,6 +126,8 @@ const GetContactDispatch = (data:any) => {
             contact = {contact}
             contactEdit = {(value:string) => handleContactEdit(value)}
             options = {option} />
+          <span style={{width: '1%'}}></span>
+          <button style={{borderRadius: '25px', width: '100px'}}>Add</button>
         </div><br />
         <Days 
           data = {data} />
