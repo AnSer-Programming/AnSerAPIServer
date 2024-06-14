@@ -64,3 +64,61 @@ export const timeSetter = (timeInterval: any, startTime: any, endTime: any):stri
       return "Invalid time interval";
   }
 }
+
+export const timeGetter = (timeInterval: any) => {
+  function getData(intervalModifier:number) {
+    let returnData = {data: [{value: '', label: ''}]};
+    let loopLength = times.length/intervalModifier;
+
+    for(let i = 0; i < loopLength; i++) {
+      returnData.data[i] = {value: '', label: ''};
+      returnData.data[i].value = times[i*intervalModifier];
+      if(parseInt(times[i*intervalModifier]) >= 0 && parseInt(times[i*intervalModifier]) < 100) {
+        returnData.data[i].label = '12:' + returnData.data[i].value.substring(2,4) + 'AM';
+      } else if(times[i*intervalModifier].substring(0, 1) == '0') {
+        returnData.data[i].value = times[i*intervalModifier].substring(1, 4);
+        returnData.data[i].label = returnData.data[i].value.substring(0, 1) + ':' + returnData.data[i].value.substring(1,3) + 'AM';
+      } else if(parseInt(times[i*intervalModifier]) > 1200) {
+        returnData.data[i].value = times[i*intervalModifier];
+        returnData.data[i].label = `${parseInt(times[i*intervalModifier])-1200}`;
+        if(parseInt(returnData.data[i].label)>= 1000) {
+          returnData.data[i].label = returnData.data[i].label.substring(0, 2) + ':' + returnData.data[i].label.substring(2,4) + 'PM';
+        } else {
+          returnData.data[i].label = returnData.data[i].label.substring(0, 1) + ':' + returnData.data[i].label.substring(1,3) + 'PM';
+        }
+      } else {
+        returnData.data[i].value = times[i*intervalModifier];
+        if(parseInt(returnData.data[i].value) == 1200) {
+          returnData.data[i].label = returnData.data[i].value.substring(0, 2) + ':' + returnData.data[i].value.substring(2,4) + 'PM';
+        } else {
+          returnData.data[i].label = returnData.data[i].value.substring(0, 2) + ':' + returnData.data[i].value.substring(2,4) + 'AM';
+        }
+      }
+    }
+
+    return returnData;
+  }
+
+  switch(timeInterval) {
+    case '15':
+      return getData(3);
+    case '20':
+      return getData(4);
+    case '30':
+      return getData(6);
+    case '45':
+      return getData(9);
+    case '1':
+      return getData(12);
+    case '115':
+      return getData(15);
+    case '130':
+      return getData(18);
+    case '145':
+      return getData(21);
+    case '2':
+      return getData(24);
+    default:
+      return "Invalid time interval";
+  }
+}
