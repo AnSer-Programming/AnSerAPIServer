@@ -24,9 +24,9 @@ const sendEmail = (data) => {
     const info = await transporter.sendMail({
       from: `${process.env.EMAIL_USER}`, // sender address
       to: "stephenm@anser.com", // list of receivers additional people:, cristianm@anser.com, custservice@anser.com, ryan@anser.com, samantha@anser.com
-      cc: [
-        'joe@anser.com'
-      ],
+      // cc: [
+      //   'joe@anser.com'
+      // ],
       subject: "Hello ✔", // Subject line
       text: "This is a test email with the company logo embedded into the html body.", // plain text body
       html: `<p>This is a test email</p><p>${JSON.stringify(data)}</p>`, // html body
