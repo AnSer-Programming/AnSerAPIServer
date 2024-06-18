@@ -2,7 +2,7 @@ const config = require('../config/connectionProductionIS');
 const sql = require('mssql');
 
 async function main() {
-  const query = `SELECT [clientNumber] ,Count([clientNumber]) AS 'Undelivered Messages'
+  const query = `SELECT [clientNumber] ,Count([clientNumber]) AS undeliveredMessages
   FROM [Intellegent].[dbo].[msgMessages] msg
   LEFT JOIN dbo.cltClients client ON client.cltId = msg.cltId
   WHERE [Delivered] = 0 AND msg.[cltId] IS NOT NULL AND msg.[Stamp] > DATEADD(month, -1, CURRENT_TIMESTAMP) 
