@@ -6,6 +6,14 @@ schedule.scheduleJob('05 1 * * *', function () {
 });
 
 // Event for sending the undelivered reports VIA Email
+schedule.scheduleJob('00 15 * * *', async function() {
+  const email = require('../node-mailer/SendUndeliveredReport');
+  const main = require('./undeliveredMessageEvent');
+  console.log(await main());
+  email(await main());
+});
+
+// Event for sending the undelivered reports VIA Email
 schedule.scheduleJob('00 19 * * *', async function() {
   const email = require('../node-mailer/SendUndeliveredReport');
   const main = require('./undeliveredMessageEvent');
