@@ -1,4 +1,6 @@
 const schedule = require('node-schedule');
+const email = require('../node-mailer/SendUndeliveredReport');
+const data = require('./undeliveredMessageEvent');
 
 schedule.scheduleJob('05 1 * * *', function () {
   const updateAccountsDB = require('./updateAccountListing');
@@ -6,24 +8,10 @@ schedule.scheduleJob('05 1 * * *', function () {
 });
 
 // Event for sending the undelivered reports VIA Email
-schedule.scheduleJob('00 15 * * *', async function() {
-  const email = require('../node-mailer/SendUndeliveredReport');
-  const main = require('./undeliveredMessageEvent');
-  console.log(await main());
-  email(await main());
-});
+// schedule.scheduleJob('00 19 * * *', async function() {
+//   email(await data());
+// });
 
-// Event for sending the undelivered reports VIA Email
-schedule.scheduleJob('00 19 * * *', async function() {
-  const email = require('../node-mailer/SendUndeliveredReport');
-  const main = require('./undeliveredMessageEvent');
-  console.log(await main());
-  email(await main());
-});
-
-schedule.scheduleJob('00 23 * * *', async function() {
-  const email = require('../node-mailer/SendUndeliveredReport');
-  const main = require('./undeliveredMessageEvent');
-  console.log(await main());
-  email(await main());
-});
+// schedule.scheduleJob('00 23 * * *', async function() {
+//   email(await data());
+// });
