@@ -31,12 +31,12 @@ router.get('/ByNumber/:accountNum', async (req, res) => {
   const query = `SELECT [ClientNumber], [ClientName], [Name]
         FROM [dbo].[cltClients]
         LEFT JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
-        WHERE [ClientNumber] LIKE '${accountNum}%'
+        WHERE [ClientNumber] LIKE :accountNum
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      let result = await config.query(query, { replacements: { accountNum: `${accountNum}%` }, type: seq.QueryTypes.SELECT });
 
       res.json(result);
     } catch (err) {
@@ -57,12 +57,12 @@ router.get('/ByName/:accountName', async (req, res) => {
   const query = `SELECT [ClientNumber], [ClientName], [Name]
         FROM [dbo].[cltClients]
         LEFT JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
-        WHERE [ClientName] LIKE '%${accountName}%'
+        WHERE [ClientName] LIKE :accountName
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      let result = await config.query(query, { replacements: { accountName: `%${accountName}%` }, type: seq.QueryTypes.SELECT });
 
       res.json(result);
     } catch (err) {
@@ -83,12 +83,12 @@ router.get('/ByDirectory/:directoryName', async (req, res) => {
   const query = `SELECT [ClientNumber], [ClientName], [Name]
         FROM [dbo].[cltClients]
         INNER JOIN [dbo].[dirSubjects] ON [dbo].[cltClients].[subId] = [dbo].[dirSubjects].[subId]
-        WHERE [Name] LIKE '%${directoryName}%'
+        WHERE [Name] LIKE :directoryName
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      let result = await config.query(query, { replacements: {directoryName: `%${directoryName}%` }, type: seq.QueryTypes.SELECT });
 
       res.json(result);
     } catch (err) {

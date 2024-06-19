@@ -8,13 +8,13 @@ router.get('/:accountNum', async (req, res) => {
   let query = `SELECT [OrderId], [Index], [Info], CONVERT(varchar, [Intellegent].[dbo].[cltInfo].[Stamp]) as "Stamp"
         FROM [dbo].[cltInfo]
         LEFT JOIN [Intellegent].[dbo].[cltClients] on [Intellegent].[dbo].[cltClients].[cltId] = [Intellegent].[dbo].[cltInfo].[cltId]
-        WHERE [ClientNumber] = ${accountNum}
+        WHERE [ClientNumber] = :accountNum
         ORDER BY [OrderId] ASC`;
 
   async function runQuery() {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });     
+      let result = await config.query(query, { replacements: { accountNum: accountNum }, type: seq.QueryTypes.SELECT });     
       return result;
     } catch (err) {
       // ... error checks
@@ -31,7 +31,7 @@ router.get('/:accountNum', async (req, res) => {
       ,[Field]
     FROM [Intellegent].[dbo].[dirListingFields]
     LEFT JOIN [Intellegent].[dbo].[cltClients] on [Intellegent].[dbo].[cltClients].[cltId] = [Intellegent].[dbo].[dirListingFields].[cltId]
-    WHERE [ClientNumber] = ${accountNum} AND [Field] IS NOT NULL`;
+    WHERE [ClientNumber] = :accountNum AND [Field] IS NOT NULL`;
 
   queryResults[1] = await runQuery();
   

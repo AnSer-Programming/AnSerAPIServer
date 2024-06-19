@@ -85,13 +85,13 @@ router.get('/ByAccountNum/:accountNum', async (req, res) => {
   const query = `SELECT [Source], [ClientNumber], [ClientName]
         FROM [Intellegent].[dbo].[cltSources]
         LEFT JOIN [dbo].[cltClients] on [dbo].[cltSources].[cltId] = [dbo].[cltClients].[cltId]
-        WHERE [ClientNumber] = ${accountNum}
+        WHERE [ClientNumber] = :accountNum
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       let results;
       const seq = require('sequelize');
-      const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT });
+      const primaryResult = await config.query(query, { replacement: {accountNum: accountNum}, type: seq.QueryTypes.SELECT });
       results = { ActiveDID: [{}], NotActiveDID: {} };
 
       const compareResult = await secondDBCall(primaryResult);
@@ -145,13 +145,13 @@ router.get('/ByAccountName/:accountName', async (req, res) => {
   const query = `SELECT [Source], [ClientNumber], [ClientName]
         FROM [Intellegent].[dbo].[cltSources]
         LEFT JOIN [dbo].[cltClients] on [dbo].[cltSources].[cltId] = [dbo].[cltClients].[cltId]
-        WHERE [ClientName] LIKE '%${accountName}%'
+        WHERE [ClientName] LIKE :accountName
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       let results;
       const seq = require('sequelize');
-      const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT });
+      const primaryResult = await config.query(query, { replacements: { accountName: `%${accountName}%`}, type: seq.QueryTypes.SELECT });
       results = { ActiveDID: [{}], NotActiveDID: {} };
 
       const compareResult = await secondDBCall(primaryResult);
@@ -204,13 +204,13 @@ router.get('/BySource/:sourceNum', async (req, res) => {
   const query = `SELECT [Source], [ClientNumber], [ClientName]
         FROM [Intellegent].[dbo].[cltSources]
         LEFT JOIN [dbo].[cltClients] on [dbo].[cltSources].[cltId] = [dbo].[cltClients].[cltId]
-        WHERE [Source] LIKE '${sourceNum}%'
+        WHERE [Source] LIKE :sourceNum
         ORDER BY [ClientNumber] ASC`;
   (async function () {
     try {
       let results;
       const seq = require('sequelize');
-      const primaryResult = await config.query(query, { type: seq.QueryTypes.SELECT });
+      const primaryResult = await config.query(query, { replacements: {sourceNum: `${sourceNum}%`}, type: seq.QueryTypes.SELECT });
       results = { ActiveDID: [{}], NotActiveDID: {} };
 
       const compareResult = await secondDBCall(primaryResult);

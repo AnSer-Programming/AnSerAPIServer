@@ -55,8 +55,8 @@ const sendEmail = (data) => {
       //   'joe@anser.com'
       // ],
       subject: "Undelivered Messages", // Subject line
-      text: `Below is a table with account numbers and the total undelivered messages per account. \n${fileData}`, // plain text body
-      html: `<p>Below is a table with account numbers and the total undelivered messages per account.</p><table>${tableBuilder()}</table>`, // html body
+      text: `Below is a table with account numbers and the total undelivered messages per account. There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket. \n${fileData}`, // plain text body
+      html: `<p>Below is a table with account numbers and the total undelivered messages per account.</p><p>There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket.</p><table>${tableBuilder()}</table>`, // html body
       attachments: attachmentBuilder()
     });
   
