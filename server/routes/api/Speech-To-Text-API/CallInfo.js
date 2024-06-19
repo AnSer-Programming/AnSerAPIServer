@@ -16,12 +16,12 @@ router.get('/:fileName', async (req, res) => {
           FROM [MDR].[dbo].[mCallSegment] t1
           LEFT JOIN [Accounts].[dbo].[02_Agents] ON t1.[Initials] = [Accounts].[dbo].[02_Agents].[Initials]
           LEFT JOIN [Intellegent].[dbo].[cltClients] ON t1.[Account] = [Intellegent].[dbo].[cltClients].[ClientNumber]
-          WHERE [Call] = '${callID}'`; 
+          WHERE [Call] = :callID`; 
 
     async function runQuery(query) {
       try {
         const seq = require('sequelize');
-        let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+        let result = await config.query(query, { replacements: { callID: callID }, type: seq.QueryTypes.SELECT });
         let procedureResult = await configCustom.query(`EXEC spAIGenerateFileInfo :Filename`, {
             replacements: {Filename: fileName}
           });
