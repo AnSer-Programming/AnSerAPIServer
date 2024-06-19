@@ -204,7 +204,7 @@ const GetDirectoryContactsAndInfoCards = () => {
       {headerHandler()} <br /> <br />
       {
         directoryData == "Unavailable" ? <p>The directory is not yet in IS</p> :
-          <div style={{overflow: "auto", height: '75vh'}}>
+          <div>
             <p><strong>Note:</strong> find and delete the word undefined from the CSV document. There is currently a bug that is causing this word to populate in some fields. If the word "undefined" pops up there is no data for that field.</p>
             <table>
               <thead>
