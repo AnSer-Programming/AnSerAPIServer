@@ -13,6 +13,7 @@ const { sequelize } = require('../../models/OnTimeTable');
 // });
 
 router.get('/:accountNum', async (req, res) => {
+  let isSorted = false;
   try {
     const vesselListData = await VesselListTable.findAll({
       where: {
@@ -35,7 +36,33 @@ router.get('/:accountNum', async (req, res) => {
       }
     }
 
-    res.status(200).json(vesselListData);
+    // if(vesselListData[vesselListData.length-1].vessel_name != "Unlisted") {
+    //   console.log(vesselListData[vesselListData.length-1].vessel_name);
+    // }
+    let vesselData = await JSON.parse(JSON.stringify(vesselListData));
+    let i = vesselData.length-1;
+    let placeHolder;
+    // console.log(vesselData);
+    // console.log(i);
+    // console.log(isSorted);
+
+
+    while(i > -1) {
+      if(vesselData[i].vessel_name == "Unlisted") {
+        placeHolder = vesselData[i];
+        for(let x = i; x < vesselData.length-1; x++) {
+          vesselData[x] = vesselData[x+1];
+        }
+        vesselData[vesselData.length-1] = placeHolder;
+        isSorted = true;
+      }
+      i--;
+    }
+
+    if(isSorted) {
+      res.status(200).json(vesselData);
+    }
+
   } catch (err) {
     res.status(500).json(err);
   }
