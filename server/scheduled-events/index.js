@@ -8,10 +8,10 @@ schedule.scheduleJob('05 1 * * *', function () {
 });
 
 // Event for sending the undelivered reports VIA Email
-// schedule.scheduleJob('00 19 * * *', async function() {
+// schedule.scheduleJob('00 14 * * *', async function() {
 //   email(await data());
 // });
 
-// schedule.scheduleJob('00 23 * * *', async function() {
+// schedule.scheduleJob('00 18 * * *', async function() {
 //   email(await data());
 // });

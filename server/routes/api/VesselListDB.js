@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { VesselListTable } = require('../../models');
+const { sequelize } = require('../../models/OnTimeTable');
 
 // be sure to include its associated Products
 // router.get('/', async (req, res) => {
@@ -16,7 +17,8 @@ router.get('/:accountNum', async (req, res) => {
     const vesselListData = await VesselListTable.findAll({
       where: {
         account_num: req.params.accountNum 
-      }
+      },
+      order: sequelize.col('vessel_name'),
     });
 
     if (!vesselListData) {

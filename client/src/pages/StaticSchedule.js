@@ -1,6 +1,6 @@
 import {React, useState} from 'react';
-import GetFixedSchedule from '../components/FixedScheduleComponents/GetFixedSchedule';
-import SetFixedSchedule from '../components/FixedScheduleComponents/SetFixedSchedule.tsx';
+import GetStaticSchedule from '../components/StaticScheduleComponents/GetStaticSchedule';
+import SetStaticSchedule from '../components/StaticScheduleComponents/SetStaticSchedule';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 
@@ -11,7 +11,7 @@ const FixedSchedule = () => {
   const editingDisabled = `Enable Editing`;
 
   const walkThroughDisplay = () => {
-    return(<p>This is where the walk-through will go.</p>);
+    return(<p>This is where the walk-through will go :)</p>);
   }
 
   const editDisplay = () => {
@@ -32,10 +32,10 @@ const FixedSchedule = () => {
         </div>
         {
           isEdit ? 
-          <SetFixedSchedule
+          <SetStaticSchedule
           accountNum={accountNum}
           setEdit={(editBoolean) => setIsEdit(editBoolean)}/> : 
-          <GetFixedSchedule
+          <GetStaticSchedule
           accountNum={accountNum} />
         } 
       </>
@@ -63,7 +63,7 @@ const FixedSchedule = () => {
   return (
     <>
       <Menu 
-        page="Disconnect List" />
+        page="Static Schedule" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select

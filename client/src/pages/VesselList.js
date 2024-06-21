@@ -24,6 +24,7 @@ const VesselsList = () => {
             <div>
               <p>*If your updates don't appear right away, please refresh the page.</p> 
               <p>The list is grouped by Contact, then sorted in reverse alphabetical order for each Vessel under that specific Contact.</p>
+              <p>Please DO NOT just leave rows as NULL. It clutters the database and appears in the drop down list in the account. Press the Delete Row button next to the NULL row to remove just that row from the list.</p>
             </div>
         }
         <div> 
