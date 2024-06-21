@@ -11,7 +11,7 @@ import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
 import SchedulerSupervisor from './pages/SchedulerSupervisor';
 import SchedulerAgent from './pages/SchedulerAgent';
-import FixedScheduler from './pages/FixedSchedule';
+import FixedScheduler from './pages/StaticSchedule';
 
 function App() {
   return (
@@ -30,7 +30,7 @@ function App() {
             <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
             <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
             <Route exact path='/Scheduler' component={SchedulerAgent} />
-            <Route exact path='/FixedScheduler' component={FixedScheduler} />
+            <Route exact path='/StaticSchedule' component={FixedScheduler} />
             <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
           </Switch>
         </div>
