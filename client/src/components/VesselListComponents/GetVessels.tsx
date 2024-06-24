@@ -36,7 +36,7 @@ const GetVessels = (data:any) => {
                     }
                     break;
                 } else {
-                    if(vessel.length == i) {
+                    if(vessel.length-1 == i) {
                       vessel[i] = {vessel_name: "Unlisted", contact_name: "Misc"};
                     }
                 }
@@ -55,6 +55,8 @@ const GetVessels = (data:any) => {
           }
         } // list, unlisted, then blank
         setVesselData(vessel);
+
+        console.log(vesselData);
       } catch (err) {
         console.error(err);
       }
