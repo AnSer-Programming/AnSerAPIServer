@@ -6,7 +6,6 @@ router.get('/', async (req, res) => {
   const query = `SELECT [msgId]
                 ,[cltId]
                 ,[Stamp]
-                ,[XmlMessage]
                 ,[Taken]
                 ,[Index]
                 ,[Summary]
@@ -19,9 +18,7 @@ router.get('/', async (req, res) => {
       const seq = require('sequelize');
       let result = await config.query(query, { type: seq.QueryTypes.SELECT });
 
-      const data = JSON.parse(JSON.stringify(result));
-      // for(let i = 0; i < )
-      res.json(data);
+      res.json(result);
     } catch (err) {
       // ... error checks
       console.log(err);
@@ -46,9 +43,7 @@ router.get('/Count', async (req, res) => {
       const seq = require('sequelize');
       let result = await config.query(query, { type: seq.QueryTypes.SELECT });
 
-      const data = JSON.parse(JSON.stringify(result));
-      // for(let i = 0; i < )
-      res.json(data);
+      res.json(result);
     } catch (err) {
       // ... error checks
       console.log(err);
@@ -68,7 +63,6 @@ router.get('/:startRange/:endRange', async (req, res) => {
   const query = `SELECT [msgId]
                 ,[cltId]
                 ,[Stamp]
-                ,[XmlMessage]
                 ,[Taken]
                 ,[Index]
                 ,[Summary]
