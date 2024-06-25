@@ -98,9 +98,9 @@ const GetClients = () => {
       return "Baton Rouge, LA";
     } else if (accountNum > 6499 && accountNum < 6700) { // GreenBay, WI
       return "GreenBay, WI";
-    } else if (accountNum > 6699 && accountNum < 6800) { // Charleston, WV
-      return "West Virginia";
-    } else if (accountNum > 6799 && accountNum < 8000) { // GreenBay, WI
+    } else if (accountNum > 6699 && accountNum < 7000) { // Charleston, WV
+      return "Charleston, WV";
+    } else if (accountNum > 6999 && accountNum < 8000) { // GreenBay, WI
       return "GreenBay, WI";
     } else if (accountNum > 7999 && accountNum < 9000) { // Gulfport, MS
       return "Gulfport, MS";
