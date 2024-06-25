@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Days from './Days';
 
-const GetContactDispatch = (data:any) => {
+const GetStaticSchedule = (data:any) => {
   const [contactDispatchData, setContactDispatchData] = useState<any>({});
   const [modifier, setModifier] = useState(0);
 
@@ -40,12 +40,13 @@ const GetContactDispatch = (data:any) => {
   return (
     <>
       <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
-        <h1>Monday</h1>
         <Days 
-          data = {data} />
+          day = "Monday"
+          data = {data}
+          isEdit = {false} />
       </div>
     </>
   );
 };
 
-export default GetContactDispatch;
+export default GetStaticSchedule;

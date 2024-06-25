@@ -98,7 +98,7 @@ const GetClients = () => {
       return "Baton Rouge, LA";
     } else if (accountNum > 6499 && accountNum < 6700) { // GreenBay, WI
       return "GreenBay, WI";
-    } else if (accountNum > 6699 && accountNum < 6800) { // GreenBay, WI
+    } else if (accountNum > 6699 && accountNum < 6800) { // Charleston, WV
       return "West Virginia";
     } else if (accountNum > 6799 && accountNum < 8000) { // GreenBay, WI
       return "GreenBay, WI";
@@ -116,8 +116,8 @@ const GetClients = () => {
       return "Baton Rouge, LA";
     } else if (accountNum > 24999 && accountNum < 30000) { // Utica, NY
       return "Utica, NY";
-    } else if (accountNum > 29999 && accountNum < 40000) { // Sub-Accounts/Non-Live Accounts
-      return "Sub-Accounts/Non-Live Accounts";
+    } else if (accountNum > 29999 && accountNum < 40000) { // Albuquerque, NM
+      return "Albuquerque, NM";
     } else if (accountNum > 39999 && accountNum < 50000) { // Eugene, OR
       return "Eugene, OR";
     } else if (accountNum > 49999 && accountNum < 60000) { // Chicago, IL

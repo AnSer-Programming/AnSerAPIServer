@@ -88,4 +88,9 @@ const indexRandomizer = require('./Training/IndexRandomizer');
 // Set Routes
 router.use('/IndexRandomizer', indexRandomizer);
 
+// Secret
+const yearToDateAccount = require('./Secret/YearToDateAccounts');
+
+router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
+
 module.exports = router;
