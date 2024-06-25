@@ -1,5 +1,7 @@
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Contact = (data:any) => {
   let options = data.options;
@@ -8,6 +10,16 @@ const Contact = (data:any) => {
       options[options.length] = "Auto-Email";
       options[options.length] = "Hold";
     }
+  }
+
+  let optionsLength = options.length;
+
+  if (!optionsLength) {
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <CircularProgress color="secondary" disableShrink />
+      </Box>
+    );
   }
 
   return (

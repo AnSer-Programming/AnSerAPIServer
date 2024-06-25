@@ -82,13 +82,6 @@ export default function MenuAppBar(data:any) {
                 </MenuItem>
                 <MenuItem
                   onClick={(event: any) => {
-                    handleClose(event, 'Static Schedule');
-                    handleRoutes('/StaticSchedule');
-                  }} >
-                  Static Schedule
-                </MenuItem>
-                <MenuItem
-                  onClick={(event: any) => {
                     handleClose(event, 'Resident Directory');
                     handleRoutes('/ResidentDirectory');
                   }} >
@@ -100,6 +93,13 @@ export default function MenuAppBar(data:any) {
                     handleRoutes('/SchedulerSupervisor');
                   }} >
                   Scheduler Tool
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
+                    handleClose(event, 'Static Schedule');
+                    handleRoutes('/StaticSchedule');
+                  }} >
+                  Static Schedule
                 </MenuItem>
                 <MenuItem
                   href="/Vessels" 
