@@ -84,9 +84,11 @@ module.exports = router;
 // Training Tools
 // Declare Variables
 const indexRandomizer = require('./Training/IndexRandomizer');
+const apiGetPutPost = require('./Training/APIGetPutPostTraining');
 
 // Set Routes
 router.use('/IndexRandomizer', indexRandomizer);
+router.use('/apiConnectionTest', apiGetPutPost);
 
 // Secret
 const yearToDateAccount = require('./Secret/YearToDateAccounts');
