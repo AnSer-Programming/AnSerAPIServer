@@ -44,6 +44,42 @@ const GetStaticSchedule = (data:any) => {
           day = "Monday"
           data = {data}
           isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Tuesday"
+          data = {data}
+          isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Wednesday"
+          data = {data}
+          isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Thursday"
+          data = {data}
+          isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Friday"
+          data = {data}
+          isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Saturday"
+          data = {data}
+          isEdit = {false} />
+      </div> <br />
+      <div style={{padding: '.5%', width: '65%', border: '1px solid', borderRadius: '25px'}}>
+        <Days 
+          day = "Sunday"
+          data = {data}
+          isEdit = {false} />
       </div>
     </>
   );

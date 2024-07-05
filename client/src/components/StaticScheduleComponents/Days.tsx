@@ -85,9 +85,46 @@ const Days = (data: any) => {
 
   const handlerAddEvent = async () => {
     console.log(dayData);
-    let dataPlaceHolder: any = dayData.data;
-    dataPlaceHolder[dataPlaceHolder.length] = await { contact: contact, start: start, end: end };
-    setDayData({ data: dataPlaceHolder });
+    let dataPlaceHolder:any[] = dayData.data;
+    let dataChecker:boolean[] = new Array();
+    
+    if(contact != '--' && contact != null) {
+      dataChecker[0] = true;
+      document.getElementById('contact')?.classList.remove(`bg-danger`);
+    } else {
+      dataChecker[0] = false;
+      document.getElementById('contact')?.classList.add(`bg-danger`);
+    }
+
+    if(start != '--' && start != null && start != 'Error') {
+      dataChecker[1] = true;
+      document.getElementById('startTime')?.classList.remove(`bg-danger`);
+    } else {
+      dataChecker[1] = false;
+      document.getElementById('startTime')?.classList.add(`bg-danger`);
+    }
+
+    if(end != '--' && end != null && end != 'Error') {
+      dataChecker[2] = true;
+      document.getElementById('endTime')?.classList.remove(`bg-danger`);
+    } else {
+      dataChecker[2] = false;
+      document.getElementById('endTime')?.classList.add(`bg-danger`);
+    }
+
+    if(dataChecker[0] && dataChecker[1] && dataChecker[2]) {
+      document.getElementById(`errorBlob${data.day}`)?.classList.remove(`d-block`);
+      document.getElementById(`errorBlob${data.day}`)?.classList.add(`d-none`);
+      if(dataPlaceHolder) {
+        dataPlaceHolder[dataPlaceHolder.length] = await { contact: contact, start: start, end: end };
+        setDayData({ data: dataPlaceHolder });
+      } else {
+        setDayData({data: [{ contact: contact, start: start, end: end }]});
+      }
+    } else {
+      document.getElementById(`errorBlob${data.day}`)?.classList.remove(`d-none`);
+      document.getElementById(`errorBlob${data.day}`)?.classList.add(`d-block`);
+    }
     console.log(dayData);
   }
 
@@ -155,6 +192,9 @@ const Days = (data: any) => {
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
         <table><tbody>{displayHandler()}</tbody></table>
       </div> 
+      <div id={`errorBlob${data.day}`} className="d-none">
+        <p>There was an error adding a new row. Please review your inputs and verify that all fields are filled in and a time block is not double booked.</p>
+      </div>
     </>
   );
 };

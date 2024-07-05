@@ -5,19 +5,19 @@ import Days from './Days';
 import { timeGetter } from '../Utility/TimeIntervals';
 import { getContactsDirectoriesByDirectory } from '../../utils/GetDataAPI';
 
-const SetStaticSchedule = (data:any) => {
+const SetStaticSchedule = (data: any) => {
   const [time, setTime] = useState<any>('Null');
   const [option, setOptions] = useState<any>('');
-  const [userData, setData] = useState<any>({data: []});
-  
+  const [userData, setData] = useState<any>({ data: [] });
+
   useEffect(() => {
-    const setTimeData = async() => {
+    const setTimeData = async () => {
       let newTime: any = await timeGetter('1');
-      newTime.data[newTime.data.length] = {value: 'Error', label: '--'};
+      newTime.data[newTime.data.length] = { value: 'Error', label: '--' };
       const response = await getContactsDirectoriesByDirectory(data.accountNum);
       const contacts = await response.json();
       let options = new Array();
-      for(let i = 0; i < contacts.length; i++) {
+      for (let i = 0; i < contacts.length; i++) {
         options[i] = await contacts[i].Field.trim();
       }
       setTime(newTime);
@@ -31,7 +31,7 @@ const SetStaticSchedule = (data:any) => {
   // if(time.data) {
   //   timeDataLength = time.data.length;
   // }
-    
+
   // if (!timeDataLength) {
   //   return (
   //     <Box sx={{ display: 'flex' }}>
@@ -39,16 +39,64 @@ const SetStaticSchedule = (data:any) => {
   //     </Box>
   //   );
   // }
-  
+
   return (
     <>
-      <div style={{padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px'}}>
-        <Days 
-          data = {userData.data}
-          day = "Monday"
-          accountNum = {data.accountNum}
-          options = {option}
-          isEdit = {true} />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Monday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Tuesday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Wednesday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Thursday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Friday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Saturday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
+      </div> <br />
+      <div style={{ padding: '.5%', width: '750px', border: '1px solid', borderRadius: '25px' }}>
+        <Days
+          data={userData.data}
+          day="Sunday"
+          accountNum={data.accountNum}
+          options={option}
+          isEdit={true} />
       </div>
     </>
   );
