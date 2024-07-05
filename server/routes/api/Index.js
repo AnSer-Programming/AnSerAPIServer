@@ -92,7 +92,9 @@ router.use('/apiConnectionTest', apiGetPutPost);
 
 // Secret
 const yearToDateAccount = require('./Secret/YearToDateAccounts');
+const qGenda = require('./Secret/QGenda');
 
 router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
+router.use('/Secret/qGenda', qGenda);
 
 module.exports = router;
