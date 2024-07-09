@@ -58,6 +58,7 @@ const infoPages = require('./GetData/GetInfoPages');
 const agentInfo = require('./GetData/GetAgents');
 const agentSupervisor = require('./GetData/GetAgentsSupervisors');
 const getUndelivered = require('./GetData/GetUndelivered');
+const qGenda = require('./GetData/QGendaData/QGenda');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
@@ -69,6 +70,7 @@ router.use('/InfoPages', infoPages);
 router.use('/AgentInfo', agentInfo);
 router.use('/AgentSupervisor', agentSupervisor);
 router.use('/GetUndelivered', getUndelivered);
+router.use('/QGenda', qGenda);
 
 // Call monitoring API
 // Declare Variables
@@ -78,8 +80,6 @@ const callList = require('./Speech-To-Text-API/CallList');
 // Set Routes
 router.use('/CallInfo', callInfo);
 router.use('/CallList', callList);
-
-module.exports = router;
 
 // Training Tools
 // Declare Variables
@@ -92,9 +92,7 @@ router.use('/apiConnectionTest', apiGetPutPost);
 
 // Secret
 const yearToDateAccount = require('./Secret/YearToDateAccounts');
-const qGenda = require('./Secret/QGenda');
 
 router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
-router.use('/Secret/qGenda', qGenda);
 
 module.exports = router;
