@@ -77,7 +77,6 @@ router.post('/GetOnCall', async (req, res) => {
     params.Date += `${placeHolder.split("/")[1]}`;
   }
 
-  console.log(params);
   let returnData = "Test";
   let token = "Test";
   let onCall = "API Error";
@@ -97,7 +96,7 @@ router.post('/GetOnCall', async (req, res) => {
 
     let bearerToken = await token.json();
   
-    returnData = await fetch(`https://api.qgenda.com/v2/schedule?startDate=${formattedToday}&endDate=${formattedToday}&includeDeletes=false`, {
+    returnData = await fetch(`https://api.qgenda.com/v2/schedule?startDate=${params.Date}&endDate=${params.Date}&includeDeletes=false`, {
       headers: {
         method: 'GET',
         'Content-Type': 'application/json',
@@ -110,7 +109,6 @@ router.post('/GetOnCall', async (req, res) => {
     for(let i = 0; i < parsedReturnData.length; i++) {
       if(!parsedReturnData[i].isStruck) {
         if(parsedReturnData[i].TaskKey == params.TaskKey) {
-          console.log("Found key");
           if(parsedReturnData[i].StartDate.split("T")[0] <= params.Date && parsedReturnData[i].StartTime <= params.Time) {
             if(parsedReturnData[i].EndDate.split("T")[0] > params.Date || parsedReturnData[i].EndDate.split("T")[0] == params.Date && parsedReturnData[i].EndTime > params.Time || parsedReturnData[i].EndDate.split("T")[0] > params.Date && parsedReturnData[i].EndTime == '00:00:00') {
               onCall = await `${parsedReturnData[i].StaffFName} ${parsedReturnData[i].StaffLName}`;
