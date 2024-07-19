@@ -57,8 +57,9 @@ const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAnd
 const infoPages = require('./GetData/GetInfoPages');
 const agentInfo = require('./GetData/GetAgents');
 const agentSupervisor = require('./GetData/GetAgentsSupervisors');
-const getUndelivered = require('./GetData/GetUndelivered');
+const getUndelivered = require('./GetData/Reports/GetUndelivered');
 const qGenda = require('./GetData/QGendaData/QGenda');
+const basementRepairSpecialists = require('./BasementRepairSpecialists');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
@@ -71,6 +72,7 @@ router.use('/AgentInfo', agentInfo);
 router.use('/AgentSupervisor', agentSupervisor);
 router.use('/GetUndelivered', getUndelivered);
 router.use('/QGenda', qGenda);
+router.use('/BasementRepairSpecialists', basementRepairSpecialists);
 
 // Call monitoring API
 // Declare Variables

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const config = require('../../../config/connectionProductionIS');
+const config = require('../../../../config/connectionProductionIS');
 const sql = require('mssql');
 
 router.get('/', async (req, res) => {

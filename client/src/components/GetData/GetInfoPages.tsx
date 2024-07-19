@@ -178,8 +178,9 @@ const GetInfoPages = () => {
       } else {
         fileData += await placeHolder;
       }
-      console.log(placeHolder);
     }
+    // fileData += "<header><img src='../../assets/img/AnserLogo2.png' /></header>";
+    console.log(fileData);
     await toMSWord(fileData, fileName);
   }
 
