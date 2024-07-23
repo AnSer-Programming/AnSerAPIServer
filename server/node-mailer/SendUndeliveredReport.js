@@ -24,8 +24,8 @@ const sendEmail = (data) => {
     },
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PWD,
+      user: process.env.EMAIL_USER_API,
+      pass: process.env.EMAIL_PWD_API,
     },
   });
 
@@ -49,7 +49,7 @@ const sendEmail = (data) => {
   // async..await is not allowed in global scope, must use a wrapper
   async function main() {
     const info = await transporter.sendMail({
-      from: `${process.env.EMAIL_USER}`, // sender address
+      from: `${process.env.EMAIL_USER_API}`, // sender address
       to: "stephenm@anser.com", // list of receivers additional people:, cristianm@anser.com, custservice@anser.com, ryan@anser.com, samantha@anser.com
       // cc: [
       //   'joe@anser.com'

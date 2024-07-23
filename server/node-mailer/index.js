@@ -50,15 +50,15 @@ const sendEmail = () => {
     },
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PWD,
+      user: process.env.EMAIL_USER_API,
+      pass: process.env.EMAIL_PWD_API,
     },
   });
   
   // async..await is not allowed in global scope, must use a wrapper
   async function main() {
     const info = await transporter.sendMail({
-      from: `${process.env.EMAIL_USER}`, // sender address
+      from: `${process.env.EMAIL_USER_API}`, // sender address
       to: "stephenm@anser.com", // list of receivers additional people:, cristianm@anser.com, custservice@anser.com, ryan@anser.com, samantha@anser.com
       // cc: [
       //   'adam@anser.com',
@@ -67,12 +67,12 @@ const sendEmail = () => {
       // ],
       subject: "Hello ✔", // Subject line
       text: "This is a test email with the company logo embedded into the html body.", // plain text body
-      html: `<img src="AnSerLogo.png" /><p>This is a test email</p>`, // html body
-      attachments: [
-        {   // filename and content type is derived from path
-          path: './AnSerLogo.png'
-        },
-      ],
+      html: `<p>This is a test email</p>`, // html body
+      // attachments: [
+      //   {   // filename and content type is derived from path
+      //     path: './AnSerLogo.png'
+      //   },
+      // ],
     });
   
     console.log("Message sent: %s", info.messageId);
