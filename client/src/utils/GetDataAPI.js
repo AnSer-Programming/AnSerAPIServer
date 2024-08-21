@@ -158,3 +158,14 @@ export const getAgentSupervisor = () => {
     },
   });
 };
+
+// Used in GetProviders.tsx
+// if the group has a value then pass the value otherwise pass nothing
+export const getProviders = (group) => {
+  return fetch(`/api/GetProviders/${group ? group : ''}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};

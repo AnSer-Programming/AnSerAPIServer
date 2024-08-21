@@ -57,6 +57,7 @@ const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAnd
 const infoPages = require('./GetData/GetInfoPages');
 const agentInfo = require('./GetData/GetAgents');
 const agentSupervisor = require('./GetData/GetAgentsSupervisors');
+const providersRoute = require('./GetData/GetProviders');
 const getUndelivered = require('./GetData/Reports/GetUndelivered');
 const qGenda = require('./GetData/QGendaData/QGenda');
 const basementRepairSpecialists = require('./BasementRepairSpecialists');
@@ -70,6 +71,7 @@ router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 router.use('/InfoPages', infoPages);
 router.use('/AgentInfo', agentInfo);
 router.use('/AgentSupervisor', agentSupervisor);
+router.use('/GetProviders', providersRoute);
 router.use('/GetUndelivered', getUndelivered);
 router.use('/QGenda', qGenda);
 router.use('/BasementRepairSpecialists', basementRepairSpecialists);

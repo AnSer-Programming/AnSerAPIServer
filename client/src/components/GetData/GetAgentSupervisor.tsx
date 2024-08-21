@@ -3,7 +3,7 @@ import { getAgentSupervisor } from '../../utils/GetDataAPI';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 
-const GetClients = () => {
+const GetAgentSupervisor = () => {
   const [agentSupervisorData, setAgentSupervisorData] = useState<any>({});
   const [agentName, setAgent] = useState<String>("");
   const [supervisorName, setSupervisor] = useState<String>("");
@@ -21,6 +21,8 @@ const GetClients = () => {
         if (!response.ok) {
           throw new Error('something went wrong!');
         }
+
+        console.log(response);
 
         let data = await response.json();
 
@@ -161,4 +163,4 @@ const GetClients = () => {
   );
 };
 
-export default GetClients;
+export default GetAgentSupervisor;
