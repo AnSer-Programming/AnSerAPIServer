@@ -1,11 +1,12 @@
 import {React, useState} from 'react';
 import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
-import GetDID from '../components/GetData/GetDID.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
+import GetDID from '../components/GetData/GetDID.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
 import GetInfoPages from '../components/GetData/GetInfoPages.tsx';
+import GetProviders from '../components/GetData/GetProviders.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -21,6 +22,7 @@ const Info = () => {
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
+    {value: 'GetProviders', label: 'Get Databased Providers'},
     {value: 'GetDID', label: 'Get DID'},
     {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'},
     {value: 'GetInfoPages', label: 'Get Info Pages'}
@@ -47,6 +49,7 @@ const Info = () => {
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
+            'GetProviders': <GetProviders />,
             'GetDID': <GetDID />,
             'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />,
             'GetInfoPages': <GetInfoPages />
