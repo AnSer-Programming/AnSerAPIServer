@@ -1,4 +1,5 @@
 import {React, useState} from 'react';
+import DocumentationPage from '../components/GetData/DocumentationPage.tsx';
 import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
@@ -11,13 +12,14 @@ import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
 const Info = () => {
-  const [content, setContent] = useState("GetClients");
+  const [content, setContent] = useState("DocumentationPage");
 
   const handlerChangeAccount = (event) => {
     setContent(event.value);
   }
 
   const option = [
+    {value: 'DocumentationPage', label: 'Documentation'},
     {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
     {value: 'GetClients', label: 'Get Clients'},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
@@ -40,11 +42,12 @@ const Info = () => {
             value={option.value}
             onChange={handlerChangeAccount}
             options={option}
-            defaultValue={{value: 'GetClients', label: 'Get Clients'}}
+            defaultValue={{value: 'DocumentationPage', label: 'Documentation'}}
           /> <br />
         </div>
         {
           {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/
+            'DocumentationPage': <DocumentationPage />,
             'GetAgentSupervisor': <GetAgentSupervisor />,
             'GetClients': <GetClients />,
             'GetClientsDirectories': <GetClientsDirectories />,
