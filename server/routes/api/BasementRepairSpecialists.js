@@ -4,8 +4,11 @@ const dotenv = require("dotenv");
 const sha256 = require('js-sha256');
 const { basementRepairSpecialistsAppointments } = require('../../utils/xmlToJSON');
 const { tomorrow, isWeekend } = require('../../utils/dateHandler');
+const { dataBaseData } = require('./BasementRepairSpecialistsDatabaseData');
 const date = new Date();
 const today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+const days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 let salesPeople = ['Bob Reber', 'Dan Frost'];
 
 dotenv.config();
@@ -14,7 +17,7 @@ dotenv.config();
   * Time blocks:
   * 8AM-12PM 9AM is available
   * 12PM-4PM 1PM is available
-  * 4PM-7PM 5PM is available
+  * 4PM-7PM 5PM is available | Changed to be 4PM-8PM so that it works better with my algorythm
 */
 function setDayData(date) {
   let dayData = [];
@@ -22,7 +25,7 @@ function setDayData(date) {
   let isSorted = false;
   let placeHolder = {};
   for (let i = 0; i < 6; i++) {
-    dayData[i] = { date: `${date}`, time: `${times[i % 3]}`, salesPerson: `${salesPeople[i % 2]}`, available: 'TRUE', index: -1};
+    dayData[i] = { date: `${date}`, time: `${times[i % 3]}`, formattedTime: '', salesPerson: `${salesPeople[i % 2]}`, available: 'TRUE', index: -1, value: '' };
   }
 
   let check = new Array();
@@ -38,7 +41,7 @@ function setDayData(date) {
         check[i] = false;
       }
 
-      if(dayData[i].time === dayData[i+1].time && dayData[i].salesPerson > dayData[i+1].salesPerson) {
+      if (dayData[i].time === dayData[i + 1].time && dayData[i].salesPerson > dayData[i + 1].salesPerson) {
         placeHolder = dayData[i];
         dayData[i] = dayData[i + 1];
         dayData[i + 1] = placeHolder;
@@ -47,7 +50,7 @@ function setDayData(date) {
     }
 
     for (let i = 0; i < check.length; i++) {
-      if (!check[i]) { 
+      if (!check[i]) {
         isSorted = false;
         break;
       } else if (i === check.length - 1 && check[i]) {
@@ -72,52 +75,54 @@ function setDayData(date) {
   * Example if appointment is at 10AM then the 8AM-12PM and 12PM-4PM slots are unavailable
 */
 async function checkAvailability(appointmentData) {
+  const scheduledAppointments = dataBaseData();
   const timeBlocks = [
-    {start: '0800', slot: '0900', end: '1200'}, 
-    {start: '1200', slot: '1300', end: '1600'}, 
-    {start: '1600', slot: '1700', end: '1900'}
+    { start: '0800', slot: '0900', end: '1200' },
+    { start: '1200', slot: '1300', end: '1600' },
+    { start: '1600', slot: '1700', end: '2000' }
   ];
   let count = 0;
-  let appointments = {available: new Array(), unAvailable: new Array()};
+  let appointments = { available: new Array() };
   let date = tomorrow(today);
-  while(isWeekend(date)) {
+  let dayObj;
+  let time;
+  let formattedDate;
+  let formattedDay;
+
+  while (isWeekend(date)) { //Check if it is the weekend
     date = tomorrow(date);
   }
-  let dayObj;
-  while(count < 10) {
-    dayObj = setDayData(date);
-    for(let x = appointmentData.entry.length; x > 0; x--) {
-      if(appointmentData.entry[x]) {
-        if(parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[0]) <= parseInt(date.split('-')[0])) {
-          if(parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[1]) <= parseInt(date.split('-')[1])) {
-            if(parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[2]) <= parseInt(date.split('-')[2])) {
-              for(let y = 0; y < timeBlocks.length; y++) {
-                if(parseInt(appointmentData.entry[x].content.properties.appointmentStartTime.replace(':', '')) >= timeBlocks[y].start && 
-                    parseInt(appointmentData.entry[x].content.properties.appointmentStartTime.replace(':', '')) < timeBlocks[y].end) {
-                  if(parseInt(appointmentData.entry[x].content.properties.appointmentEndTime.replace(':', '')) > timeBlocks[y].end) {
+
+  while (count < 15) { //Get 15 rows of data
+    dayObj = setDayData(date); //set time slots and saleperson for the entire day
+    for (let x = appointmentData.entry.length; x > 0; x--) { //Begin check to see if an appointment slot has already been filled
+      if (appointmentData.entry[x]) { //Check that appointmentData.entry[x] exists
+        if (parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[0]) == parseInt(date.split('-')[0])) { //Year check
+          if (parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[1]) == parseInt(date.split('-')[1])) { //Month check
+            if (parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[2]) == parseInt(date.split('-')[2])) { //Day check
+              for (let y = 0; y < timeBlocks.length; y++) { //Begin loop for the time block validation
+                if (parseInt(appointmentData.entry[x].content.properties.appointmentStartTime.replace(':', '')) >= timeBlocks[y].start &&
+                  parseInt(appointmentData.entry[x].content.properties.appointmentStartTime.replace(':', '')) < timeBlocks[y].end) { //Check for chich index of the time block that an appointment is in
+                  if (parseInt(appointmentData.entry[x].content.properties.appointmentEndTime.replace(':', '')) > timeBlocks[y].end) { //Check if the appointment extends past the original time block
                     // two time blocks are invalid
-                    if(dayObj[y].salesPerson === appointmentData.entry[x].content.properties.salesPerson1) { // If Bob
-                      if(dayObj[y]) {
-                        dayObj[y].available = 'FALSE';
-                        if(dayObj[y+2]) {
-                          dayObj[y+2].available = 'FALSE';
+                    for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
+                      if (timeBlocks[y].slot === dayObj[z].time) { //Check if the taken time block matches the row in the dayObj
+                        if (dayObj[z].salesPerson === appointmentData.entry[x].content.properties.salesPerson1) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
+                          dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
                         }
-                      }
-                    } else { // Else Dan
-                      if(dayObj[y+1]) {
-                        dayObj[y+1].available = 'FALSE';
-                        if(dayObj[y+3]) {
-                          dayObj[y+3].available = 'FALSE';
+                      } else if (timeBlocks[y + 1].slot === dayObj[z].time) { //Check the next time block (double block)
+                        if (dayObj[z].salesPerson === appointmentData.entry[x].content.properties.salesPerson1) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
+                          dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
                         }
                       }
                     }
-                  } else {
+                  } else { //The appointment does not extend into another time block
                     // one time block is invalid
-                    if(dayObj[y].salesPerson === appointmentData.entry[x].content.properties.salesPerson1) { // If Bob
-                      dayObj[y].available = 'FALSE';
-                    } else { // Else Dan
-                      if(dayObj[y+1]) {
-                        dayObj[y+1].available = 'FALSE';
+                    for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
+                      if (timeBlocks[y].slot === dayObj[z].time) { //Check if the taken time block matches the row in the dayObj
+                        if (dayObj[z].salesPerson === appointmentData.entry[x].content.properties.salesPerson1) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
+                          dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
+                        }
                       }
                     }
                   }
@@ -129,13 +134,60 @@ async function checkAvailability(appointmentData) {
       }
     }
 
-    for(let i = 0; i < dayObj.length; i++) {
-      if(dayObj[i].available == "FALSE") {
-        appointments.unAvailable[appointments.unAvailable.length] = dayObj[i];
+    for (let x = 0; x < scheduledAppointments.length; x++) { //Begin check to see if an appointment slot has already been filled by AnSer
+      if (scheduledAppointments[x]) { //Check to make sure scheduledAppointment[x] does exist
+        if (parseInt(scheduledAppointments[x].Date.split('-')[0]) == parseInt(date.split('-')[0])) { //Check Year
+          if (parseInt(scheduledAppointments[x].Date.split('-')[1]) == parseInt(date.split('-')[1])) { //Check Month
+            if (parseInt(scheduledAppointments[x].Date.split('-')[2]) == parseInt(date.split('-')[2])) { //Check Day
+              for (let y = 0; y < timeBlocks.length; y++) { //Begin loop for the time block validation
+                if (parseInt(scheduledAppointments[x].rawtime) == timeBlocks[y].slot) {
+                  for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
+                    if (timeBlocks[y].slot === dayObj[z].time) { //Check if the taken time block matches the row in the dayObj
+                      if (dayObj[z].salesPerson === scheduledAppointments[x].Salesperson) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
+                        dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-      else {
+    }
+
+    for (let i = 0; i < dayObj.length; i++) {
+      if (dayObj[i].available == "TRUE") {
         appointments.available[count] = dayObj[i];
         appointments.available[count].index = count;
+        if (dayObj[i].time === "0900") {
+          time = '9AM';
+        } else if (dayObj[i].time === "1300") {
+          time = '1PM';
+        } else if (dayObj[i].time === "1700") {
+          time = '5PM';
+        }
+
+        formattedDay = parseInt(dayObj[i].date.split('-')[2]);
+        if(formattedDate%10 === 1) {
+          formattedDay = `${formattedDay}th`;
+        } else {
+          if(dayObj[i].date.split('-')[2] % 10 === 1) {
+            formattedDay = `${formattedDay}st`;
+          } else if(dayObj[i].date.split('-')[2] % 10 === 2) {
+            formattedDay = `${formattedDay}nd`;
+          } else if(dayObj[i].date.split('-')[2] % 10 === 3) {
+            formattedDay = `${formattedDay}rd`;
+          } else {
+            formattedDay = `${formattedDay}th`;
+          }
+        }
+
+        formattedDate = `${days[new Date(dayObj[i].date).getDay()]} ${months[parseInt(dayObj[i].date.split('-')[1])-1]} ${formattedDay}`;
+        // console.log(`${formattedDate} ${days[new Date(dayObj[i].date).getDay()]}`);
+
+        appointments.available[count].formattedTime = time;
+        appointments.available[count].value = `${formattedDate} at ${time} with ${appointments.available[count].salesPerson}`;
         count++;
       }
     }
@@ -150,10 +202,13 @@ async function checkAvailability(appointmentData) {
 
 router.get('/', async (req, res) => {
   let returnData;
+
+  // DO NOT TOUCH THESE LINES!
   const bytes = Buffer.from(`${process.env.COMPANY_ID}${process.env.BASEMENT_REPAIR_SPECIALISTS_API_KEY}${unixEpoch}`, 'ascii');
   const decoded = Buffer.from(`${process.env.BASEMENT_REPAIR_SPECIALISTS_SECRET}`, 'base64');
   const hash = await sha256.hmac(decoded, bytes);
   const encoded = Buffer.from(hash, 'hex').toString('base64');
+  // DO NOT TOUCH THESE LINES!
 
   try {
     returnData = await fetch(`https://api4.marketsharpm.com/WcfDataService.svc/Appointments?$top=100&$orderby=appointmentDate desc`, { //Appointments
@@ -170,11 +225,9 @@ router.get('/', async (req, res) => {
 
     let availableAppointments = await checkAvailability(appointmentData);
 
-    // console.log(availableAppointments);
+    appointmentData = { AppointmentData: appointmentData, AvailabilityData: availableAppointments };
 
-    appointmentData = {"Appointment Data": appointmentData, "Availability Data": availableAppointments};
-
-    res.send(appointmentData);
+    res.json(appointmentData);
   } catch (err) {
     res.send(err);
   }
