@@ -81,12 +81,33 @@ const DocumentationPage = () => {
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="3">
+          <Accordion.Header style={headerStyle}>Get Client's Contacts And Their Roles</Accordion.Header>
+          <Accordion.Body style={bodyStyle}>
+            <p>
+              On this page you will be able to select a Client and view all of their directory listings and the roles that are assigned to each of them.
+              Page Data will generate after an Account Number is entered/selected.
+            </p>
+            <p>Information that you will get:</p>
+            <ul>
+              <li>Account Number (Client Number)</li>
+              <li>Client Name (Client)</li>
+              <li>Contact Name (Name)</li>
+              <li>Role List</li>
+            </ul>
+            <p>Filter Options are:</p>
+            <ul>
+              <li>Page Number: Use this option to quickly jump to a specific page.</li>
+              <li>Account Number: Enter the Account Number for the account that you are looking for. Page updates as you type in your filter.</li>
+            </ul>
+          </Accordion.Body>
+        </Accordion.Item>
+        <Accordion.Item eventKey="4">
           <Accordion.Header style={headerStyle}>Get Contacts And Directories</Accordion.Header>
           <Accordion.Body style={bodyStyle}>
             <h1>DOWN FOR MAINTENACE!</h1>
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="4">
+        <Accordion.Item eventKey="5">
           <Accordion.Header style={headerStyle}>Get Databased Providers</Accordion.Header>
           <Accordion.Body style={bodyStyle}>
             <p>On this page you will be able to view all of our on file provider information! This page is designed to be very responsive to user input.</p>
@@ -111,7 +132,7 @@ const DocumentationPage = () => {
             </ul>
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="5">
+        <Accordion.Item eventKey="6">
           <Accordion.Header style={headerStyle}>Get DID</Accordion.Header>
           <Accordion.Body style={bodyStyle}>
             <p>On this page you will be able to view all of our Accounts and the DID Assigned to them! This page is designed to be very responsive to user input.</p>
@@ -158,7 +179,7 @@ const DocumentationPage = () => {
             </ul>
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="6">
+        <Accordion.Item eventKey="7">
           <Accordion.Header style={headerStyle}>Get Directory Contacts And Info Cards</Accordion.Header>
           <Accordion.Body style={bodyStyle}>
             <p>This page functions based off of the Choose An Account Number Auto-Fill drop down list!</p>
@@ -183,7 +204,7 @@ const DocumentationPage = () => {
             </p>
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="7">
+        <Accordion.Item eventKey="8">
           <Accordion.Header style={headerStyle}>Get Info Pages</Accordion.Header>
           <Accordion.Body style={bodyStyle}>
             <p>This page functions based off of the Choose An Account Number Auto-Fill drop down list!</p>

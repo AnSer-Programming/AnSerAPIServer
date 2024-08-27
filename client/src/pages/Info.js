@@ -3,6 +3,7 @@ import DocumentationPage from '../components/GetData/DocumentationPage.tsx';
 import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
 import GetClients from '../components/GetData/GetClients.tsx';
+import GetClientContactsAndRoles from '../components/GetData/GetClientContactsAndRoles.tsx';
 import GetContactsDirectories from '../components/GetData/GetContactsDirectories.tsx';
 import GetDID from '../components/GetData/GetDID.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
@@ -22,6 +23,7 @@ const Info = () => {
     {value: 'DocumentationPage', label: 'Documentation'},
     {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
     {value: 'GetClients', label: 'Get Clients'},
+    {value: 'GetClientContactsAndRoles', label: `Get Client's Contacts And Roles`},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
     {value: 'GetProviders', label: 'Get Databased Providers'},
@@ -50,6 +52,7 @@ const Info = () => {
             'DocumentationPage': <DocumentationPage />,
             'GetAgentSupervisor': <GetAgentSupervisor />,
             'GetClients': <GetClients />,
+            'GetClientContactsAndRoles': <GetClientContactsAndRoles />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
             'GetProviders': <GetProviders />,
