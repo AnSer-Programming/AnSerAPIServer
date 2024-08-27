@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const unixEpoch = Math.floor(Date.now() / 1000);
 const dotenv = require("dotenv");
 const sha256 = require('js-sha256');
 const { basementRepairSpecialistsAppointments } = require('../../utils/xmlToJSON');
@@ -75,7 +74,7 @@ function setDayData(date) {
   * Example if appointment is at 10AM then the 8AM-12PM and 12PM-4PM slots are unavailable
 */
 async function checkAvailability(appointmentData) {
-  const scheduledAppointments = dataBaseData();
+  const scheduledAppointments = await dataBaseData();
   const timeBlocks = [
     { start: '0800', slot: '0900', end: '1200' },
     { start: '1200', slot: '1300', end: '1600' },
@@ -136,15 +135,20 @@ async function checkAvailability(appointmentData) {
 
     for (let x = 0; x < scheduledAppointments.length; x++) { //Begin check to see if an appointment slot has already been filled by AnSer
       if (scheduledAppointments[x]) { //Check to make sure scheduledAppointment[x] does exist
+        // console.log(scheduledAppointments[x]);
         if (parseInt(scheduledAppointments[x].Date.split('-')[0]) == parseInt(date.split('-')[0])) { //Check Year
           if (parseInt(scheduledAppointments[x].Date.split('-')[1]) == parseInt(date.split('-')[1])) { //Check Month
-            if (parseInt(scheduledAppointments[x].Date.split('-')[2]) == parseInt(date.split('-')[2])) { //Check Day
+            if (parseInt(scheduledAppointments[x].Date.split('-')[2])+1 == parseInt(date.split('-')[2])) { //Check Day
               for (let y = 0; y < timeBlocks.length; y++) { //Begin loop for the time block validation
                 if (parseInt(scheduledAppointments[x].rawtime) == timeBlocks[y].slot) {
                   for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
                     if (timeBlocks[y].slot === dayObj[z].time) { //Check if the taken time block matches the row in the dayObj
                       if (dayObj[z].salesPerson === scheduledAppointments[x].Salesperson) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
-                        dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
+                        if(scheduledAppointments[x].Cancelled) {
+                          dayObj[z].available = 'TRUE'; //Set available to true | The appointment was cancelled on our end
+                        } else {
+                          dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
+                        }
                       }
                     }
                   }
@@ -201,6 +205,7 @@ async function checkAvailability(appointmentData) {
 }
 
 router.get('/', async (req, res) => {
+  const unixEpoch = Math.floor(Date.now() / 1000);
   let returnData;
 
   // DO NOT TOUCH THESE LINES!

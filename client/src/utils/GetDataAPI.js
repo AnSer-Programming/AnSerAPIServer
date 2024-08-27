@@ -169,3 +169,13 @@ export const getProviders = (group) => {
     },
   });
 };
+
+// Used in GetClientContactsAndRoles.tsx
+export const getClientContactsAndRoles = (accountNum) => {
+  return fetch(`/api/GetClientContactsAndRoles/ByAccountNum/${accountNum}`, {
+    headeres: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
