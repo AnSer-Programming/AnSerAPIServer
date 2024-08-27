@@ -23,7 +23,7 @@ const Info = () => {
     {value: 'DocumentationPage', label: 'Documentation'},
     {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
     {value: 'GetClients', label: 'Get Clients'},
-    {value: 'GetClientContactsAndRoles', label: `Get Client's Contacts And Roles`},
+    {value: 'GetClientContactsAndRoles', label: `Get Client Contacts And Roles`},
     {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
     {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
     {value: 'GetProviders', label: 'Get Databased Providers'},

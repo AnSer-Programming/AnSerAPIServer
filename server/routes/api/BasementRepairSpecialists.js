@@ -173,7 +173,7 @@ async function checkAvailability(appointmentData) {
         }
 
         formattedDay = parseInt(dayObj[i].date.split('-')[2]);
-        if(formattedDate%10 === 1) {
+        if(formattedDay%10 === 1) {
           formattedDay = `${formattedDay}th`;
         } else {
           if(dayObj[i].date.split('-')[2] % 10 === 1) {
