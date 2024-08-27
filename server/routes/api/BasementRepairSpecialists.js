@@ -138,7 +138,7 @@ async function checkAvailability(appointmentData) {
         // console.log(scheduledAppointments[x]);
         if (parseInt(scheduledAppointments[x].Date.split('-')[0]) == parseInt(date.split('-')[0])) { //Check Year
           if (parseInt(scheduledAppointments[x].Date.split('-')[1]) == parseInt(date.split('-')[1])) { //Check Month
-            if (parseInt(scheduledAppointments[x].Date.split('-')[2])+1 == parseInt(date.split('-')[2])) { //Check Day
+            if (parseInt(scheduledAppointments[x].Date.split('-')[2]) == parseInt(date.split('-')[2])) { //Check Day
               for (let y = 0; y < timeBlocks.length; y++) { //Begin loop for the time block validation
                 if (parseInt(scheduledAppointments[x].rawtime) == timeBlocks[y].slot) {
                   for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
