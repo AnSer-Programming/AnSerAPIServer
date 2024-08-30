@@ -120,6 +120,13 @@ export default function MenuAppBar(data:any) {
                 </MenuItem>
                 <MenuItem
                   onClick={(event: any) => {
+                    handleClose(event, 'How To');
+                    handleRoutes('/HowTo');
+                  }} >
+                  How To
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
                     handleClose(event, 'Info');
                     handleRoutes('/Info');
                   }} >

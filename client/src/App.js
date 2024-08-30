@@ -7,6 +7,7 @@ import AgentStats from './pages/AgentStats';
 import ContactDispatch from './pages/ContactDispatch';
 import Calendar from './pages/Calendar';
 import Tracker from './pages/TrackerPages';
+import HowTo from './pages/HowTo';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
 import SchedulerSupervisor from './pages/SchedulerSupervisor';
@@ -26,6 +27,7 @@ function App() {
             <Route exact path='/Calendar' component={Calendar} />
             <Route exact path='/AgentStats' component={AgentStats} />
             <Route exact path='/StatTracker' component={Tracker} />
+            <Route exact path='/HowTo' component={HowTo} />
             <Route exact path='/Info' component={Info} />
             <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
             <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
