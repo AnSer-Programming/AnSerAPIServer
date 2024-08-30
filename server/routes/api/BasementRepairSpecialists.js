@@ -4,8 +4,6 @@ const sha256 = require('js-sha256');
 const { basementRepairSpecialistsAppointments } = require('../../utils/xmlToJSON');
 const { tomorrow, isWeekend } = require('../../utils/dateHandler');
 const { dataBaseData } = require('./BasementRepairSpecialistsDatabaseData');
-const date = new Date();
-const today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 const days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 let salesPeople = ['Bob Reber', 'Dan Frost'];
@@ -73,7 +71,7 @@ function setDayData(date) {
   * Example if appointment is at 8AM then the 8AM-12PM slot is unavailable.
   * Example if appointment is at 10AM then the 8AM-12PM and 12PM-4PM slots are unavailable
 */
-async function checkAvailability(appointmentData) {
+async function checkAvailability(appointmentData, today) {
   const scheduledAppointments = await dataBaseData();
   const timeBlocks = [
     { start: '0800', slot: '0900', end: '1200' },
@@ -205,6 +203,8 @@ async function checkAvailability(appointmentData) {
 }
 
 router.get('/', async (req, res) => {
+  const date = new Date();
+  const today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
   const unixEpoch = Math.floor(Date.now() / 1000);
   let returnData;
 
@@ -228,7 +228,7 @@ router.get('/', async (req, res) => {
 
     let appointmentData = await basementRepairSpecialistsAppointments(parsedReturnData, today);
 
-    let availableAppointments = await checkAvailability(appointmentData);
+    let availableAppointments = await checkAvailability(appointmentData, today);
 
     appointmentData = { AppointmentData: appointmentData, AvailabilityData: availableAppointments };
 
