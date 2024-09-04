@@ -118,6 +118,8 @@ const GetContactsDirectories = () => {
         variant="filled" /> <br /><br />
       {
         contactsDirectoriesDataLength ?
+        <div>
+          <p>Number of listings in the directory: {contactsDirectoriesData.length}</p>
           <table style={{ minWidth: '50%', width: '90%', tableLayout: 'fixed' }}>
             <thead>
               <tr key={"HeaderRow"} style={{ borderBottom: '1px solid', fontSize: '24px' }}>
@@ -149,7 +151,8 @@ const GetContactsDirectories = () => {
                 return rows;
               })()}
             </tbody>
-          </table> : <h2>LOADING...</h2>
+          </table>
+          </div> : <h2>LOADING...</h2>
       }
       <br />
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum + 1} of ${maxPages + 1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
