@@ -101,4 +101,9 @@ const yearToDateAccount = require('./Secret/YearToDateAccounts');
 
 router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
 
+//MailGun Tools
+const getEvents = require('./MailGun/GetEvents');
+
+router.use('/MailGun/Events', getEvents);
+
 module.exports = router;

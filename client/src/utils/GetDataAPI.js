@@ -1,7 +1,7 @@
 // Used in GetClients.tsx, GetDirectoryContactsAndInfoCards.tsx
 export const getClients = () => {
   return fetch(`/api/Clients`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -11,7 +11,7 @@ export const getClients = () => {
 // Used in GetClients.tsx
 export const getClientsByNum = (accountNum) => {
   return fetch(`/api/Clients/ByAccountNum/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -20,7 +20,7 @@ export const getClientsByNum = (accountNum) => {
 
 export const getClientsByName = (accountName) => {
   return fetch(`/api/Clients/ByAccountName/${accountName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -30,7 +30,7 @@ export const getClientsByName = (accountName) => {
 // Used in GetClientsDirectories.tsx
 export const getClientsDirectories = () => {
   return fetch(`/api/ClientsAndDirectories`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -39,7 +39,7 @@ export const getClientsDirectories = () => {
 
 export const getClientsDirectoriesByNum = (accountNum) => {
   return fetch(`/api/ClientsAndDirectories/ByNumber/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -48,7 +48,7 @@ export const getClientsDirectoriesByNum = (accountNum) => {
 
 export const getClientsDirectoriesByName = (accountName) => {
   return fetch(`/api/ClientsAndDirectories/ByName/${accountName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -57,7 +57,7 @@ export const getClientsDirectoriesByName = (accountName) => {
 
 export const getClientsDirectoriesByDirectory = (directoryName) => {
   return fetch(`/api/ClientsAndDirectories/ByDirectory/${directoryName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -67,7 +67,7 @@ export const getClientsDirectoriesByDirectory = (directoryName) => {
 // Used in GetClientsDirectories.tsx
 export const getContactsDirectories = () => {
   return fetch(`/api/ContactsAndDirectories`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -76,7 +76,7 @@ export const getContactsDirectories = () => {
 
 export const getContactsDirectoriesByPersonName = (personName) => {
   return fetch(`/api/ContactsAndDirectories/ByPersonName/${personName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -85,7 +85,7 @@ export const getContactsDirectoriesByPersonName = (personName) => {
 
 export const getContactsDirectoriesByDirectory = (directoryName) => {
   return fetch(`/api/ContactsAndDirectories/ByDirectoryName/${directoryName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -95,7 +95,7 @@ export const getContactsDirectoriesByDirectory = (directoryName) => {
 // Used in GetActiveDID.tsx
 export const getDID = () => {
   return fetch(`/api/GetDID`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -104,7 +104,7 @@ export const getDID = () => {
 
 export const getDIDByAccountNum = (accountNum) => {
   return fetch(`/api/GetDID/ByAccountNum/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -113,7 +113,7 @@ export const getDIDByAccountNum = (accountNum) => {
 
 export const getDIDByName = (accountName) => {
   return fetch(`/api/GetDID/ByAccountName/${accountName}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -122,7 +122,7 @@ export const getDIDByName = (accountName) => {
 
 export const getDIDBySource = (sourceNum) => {
   return fetch(`/api/GetDID/BySource/${sourceNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -132,7 +132,7 @@ export const getDIDBySource = (sourceNum) => {
 // Used in GetDirectoryContactsAndInfoCards.tsx
 export const getDirectoryContactsAndInfoCards = (accountNum) => {
   return fetch(`/api/DirectoryContactsAndInfoCards/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -142,7 +142,7 @@ export const getDirectoryContactsAndInfoCards = (accountNum) => {
 // Used in GetInfoPages.tsx
 export const getInfoPages = (accountNum) => {
   return fetch(`/api/InfoPages/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -152,7 +152,7 @@ export const getInfoPages = (accountNum) => {
 // Used in GetAgentSupervisor.tsx
 export const getAgentSupervisor = () => {
   return fetch(`/api/AgentSupervisor`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -163,7 +163,7 @@ export const getAgentSupervisor = () => {
 // if the group has a value then pass the value otherwise pass nothing
 export const getProviders = (group) => {
   return fetch(`/api/GetProviders/${group ? group : ''}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
     },
@@ -173,9 +173,19 @@ export const getProviders = (group) => {
 // Used in GetClientContactsAndRoles.tsx
 export const getClientContactsAndRoles = (accountNum) => {
   return fetch(`/api/GetClientContactsAndRoles/ByAccountNum/${accountNum}`, {
-    headeres: {
+    headers: {
       method: 'GET',
       'Content-Type': 'application/json',
+    },
+  });
+};
+
+// Used in GetMailGunFailedEvents.tsx
+export const getMailGunFailedEvents = () => {
+  return fetch(`/api/MailGun/Events`, {
+    headers: {
+      method: 'GET',
+      'Contect-Type': 'application/json',
     },
   });
 };
