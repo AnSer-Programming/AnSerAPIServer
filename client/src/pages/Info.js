@@ -9,6 +9,7 @@ import GetDID from '../components/GetData/GetDID.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
 import GetInfoPages from '../components/GetData/GetInfoPages.tsx';
 import GetProviders from '../components/GetData/GetProviders.tsx';
+import GetMailGunFailedEvents from '../components/GetData/GetMailGunFailedEvents.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -29,7 +30,8 @@ const Info = () => {
     {value: 'GetProviders', label: 'Get Databased Providers'},
     {value: 'GetDID', label: 'Get DID'},
     {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'},
-    {value: 'GetInfoPages', label: 'Get Info Pages'}
+    {value: 'GetInfoPages', label: 'Get Info Pages'},
+    {value: 'GetMailGunFailedEvents', label: 'Mail Gun Failed Events'}
   ];
   
   return (
@@ -55,10 +57,11 @@ const Info = () => {
             'GetClientContactsAndRoles': <GetClientContactsAndRoles />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
-            'GetProviders': <GetProviders />,
             'GetDID': <GetDID />,
             'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />,
-            'GetInfoPages': <GetInfoPages />
+            'GetInfoPages': <GetInfoPages />,
+            'GetProviders': <GetProviders />,
+            'GetMailGunFailedEvents': <GetMailGunFailedEvents />
           }[content]
         }
       </div>
