@@ -1,4 +1,4 @@
-import {React, useState} from 'react';
+import { React, useState, useEffect } from 'react';
 import DocumentationPage from '../components/GetData/DocumentationPage.tsx';
 import GetAgentSupervisor from '../components/GetData/GetAgentSupervisor.tsx';
 import GetClientsDirectories from '../components/GetData/GetClientsDirectories.tsx';
@@ -15,39 +15,61 @@ import Select from 'react-select';
 
 const Info = () => {
   const [content, setContent] = useState("DocumentationPage");
+  const [defaultPage, setDefaultPage] = useState({ value: 'DocumentationPage', label: 'Documentation' });
+
+  const url = window.location.href.toString();
+  const destination = url.split('/')[4];
+
+  useEffect(() => {
+    if (destination) {
+      for (let i = 0; i < option.length; i++) {
+        if (option[i].value == destination) {
+          setContent(destination);
+          setDefaultPage(option[i]);
+          break;
+        } else {
+          setContent("DocumentationPage");
+          setDefaultPage({ value: 'DocumentationPage', label: 'Documentation' });
+        }
+      }
+    } else {
+      setContent("DocumentationPage");
+      setDefaultPage({ value: 'DocumentationPage', label: 'Documentation' });
+    }
+  }, [url, destination]);
 
   const handlerChangeAccount = (event) => {
     setContent(event.value);
+    setDefaultPage(event);
   }
 
   const option = [
-    {value: 'DocumentationPage', label: 'Documentation'},
-    {value: 'GetAgentSupervisor', label: 'Get Agents Supervisors'},
-    {value: 'GetClients', label: 'Get Clients'},
-    {value: 'GetClientContactsAndRoles', label: `Get Client Contacts And Roles`},
-    {value: 'GetClientsDirectories', label: 'Get Clients And Directories'},
-    {value: 'GetContactsDirectories', label: 'Get Contacts And Directories'},
-    {value: 'GetProviders', label: 'Get Databased Providers'},
-    {value: 'GetDID', label: 'Get DID'},
-    {value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards'},
-    {value: 'GetInfoPages', label: 'Get Info Pages'},
-    {value: 'GetMailGunFailedEvents', label: 'Mail Gun Failed Events'}
+    { value: 'DocumentationPage', label: 'Documentation' },
+    { value: 'GetAgentSupervisor', label: 'Get Agents Supervisors' },
+    { value: 'GetClients', label: 'Get Clients' },
+    { value: 'GetClientContactsAndRoles', label: `Get Client Contacts And Roles` },
+    { value: 'GetClientsDirectories', label: 'Get Clients And Directories' },
+    { value: 'GetContactsDirectories', label: 'Get Contacts And Directories' },
+    { value: 'GetProviders', label: 'Get Databased Providers' },
+    { value: 'GetDID', label: 'Get DID' },
+    { value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards' },
+    { value: 'GetInfoPages', label: 'Get Info Pages' },
+    { value: 'GetMailGunFailedEvents', label: 'Mail Gun Failed Events' }
   ];
-  
+
   return (
     <>
-      <Menu 
+      <Menu
         page="Info" />
-      <div style={{height: '90vh', width: '100%', padding: '.5%', overflowY: 'scroll'}}>
-        <div style={{width: '50%'}}>
+      <div style={{ height: '90vh', width: '100%', padding: '.5%', overflowY: 'scroll' }}>
+        <div style={{ width: '50%' }}>
           <Select
             className='text-dark'
             name="Account List"
             value={option.value}
             onChange={handlerChangeAccount}
             options={option}
-            defaultValue={{value: 'DocumentationPage', label: 'Documentation'}}
-          /> <br />
+            placeholder={defaultPage.label} /> <br />
         </div>
         {
           {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/

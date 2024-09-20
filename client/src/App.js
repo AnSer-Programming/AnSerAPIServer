@@ -28,7 +28,9 @@ function App() {
             <Route exact path='/AgentStats' component={AgentStats} />
             <Route exact path='/StatTracker' component={Tracker} />
             <Route exact path='/HowTo' component={HowTo} />
+            <Route exact path='/HowTo/*' component={HowTo} />
             <Route exact path='/Info' component={Info} />
+            <Route exact path='/Info/*' component={Info} />
             <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
             <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
             <Route exact path='/Scheduler' component={SchedulerAgent} />
