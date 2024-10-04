@@ -127,7 +127,65 @@ export const setResidentDirectoryAPI = (accountNum, data) => {
   });
 };
 
-// Resident Directory API Call
+// Crescent Electric API Calls
+export const getReachList = () => {
+  return fetch(`/api/CrescentElectricReachList`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getReachListRowByBranch = (branch) => {
+  return fetch(`/api/CrescentElectricReachList/ByBranch/${branch}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getReachListRowByID = (id) => {
+  return fetch(`/api/CrescentElectricReachList/ByBranch/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const postToReachList = (data) => {
+  return fetch(`/api/CrescentElectricReachList`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const updateReachList = (id, data) => {
+  return fetch(`/api/CrescentElectricReachList/ByID/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export const deleteReachListRow = (id, data) => {
+  return fetch(`/api/CrescentElectricReachList/ByID/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+// Scheduler API Call
 export const getSchedulerAPI = (accountNum) => {
   return fetch(`/api/Scheduler/${accountNum}`, {
     headers: {

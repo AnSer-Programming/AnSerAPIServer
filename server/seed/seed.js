@@ -34,15 +34,15 @@
 // }
 
 // create a single table
-// try {
-//     const sequelize = require('../config/connection');
-//     const TestDatabaseTable = require('../models/TestDatabaseTable');
-//     const seedDatabase = async () => {
-//         await TestDatabaseTable.sync({ force: true });  
-//         process.exit(0);
-//     };
+try {
+    const sequelize = require('../config/connection');
+    const TestDatabaseTable = require('../models/CrescentElectricTable');
+    const seedDatabase = async () => {
+        await TestDatabaseTable.sync({ force: true });  
+        process.exit(0);
+    };
     
-//     seedDatabase();
-// } catch(err) {
-//     console.log(`Seed Error: ${ err }`);
-// }
+    seedDatabase();
+} catch(err) {
+    console.log(`Seed Error: ${ err }`);
+}
