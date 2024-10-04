@@ -25,6 +25,7 @@ router.use('/ContactDispatch', contactDispatch);
 
 // API Routes
 // Declare variables
+const crescentElectricReachRoute = require('./CrescentElectricReachList');
 const disconnectListRoute = require('./DisconnectList');
 const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
@@ -32,6 +33,7 @@ const timeConverterRoute = require('./TimeConverter');
 const vesselRouteDB = require('./VesselListDB');
 
 // Set Routes
+router.use('/CrescentElectricReachList', crescentElectricReachRoute);
 router.use('/DisconnectList', disconnectListRoute);
 router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);

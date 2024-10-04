@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const config = require('../../../config/connectionProductionIS');
 const sql = require('mssql');
-const xml2js = require('xml2js');
 
 async function dataConverter(data) {
   let jsonData;

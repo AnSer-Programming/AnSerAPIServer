@@ -75,6 +75,13 @@ export default function MenuAppBar(data:any) {
                 <strong>Web Tools</strong>
                 <MenuItem
                   onClick={(event: any) => {
+                    handleClose(event, 'Crescent Electric Reach List');
+                    handleRoutes('/CrescentElectricReachList');
+                  }} >
+                  Crescent Electric Reach List
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
                     handleClose(event, 'Disconnect List');
                     handleRoutes('/DisconnectList');
                   }} >
