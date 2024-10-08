@@ -72,9 +72,12 @@ const SetList = (data: any) => {
   }
 
   const saveHandler = () => {
-    for(let i = 0; i < updatedContacts.length; i++) {
-      updateReachList(updatedContacts[i].id, updatedContacts[i]);
+    if(updatedContacts) {
+      for(let i = 0; i < updatedContacts.length; i++) {
+        updateReachList(updatedContacts[i].id, updatedContacts[i]);
+      }
     }
+    data.setEdit();
   }
 
   return (
@@ -134,7 +137,7 @@ const SetList = (data: any) => {
         </tbody>
       </table>
       <p>{errorStatement}</p>
-      <button onClick={saveHandler}>Save New Branch</button>
+      <button onClick={() => saveHandler()}>Save All Contact Updates</button>
     </>
   );
 };
