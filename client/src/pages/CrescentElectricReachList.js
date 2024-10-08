@@ -44,13 +44,13 @@ const CrescentElectricReachList = () => {
               contactsOnly: <div>
                 <button onClick={editingHandlerContactsOnly}>{isEdit ? editingEnabled : editingDisabled}</button><br /><br /> 
                 <SetReachListContactsOnly
-                  setEdit = {(() => setIsEdit(false))}
+                  setEdit = {() => setIsEdit(false)}
                   options = {directoryContacts} />
               </div>, 
               addBranch: <div>
                 <button onClick={editingHandlerAddBranch}>{isEdit ? editingEnabled : editingDisabled}</button><br /><br /> 
                 <SetReachListAddBranch
-                  setEdit = {(() => setIsEdit(false))}
+                  setEdit = {() => setIsEdit(false)}
                   options = {directoryContacts} />
               </div>
             }[editChoice] 
