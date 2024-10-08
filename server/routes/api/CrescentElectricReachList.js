@@ -16,7 +16,11 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  // create a new vessel/contact
+  // create a new branch listing
+  if(req.body.primary_contact === "Branch Closed" || req.body.primary_contact === "Branch Closed - Calls go to branch#" || req.body.primary_contact === "No Emergency Service") {
+    sendEmail({id: req.params.id, primary_contact: req.body.primary_contact});
+  }
+
   try {
     const reachListData = await CrescentElectricTable.create(req.body);
     res.status(200).json(reachListData);
