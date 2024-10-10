@@ -39,6 +39,7 @@ const HowTo = () => {
   const handlerChangeAccount = (event) => {
     setContent(event.value);
     setDefaultPage(event);
+    window.history.pushState(null, "New Page Title", `/HowTo/${event.value}`);
   }
   
   return (

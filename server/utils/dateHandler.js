@@ -33,7 +33,6 @@ const tomorrow = (data) => {
   const isLeapYear = leapYearCheck(year);
 
   function monthCheck() {
-    leapYearCheck();
     switch (parseInt(month)) {
       case 1:
         if (day === '31') {

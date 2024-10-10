@@ -38,9 +38,10 @@ const Info = () => {
     }
   }, [url, destination]);
 
-  const handlerChangeAccount = (event) => {
+  const handlerChangeAccount = async(event) => {
     setContent(event.value);
     setDefaultPage(event);
+    window.history.pushState(null, "New Page Title", `/Info/${event.value}`);
   }
 
   const option = [

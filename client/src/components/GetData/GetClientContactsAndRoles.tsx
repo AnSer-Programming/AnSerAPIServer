@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getClientContactsAndRoles } from '../../utils/GetDataAPI';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import { toCSV } from '../Utility/DownloadHelper';
 
 const GetClients = () => {
   const [clientsData, setClientsData] = useState<any>({});
@@ -22,7 +23,15 @@ const GetClients = () => {
           response = await getClientContactsAndRoles(accountNum);
 
           let data = await response.json();
-  
+
+          if(data) {
+            for(let i = 0; i < data.length; i++) {
+              if(data[i].role_list) {
+                data[i].role_list = data[i].role_list.substring(0, data[i].role_list.lastIndexOf(','));
+              }
+            }
+          }
+
           setClientsData(data);
           console.log(clientsData);
         }
@@ -58,6 +67,19 @@ const GetClients = () => {
     maxPages = (Math.ceil((clientsDataLength / 50) - 1));
   }
 
+  function downloadHandler() {
+    let fileData: String = "Name,Role List\n";
+    let fileName: string = `Account${accountNum}ContactsAndRoles.csv`;
+    for (let i = 0; i < clientsData.length; i++) {
+      if(clientsData[i].role_list) {
+        fileData += `${clientsData[i].name.replaceAll(/,/g, "")},${clientsData[i].role_list.replaceAll(/,/g, " |")}\n`;
+      } else {
+        fileData += `${clientsData[i].name.replaceAll(/,/g, "")},None\n`;
+      }
+    }
+    toCSV(fileData, fileName);
+  }
+
   return (
     <>
       {maxPageSetter()}
@@ -76,30 +98,35 @@ const GetClients = () => {
         variant="filled" /> <br /><br />
       {
         clientsDataLength ?
-          <table>
-            <tbody>
-              {(function () {
-                let length: number = 50;
-                let start: number = length * pageNum;
-                let rows: any = [];
-                for (let i = 0; i < length; i++) {
-                  if (clientsData[i + start] == undefined) {
-                    break;
-                  } else {
-                    rows.push(
-                      <tr key={i} style={{ minWidth: '100%' }}>
-                        <td style={{ paddingRight: '25px' }}>Client Number: {clientsData[i + start].ClientNumber}</td>
-                        <td style={{ paddingRight: '25px' }}>Client: {clientsData[i + start].ClientName}</td>
-                        <td style={{ paddingRight: '25px' }}>Name: {clientsData[i + start].name}</td>
-                        <td style={{ paddingRight: '25px' }}>Role List: {clientsData[i + start].role_list}</td>
-                      </tr>
-                    )
+          <div>
+            <button onClick={downloadHandler} id="downloadCSV" value="download">
+              <i className="fas fa-download" />Click Here to Download
+            </button><br /><br />
+            <table>
+              <tbody>
+                {(function () {
+                  let length: number = 50;
+                  let start: number = length * pageNum;
+                  let rows: any = [];
+                  for (let i = 0; i < length; i++) {
+                    if (clientsData[i + start] == undefined) {
+                      break;
+                    } else {
+                      rows.push(
+                        <tr key={i} style={{ minWidth: '100%' }}>
+                          <td style={{ paddingRight: '25px' }}>Client Number: {clientsData[i + start].ClientNumber}</td>
+                          <td style={{ paddingRight: '25px' }}>Client: {clientsData[i + start].ClientName}</td>
+                          <td style={{ paddingRight: '25px' }}>Name: {clientsData[i + start].name}</td>
+                          <td style={{ paddingRight: '25px' }}>Role List: {clientsData[i + start].role_list}</td>
+                        </tr>
+                      )
+                    }
                   }
-                }
-                return rows;
-              })()}
-            </tbody>
-          </table> : <h2>LOADING...</h2>
+                  return rows;
+                })()}
+              </tbody>
+            </table>
+          </div> : <h2>LOADING...</h2>
       } <br />
       <button onClick={() => pageChangeHandler('Previous', 0)}>Previous</button> {`${pageNum + 1} of ${maxPages + 1}`} <button onClick={() => pageChangeHandler('Next', 0)}>Next</button>
     </>

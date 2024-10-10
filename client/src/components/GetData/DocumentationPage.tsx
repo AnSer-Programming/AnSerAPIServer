@@ -87,6 +87,7 @@ const DocumentationPage = () => {
               On this page you will be able to select a Client and view all of their directory listings and the roles that are assigned to each of them.
               Page Data will generate after an Account Number is entered/selected.
             </p>
+            <p>This page supports a CSV download of the Contacts and their Roles.</p>
             <p>Information that you will get:</p>
             <ul>
               <li>Account Number (Client Number)</li>
@@ -98,6 +99,19 @@ const DocumentationPage = () => {
             <ul>
               <li>Page Number: Use this option to quickly jump to a specific page.</li>
               <li>Account Number: Enter the Account Number for the account that you are looking for. Page updates as you type in your filter.</li>
+            </ul>
+            <p>
+              Reasons to submit a support ticket to Stephen Merki in freshdesk with the label type as API:
+            </p>
+            <ul>
+              <li>The Web Page is blank after entering an Account Number</li>
+              <li>Missing roles/contacts</li>
+            </ul>
+            <p>Information that I will need:</p>
+            <ul>
+              <li>Date and Time when you are attempting to access this information</li>
+              <li>CSV File with the missing data</li>
+              <li>What/who is missing from the webpage/CSV file or both</li>
             </ul>
           </Accordion.Body>
         </Accordion.Item>
@@ -137,7 +151,7 @@ const DocumentationPage = () => {
           <Accordion.Body style={bodyStyle}>
             <p>On this page you will be able to view all of our Accounts and the DID Assigned to them! This page is designed to be very responsive to user input.</p>
             <p>The Toggle Active DID will switch between DID's that are in use and DID's that are not in use but it is documented that we own that phone number.</p>
-            <p><strong style={{color: '#FF3333'}}>NOTE:</strong> If an Account Number appears multiple times then there are multiple DID's for that account.</p>
+            <p><strong style={{ color: '#FF3333' }}>NOTE:</strong> If an Account Number appears multiple times then there are multiple DID's for that account.</p>
             <p>Information that you will get (If the Toggle Active DID is checked):</p>
             <ul>
               <li>Account Number (Client Number)</li>
@@ -189,19 +203,19 @@ const DocumentationPage = () => {
               This button will begin downloading all directory information and put it into a CSV file to be shared with the client or backed up.
             </p>
             <p>
-              Do a search in the spreadsheet for 0 or Undefined. 
+              Do a search in the spreadsheet for 0 or Undefined.
               These are default values that get passed. The server should auto-remove undefined data but sometimes it sneaks its way through.
             </p>
             <p>
               If the CSV file is blank but the web page shows that there should have been data please submit a support ticket to Stephen Merki in freshdesk and label the type as API.
               Information that I will need:
-              <ul>
-                <li>Account Number</li>
-                <li>API Server URL (there are two servers | Production and Developer)</li>
-                <li>Date and Time of when you attempted to download the CSV</li>
-                <li>The CSV document even if it is blank</li>
-              </ul>
             </p>
+            <ul>
+              <li>Account Number</li>
+              <li>API Server URL (there are two servers | Production and Developer)</li>
+              <li>Date and Time of when you attempted to download the CSV</li>
+              <li>The CSV document even if it is blank</li>
+            </ul>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="8">
@@ -215,29 +229,60 @@ const DocumentationPage = () => {
               With how the Word Documents are being generated it is currently not possible to add anything to the header or footer of the word document.
             </p>
             <p>
-              There are still some images that will appear as a box with a red <span style={{color: '#FF3333'}}>X</span> in it. 
+              There are still some images that will appear as a box with a red <span style={{ color: '#FF3333' }}>X</span> in it.
               You should be able to delete it but these are typically the dial string images that appear in the info pages next to the phone number to dial.
-              Most of these images have been purged before the download but for some reason there are several ways that Amtelco declared an image tag. 
+              Most of these images have been purged before the download but for some reason there are several ways that Amtelco declared an image tag.
               Which has made it very hard to catch them all.
             </p>
             <p>
               Reasons to submit a support ticket to Stephen Merki in freshdesk with the label type as API:
-              <ul>
-                <li>The Word document is blank</li>
-                <li>The Web Page is blank</li>
-                <li>Missing information/data that should be there</li>
-                <li>The document has a System Shared Field ID instead of the value/data from the System Shared Field</li>
-                <li>The document has a Client Shared Field ID instead of the value/data from the Client Shared Field</li>
-                <li>Unlisted</li>
-              </ul>
-              Information that I will need:
-              <ul>
-                <li>Account Number</li>
-                <li>API Server URL (there are two servers | Production and Developer)</li>
-                <li>Date and Time of when you attempted to download the Word Document</li>
-                <li>The Word document even if it is blank</li>
-              </ul>
             </p>
+            <ul>
+              <li>The Word document is blank</li>
+              <li>The Web Page is blank</li>
+              <li>Missing information/data that should be there</li>
+              <li>The document has a System Shared Field ID instead of the value/data from the System Shared Field</li>
+              <li>The document has a Client Shared Field ID instead of the value/data from the Client Shared Field</li>
+              <li>Unlisted</li>
+            </ul>
+            <p>Information that I will need:</p>
+            <ul>
+              <li>Account Number</li>
+              <li>API Server URL (there are two servers | Production and Developer)</li>
+              <li>Date and Time of when you attempted to download the Word Document</li>
+              <li>The Word document even if it is blank</li>
+            </ul>
+          </Accordion.Body>
+        </Accordion.Item>
+        <Accordion.Item eventKey="9">
+          <Accordion.Header style={headerStyle}>Mail Gun Failed Events</Accordion.Header>
+          <Accordion.Body style={bodyStyle}>
+            <p>
+              This page is designed to give customer support and the supervisor teams at AnSer a way to view why emails are potentially not arriving in clients inboxes.
+            </p>
+            <p>List of columns being displayed.</p>
+            <ul>
+              <li>Recipient: The address that the emails are being sent to</li>
+              <li>Reason: The reason that was sent back to Mail Gun</li>
+              <li>Severity: How long we are being blocked for</li>
+              <ul>
+                <li>temporary</li>
+                <li>permanent</li>
+              </ul>
+              <li>Log Level: Is it a warning or an error</li>
+              <li>Date and Time (Central Standard Time)</li>
+            </ul>
+            <p>
+              Reasons to submit a support ticket to Stephen Merki in freshdesk with the label type as API:
+            </p>
+            <ul>
+              <li>The Web Page is blank</li>
+              <li>Missing information/data that should be there</li>
+            </ul>
+            <p>Information that I will need:</p>
+            <ul>
+              <li>Date and Time when you are attempting to access this information</li>
+            </ul>
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>
