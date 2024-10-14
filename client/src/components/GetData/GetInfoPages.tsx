@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { getClients, getInfoPages } from '../../utils/GetDataAPI';
+import { getInfoPages } from '../../utils/GetDataAPI';
 import { toPDF, toMSWord } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const GetInfoPages = () => {
-  const [clientsData, setClientsData] = useState<any>({});
+const GetInfoPages = (data:any) => {
   const [infoPages, setData] = useState<any>({});
   const [maxPage, setMaxPage] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [accountNum, setAccountNum] = useState<number>(0);
   const [accountName, setAccountName] = useState<string>("");
+  const [clientsData, setClientsData] = useState<any>({});
   let regex: RegExp;
   let isDone: boolean = false;
 
@@ -26,21 +25,7 @@ const GetInfoPages = () => {
       try {
         setCurrentPage(0);
         if (accountNum === 0) {
-          const response = await getClients();
-          let numbers: any[] = new Array;
-
-          if (!response.ok) {
-            throw new Error('something went wrong!');
-          }
-
-          let data = await response.json();
-
-          for (let i = 0; i < data.length; i++) {
-            numbers[i] = `${data[i].ClientNumber}`;
-          }
-
-          setClientsData(data);
-          setAccountNumbers(numbers);
+          setClientsData(data.clientsData);
         } else {
           console.log(accountNum);
           const response = await getInfoPages(accountNum);
@@ -204,12 +189,12 @@ const GetInfoPages = () => {
     <>
       <Autocomplete
         disablePortal
-        onChange={(event, newValue) => {
+        onChange={(event, newValue:any) => {
           if (newValue) {
             setAccountNum(parseInt(newValue));
           }
         }}
-        options={accountNumbers}
+        options={data.accountNumbers}
         sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{ zIndex: 0 }} />}
       /> <br />

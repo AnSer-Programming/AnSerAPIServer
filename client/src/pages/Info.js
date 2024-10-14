@@ -8,19 +8,41 @@ import GetContactsDirectories from '../components/GetData/GetContactsDirectories
 import GetDID from '../components/GetData/GetDID.tsx';
 import GetDirectoryContactsAndInfoCards from '../components/GetData/GetDirectoryContactsAndInfoCards.tsx';
 import GetInfoPages from '../components/GetData/GetInfoPages.tsx';
+import GetISHolidays from '../components/GetData/GetISHolidays.tsx';
 import GetProviders from '../components/GetData/GetProviders.tsx';
 import GetMailGunFailedEvents from '../components/GetData/GetMailGunFailedEvents.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
+import { getClients } from '../utils/GetDataAPI';
 
 const Info = () => {
   const [content, setContent] = useState("DocumentationPage");
   const [defaultPage, setDefaultPage] = useState({ value: 'DocumentationPage', label: 'Documentation' });
+  const [accountNumbers, setAccountNumbers] = useState([]);
+  const [clientsData, setClientsData] = useState({});
 
   const url = window.location.href.toString();
   const destination = url.split('/')[4];
 
   useEffect(() => {
+    const getAcountNumbers = async () => {
+      const response = await getClients();
+      let numbers = new Array;
+
+      if (!response.ok) {
+        throw new Error('something went wrong!');
+      }
+
+      let data = await response.json();
+
+      for (let i = 0; i < data.length; i++) {
+        numbers[i] = `${data[i].ClientNumber}`;
+      }
+
+      setClientsData(data);
+      setAccountNumbers(numbers);
+    }
+
     if (destination) {
       for (let i = 0; i < option.length; i++) {
         if (option[i].value == destination) {
@@ -36,9 +58,11 @@ const Info = () => {
       setContent("DocumentationPage");
       setDefaultPage({ value: 'DocumentationPage', label: 'Documentation' });
     }
+
+    getAcountNumbers();
   }, [url, destination]);
 
-  const handlerChangeAccount = async(event) => {
+  const handlerChangeAccount = async (event) => {
     setContent(event.value);
     setDefaultPage(event);
     window.history.pushState(null, "New Page Title", `/Info/${event.value}`);
@@ -55,6 +79,7 @@ const Info = () => {
     { value: 'GetDID', label: 'Get DID' },
     { value: 'GetDirectoryContactsAndInfoCards', label: 'Get Directory Contacts And Info Cards' },
     { value: 'GetInfoPages', label: 'Get Info Pages' },
+    { value: 'GetISHolidays', label: 'Get IS Holidays' },
     { value: 'GetMailGunFailedEvents', label: 'Mail Gun Failed Events' }
   ];
 
@@ -77,13 +102,20 @@ const Info = () => {
             'DocumentationPage': <DocumentationPage />,
             'GetAgentSupervisor': <GetAgentSupervisor />,
             'GetClients': <GetClients />,
-            'GetClientContactsAndRoles': <GetClientContactsAndRoles />,
+            'GetClientContactsAndRoles': <GetClientContactsAndRoles
+              accountNumbers={accountNumbers} />,
             'GetClientsDirectories': <GetClientsDirectories />,
             'GetContactsDirectories': <GetContactsDirectories />,
             'GetDID': <GetDID />,
-            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards />,
-            'GetInfoPages': <GetInfoPages />,
+            'GetDirectoryContactsAndInfoCards': <GetDirectoryContactsAndInfoCards
+              accountNumbers={accountNumbers}
+              clientsData={clientsData} />,
+            'GetInfoPages': <GetInfoPages
+              accountNumbers={accountNumbers}
+              clientsData={clientsData} />,
             'GetProviders': <GetProviders />,
+            'GetISHolidays': <GetISHolidays
+              accountNumbers={accountNumbers} />,
             'GetMailGunFailedEvents': <GetMailGunFailedEvents />
           }[content]
         }

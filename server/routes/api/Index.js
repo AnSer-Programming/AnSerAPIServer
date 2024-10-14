@@ -64,6 +64,7 @@ const clientsContactsAndRolesRoute = require('./GetData/GetClientContactsAndRole
 const getUndelivered = require('./GetData/Reports/GetUndelivered');
 const qGenda = require('./GetData/QGendaData/QGenda');
 const basementRepairSpecialists = require('./BasementRepairSpecialists');
+const getISHolidays = require('./GetData/GetISHolidays');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
@@ -79,6 +80,7 @@ router.use('/GetClientContactsAndRoles', clientsContactsAndRolesRoute);
 router.use('/GetUndelivered', getUndelivered);
 router.use('/QGenda', qGenda);
 router.use('/BasementRepairSpecialists', basementRepairSpecialists);
+router.use('/ISHolidays', getISHolidays);
 
 // Call monitoring API
 // Declare Variables
