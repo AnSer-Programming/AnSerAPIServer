@@ -189,3 +189,32 @@ export const getMailGunFailedEvents = () => {
     },
   });
 };
+
+// Used in GetISHolidays.tsx, GetDirectoryContactsAndInfoCards.tsx
+export const getISHolidays = () => {
+  return fetch(`/api/ISHolidays`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+// Used in GetClients.tsx
+export const getISHolidaysByNum = (accountNum) => {
+  return fetch(`/api/ISHolidays/ByAccountNum/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getISHolidaysByName = (accountName) => {
+  return fetch(`/api/ISHolidays/ByAccountName/${accountName}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
