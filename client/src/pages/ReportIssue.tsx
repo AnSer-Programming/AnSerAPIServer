@@ -81,7 +81,7 @@ const ReportIssue = () => {
         url: `${url}`,
         statement: `${description}`
       }
-      setErrorStatement([]);
+      setErrorStatement([<p>Thank you!</p>]);
       setSubmitted(true);
       setUrgency("");
       setFullName("");
