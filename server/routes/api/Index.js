@@ -1,14 +1,5 @@
 const router = require('express').Router();
 
-// Route for John Fallahee/Ryan Nettesheim || Training
-// Declare variables
-const brainier = require('./Brainier/Index');
-const onTimeRoute = require('./OnTime');
-
-// Set Routes
-router.use('/Brainier', brainier);
-router.use('/OnTime', onTimeRoute);
-
 // Test Routes
 // Declare variables
 const billy = require('./Billy');
@@ -109,5 +100,11 @@ router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
 const getEvents = require('./MailGun/GetEvents');
 
 router.use('/MailGun/Events', getEvents);
+
+//NodeMailer Tools
+const sendFeedbackEmail = require('./ReportIssueFeedback');
+
+router.use('/ReportIssueFeedback', sendFeedbackEmail);
+
 
 module.exports = router;

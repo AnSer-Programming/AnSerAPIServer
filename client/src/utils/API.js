@@ -204,3 +204,13 @@ export const setSchedulerAPI = (accountNum, data) => {
     body: JSON.stringify(data),
   });
 };
+
+export const sendEmailReportIssueFeedback = (data) => {
+  return fetch(`/api/ReportIssueFeedback`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
