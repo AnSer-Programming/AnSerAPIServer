@@ -1,4 +1,8 @@
 const schedule = require('node-schedule');
+const dotenv = require("dotenv");
+
+dotenv.config();
+
 // const sendEmail = require('../node-mailer/index');
 const sendUndeliveredReport = require('../node-mailer/SendUndeliveredReport');
 const undeliveredMessages = require('./undeliveredMessageEvent');
@@ -9,18 +13,23 @@ const directoriesWrongStatusCheckinMode = require('./directoriesWrongStatusCheck
 
 // Update active accounts to the API Database
 schedule.scheduleJob('05 1 * * *', function () {
-  const updateAccountsDB = require('./updateAccountListing');
-  updateAccountsDB;
+  if(process.env.SERVER_TYPE == "production") {
+    const updateAccountsDB = require('./updateAccountListing');
+    updateAccountsDB;
+  }
 });
 
 // Automated Reports
 schedule.scheduleJob('00 07 01 * *', async function () {
-  SendDirectoriesWithoutOverrides(await directoriesMissingOverrides());
+  if(process.env.SERVER_TYPE == "production") {
+    SendDirectoriesWithoutOverrides(await directoriesMissingOverrides());
+  }
 });
 
 schedule.scheduleJob('00 07 01 * *', async function () {
-  // directoriesWrongStatusCheckinMode();
-  SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
+  if(process.env.SERVER_TYPE == "production") {
+    SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
+  }
 });
 
 //Test
