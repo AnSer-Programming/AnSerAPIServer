@@ -94,20 +94,13 @@ export default function MenuAppBar(data:any) {
                   }} >
                   Resident Directory
                 </MenuItem>
-                <MenuItem
-                  onClick={(event: any) => {
-                    handleClose(event, 'Scheduler Tool');
-                    handleRoutes('/SchedulerSupervisor');
-                  }} >
-                  Scheduler Tool
-                </MenuItem>
-                <MenuItem
+                {/* <MenuItem
                   onClick={(event: any) => {
                     handleClose(event, 'Static Schedule');
                     handleRoutes('/StaticSchedule');
                   }} >
                   Static Schedule
-                </MenuItem>
+                </MenuItem> */}
                 <MenuItem
                   href="/Vessels" 
                   onClick={(event: any) => {
@@ -118,13 +111,6 @@ export default function MenuAppBar(data:any) {
                 </MenuItem>
                 <hr />
                 <strong>Other</strong>
-                <MenuItem
-                  onClick={(event: any) => {
-                    handleClose(event, 'Contact Dispatch List');
-                    handleRoutes('/ContactDispatch');
-                  }} >
-                  Contact Dispatch List
-                </MenuItem>
                 <MenuItem
                   onClick={(event: any) => {
                     handleClose(event, 'How To');
@@ -139,14 +125,14 @@ export default function MenuAppBar(data:any) {
                   }} >
                   Info
                 </MenuItem>
-                <MenuItem
+                {/* <MenuItem
                   href="/StatTracker" 
                   onClick={(event: any) => {
                     handleClose(event, 'Stat Tracker');
                     handleRoutes('/StatTracker');
                   }} >
                   Stat Tracker
-                </MenuItem>
+                </MenuItem> */}
               </Menu>
             </div>
           )}
