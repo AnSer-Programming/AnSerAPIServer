@@ -112,7 +112,13 @@ const GetClients = (data: any) => {
                   <i className="fas fa-download" />Click Here to Download
                 </button> : <></>
             }<br /><br />
-          </div> : <></>
+          </div> : <>
+            {
+              clientsDataLength ?
+                <button style={{ marginLeft: '.5%' }} onClick={downloadHandler} id="downloadCSV" value="download">
+                  <i className="fas fa-download" />Click Here to Download
+                </button> : <></>
+            }<br /><br /> </>
       } 
       {
         clientsDataLength ?
