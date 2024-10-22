@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { getClients, getDirectoryContactsAndInfoCards } from '../../utils/GetDataAPI';
+import { getDirectoryContactsAndInfoCards } from '../../utils/GetDataAPI';
 import { toCSV } from '../Utility/DownloadHelper';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const GetDirectoryContactsAndInfoCards = () => {
+const GetDirectoryContactsAndInfoCards = (data:any) => {
   const [clientsData, setClientsData] = useState<any>({});
   const [directoryData, setData] = useState<any>({});
   const [columnHeaders, setHeaders] = useState<any[]>([]);
-  const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [accountNum, setAccountNum] = useState<number>(0);
   const [accountName, setAccountName] = useState<string>("");
 
@@ -27,27 +26,7 @@ const GetDirectoryContactsAndInfoCards = () => {
     const getClientsData = async() => {
       try {
         if(accountNum === 0) {
-          const response = await getClients(); 
-          let numbers:any[] = new Array; 
-  
-          if (!response.ok) {
-            throw new Error('something went wrong!');
-          }
-  
-          let data = await response.json();
-  
-          setClientsData(data);
-
-          for(let i = 0; i < clientsDataLength; i++) {
-            if(clientsData[i].ClientNumber == accountNum) {
-              setAccountName(clientsData[i].ClientName);
-            }
-          }
-
-          for(let i = 0; i < data.length; i ++) {
-            numbers[i] = `${data[i].ClientNumber}`;
-          }
-          setAccountNumbers(numbers);
+          setClientsData(data.clientsData);
         } else {
           setHeaders([null]);
           const response = await getDirectoryContactsAndInfoCards(accountNum);
@@ -192,23 +171,23 @@ const GetDirectoryContactsAndInfoCards = () => {
     <>
       <Autocomplete
         disablePortal 
-        onChange={(event, newValue) => {
+        onChange={(event, newValue:any) => {
           if(newValue) { 
             setAccountNum(parseInt(newValue));
           }
         }}      
-        options={accountNumbers}
+        options={data.accountNumbers}
         sx={{background: 'white', width: '50%', minWidth: '150px', zIndex: 0}}
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{zIndex: 0}} />}
       /> <br />
       {headerHandler()} <br /> <br />
       {
         directoryData == "Unavailable" ? <p>The directory is not yet in IS</p> :
-          <div style={{overflow: "auto", height: '75vh'}}>
+          <div>
             <p><strong>Note:</strong> find and delete the word undefined from the CSV document. There is currently a bug that is causing this word to populate in some fields. If the word "undefined" pops up there is no data for that field.</p>
             <table>
               <thead>
-                <tr key={"columnHeaderRow"}>
+                <tr key="columnHeaderRow">
                   {(function(){
                       let rows:any = [];
                       for (let i = 0; i < columnHeaders.length; i++) {

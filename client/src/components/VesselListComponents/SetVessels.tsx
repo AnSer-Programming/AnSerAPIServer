@@ -107,9 +107,11 @@ const SetVessels = (data:any) => {
             contact_name = {vesselData[i].contact_name}
             vesselEdit = {(i:number, value:string) => handleVesselEdit(i, value, "contact_name")}
             options = {option} />
+          {
+          vesselData[i].vessel_name === "Unlisted" ? <td style={fieldStyles}></td> :
           <td style={fieldStyles}>
             <br /><button onClick={() => deleteRowHandler(parseInt(vesselData[i].index))} id={`${i}`} style={{height: '65%', width: '100%', alignSelf: 'baseline'}}>Delete Row</button>
-          </td>
+          </td> }
         </tr>
       )
     }

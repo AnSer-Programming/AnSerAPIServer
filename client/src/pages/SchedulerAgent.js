@@ -1,6 +1,6 @@
 import {React, useState, useEffect} from 'react';
 import GetScheduler from '../components/SchedulerComponents/AgentView.tsx';
-import SetScheduler from '../components/SetScheduler.tsx';
+import SetScheduler from '../components/SetScheduler';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 import { getSchedulerAPI } from '../utils/API';

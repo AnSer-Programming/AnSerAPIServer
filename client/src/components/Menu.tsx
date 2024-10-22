@@ -75,6 +75,13 @@ export default function MenuAppBar(data:any) {
                 <strong>Web Tools</strong>
                 <MenuItem
                   onClick={(event: any) => {
+                    handleClose(event, 'Crescent Electric Reach List');
+                    handleRoutes('/CrescentElectricReachList');
+                  }} >
+                  Crescent Electric Reach List
+                </MenuItem>
+                <MenuItem
+                  onClick={(event: any) => {
                     handleClose(event, 'Disconnect List');
                     handleRoutes('/DisconnectList');
                   }} >
@@ -87,13 +94,13 @@ export default function MenuAppBar(data:any) {
                   }} >
                   Resident Directory
                 </MenuItem>
-                <MenuItem
+                {/* <MenuItem
                   onClick={(event: any) => {
-                    handleClose(event, 'Scheduler Tool');
-                    handleRoutes('/SchedulerSupervisor');
+                    handleClose(event, 'Static Schedule');
+                    handleRoutes('/StaticSchedule');
                   }} >
-                  Scheduler Tool
-                </MenuItem>
+                  Static Schedule
+                </MenuItem> */}
                 <MenuItem
                   href="/Vessels" 
                   onClick={(event: any) => {
@@ -106,10 +113,10 @@ export default function MenuAppBar(data:any) {
                 <strong>Other</strong>
                 <MenuItem
                   onClick={(event: any) => {
-                    handleClose(event, 'Contact Dispatch List');
-                    handleRoutes('/ContactDispatch');
+                    handleClose(event, 'How To');
+                    handleRoutes('/HowTo');
                   }} >
-                  Contact Dispatch List
+                  How To
                 </MenuItem>
                 <MenuItem
                   onClick={(event: any) => {
@@ -118,14 +125,14 @@ export default function MenuAppBar(data:any) {
                   }} >
                   Info
                 </MenuItem>
-                <MenuItem
+                {/* <MenuItem
                   href="/StatTracker" 
                   onClick={(event: any) => {
                     handleClose(event, 'Stat Tracker');
                     handleRoutes('/StatTracker');
                   }} >
                   Stat Tracker
-                </MenuItem>
+                </MenuItem> */}
               </Menu>
             </div>
           )}

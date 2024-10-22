@@ -13,10 +13,10 @@
     "bootstrap": "^5.2.3",
     "chart.js": "^4.0.0",
     "jspdf": "^2.5.1",
-    "react": "^16.13.1",
+    "react": "^17.0.0 || ^18.0.0",
     "react-bootstrap": "^2.7.0",
     "react-chartjs-2": "^5.0.0",
-    "react-dom": "^16.13.1",
+    "react-dom": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^5.0.1",
     "react-select": "^5.7.4"

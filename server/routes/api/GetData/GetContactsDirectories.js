@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const config = require('../../../config/connectionProductionIS');
 const sql = require('mssql');
-const xml2js = require('xml2js');
 
 async function dataConverter(data) {
   let jsonData;
@@ -186,11 +185,11 @@ router.get('/ByDirectoryName/:directoryName', async (req, res) => {
         LEFT JOIN [dbo].[dirListingFields] ON [dbo].[dirViewFields].[subfieldId] = [dbo].[dirListingFields].[subfieldId]
         LEFT JOIN [dbo].[dirSubjects] ON [dbo].[dirSubjects].[subId] = [dbo].[dirListingFields].[subId]
         LEFT JOIN [dbo].[dirListings] ON [dbo].[dirListingFields].[listId] = [dbo].[dirListings].[listId]
-        WHERE [Title] = 'Name' AND [Name] = '${directoryName}'`;
+        WHERE [Title] = 'Name' AND [Name] = :directoryName`;
   (async function () {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      let result = await config.query(query, { replacements: { directoryName: directoryName }, type: seq.QueryTypes.SELECT });
 
       for(let i = 0; i<result.length; i++) {
         result[i].Status = await dataConverter(result[i].Status);
@@ -217,11 +216,11 @@ router.get('/ByPersonName/:personName', async (req, res) => {
         LEFT JOIN [dbo].[dirListingFields] ON [dbo].[dirViewFields].[subfieldId] = [dbo].[dirListingFields].[subfieldId]
         LEFT JOIN [dbo].[dirSubjects] ON [dbo].[dirSubjects].[subId] = [dbo].[dirListingFields].[subId]
         LEFT JOIN [dbo].[dirListings] ON [dbo].[dirListingFields].[listId] = [dbo].[dirListings].[listId]
-        WHERE [Title] = 'Name' AND [Field] LIKE '%${personName}%'`;
+        WHERE [Title] = 'Name' AND [Field] LIKE :personName`;
   (async function () {
     try {
       const seq = require('sequelize');
-      let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      let result = await config.query(query, { replacements: {personName: `%${personName}%` }, type: seq.QueryTypes.SELECT });
 
       for(let i = 0; i<result.length; i++) {
         result[i].Status = await dataConverter(result[i].Status);

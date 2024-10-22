@@ -1,14 +1,5 @@
 const router = require('express').Router();
 
-// Route for John Fallahee/Ryan Nettesheim || Training
-// Declare variables
-const brainier = require('./Brainier/Index');
-const onTimeRoute = require('./OnTime');
-
-// Set Routes
-router.use('/Brainier', brainier);
-router.use('/OnTime', onTimeRoute);
-
 // Test Routes
 // Declare variables
 const billy = require('./Billy');
@@ -25,6 +16,7 @@ router.use('/ContactDispatch', contactDispatch);
 
 // API Routes
 // Declare variables
+const crescentElectricReachRoute = require('./CrescentElectricReachList');
 const disconnectListRoute = require('./DisconnectList');
 const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
@@ -32,6 +24,7 @@ const timeConverterRoute = require('./TimeConverter');
 const vesselRouteDB = require('./VesselListDB');
 
 // Set Routes
+router.use('/CrescentElectricReachList', crescentElectricReachRoute);
 router.use('/DisconnectList', disconnectListRoute);
 router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);
@@ -57,6 +50,12 @@ const directoryContactsAndInfoCards = require('./GetData/GetDirectoryContactsAnd
 const infoPages = require('./GetData/GetInfoPages');
 const agentInfo = require('./GetData/GetAgents');
 const agentSupervisor = require('./GetData/GetAgentsSupervisors');
+const providersRoute = require('./GetData/GetProviders');
+const clientsContactsAndRolesRoute = require('./GetData/GetClientContactsAndRoles');
+const getUndelivered = require('./GetData/Reports/GetUndelivered');
+const qGenda = require('./GetData/QGendaData/QGenda');
+const basementRepairSpecialists = require('./BasementRepairSpecialists');
+const getISHolidays = require('./GetData/GetISHolidays');
 
 // Set Routes
 router.use('/GetDID', getDIDRoute);
@@ -67,6 +66,12 @@ router.use('/DirectoryContactsAndInfoCards', directoryContactsAndInfoCards);
 router.use('/InfoPages', infoPages);
 router.use('/AgentInfo', agentInfo);
 router.use('/AgentSupervisor', agentSupervisor);
+router.use('/GetProviders', providersRoute);
+router.use('/GetClientContactsAndRoles', clientsContactsAndRolesRoute);
+router.use('/GetUndelivered', getUndelivered);
+router.use('/QGenda', qGenda);
+router.use('/BasementRepairSpecialists', basementRepairSpecialists);
+router.use('/ISHolidays', getISHolidays);
 
 // Call monitoring API
 // Declare Variables
@@ -76,5 +81,30 @@ const callList = require('./Speech-To-Text-API/CallList');
 // Set Routes
 router.use('/CallInfo', callInfo);
 router.use('/CallList', callList);
+
+// Training Tools
+// Declare Variables
+const indexRandomizer = require('./Training/IndexRandomizer');
+const apiGetPutPost = require('./Training/APIGetPutPostTraining');
+
+// Set Routes
+router.use('/IndexRandomizer', indexRandomizer);
+router.use('/apiConnectionTest', apiGetPutPost);
+
+// Secret
+const yearToDateAccount = require('./Secret/YearToDateAccounts');
+
+router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
+
+//MailGun Tools
+const getEvents = require('./MailGun/GetEvents');
+
+router.use('/MailGun/Events', getEvents);
+
+//NodeMailer Tools
+const sendFeedbackEmail = require('./ReportIssueFeedback');
+
+router.use('/ReportIssueFeedback', sendFeedbackEmail);
+
 
 module.exports = router;
