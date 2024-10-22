@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -26,7 +26,7 @@ import ReportIssue from './pages/ReportIssue';
 // import zIndex from '@mui/material/styles/zIndex';
 
 function App() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
