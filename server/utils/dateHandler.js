@@ -162,6 +162,142 @@ const tomorrow = (data) => {
   return monthCheck();
 }
 
+const yesterday = (data) => {
+  let year = data.split('-')[0];
+  let month = data.split('-')[1];
+  let day = data.split('-')[2];
+  const isLeapYear = leapYearCheck(year);
+
+  function monthCheck() {
+    switch (parseInt(month)) {
+      case 1:
+        if (day === '1') {
+          return `${year}-12-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 2:
+        if (day === '1') {
+          return `${year}-01-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 3:
+        if (isLeapYear) {
+          if (day === '1') {
+            return `${year}-02-29`;
+          } else {
+            if(`${parseInt(day) - 1}`.length < 2) {
+              return `${year}-${month}-0${parseInt(day) - 1}`;
+            }
+            return `${year}-${month}-${parseInt(day) - 1}`;
+          }
+        } else {
+          if (day === '1') {
+            return `${year}-02-28`;
+          } else {
+            if(`${parseInt(day) - 1}`.length < 2) {
+              return `${year}-${month}-0${parseInt(day) - 1}`;
+            }
+            return `${year}-${month}-${parseInt(day) - 1}`;
+          }
+        }
+      case 4:
+        if (day === '1') {
+          return `${year}-03-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 5:
+        if (day === '1') {
+          return `${year}-04-30`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 6:
+        if (day === '1') {
+          return `${year}-05-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 7:
+        if (day === '1') {
+          return `${year}-06-30`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 8:
+        if (day === '1') {
+          return `${year}-07-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 9:
+        if (day === '1') {
+          return `${year}-8-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 10:
+        if (day === '1') {
+          return `${year}-9-30`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 11:
+        if (day === '1') {
+          return `${year}-10-31`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      case 12:
+        if (day === '1') {
+          return `${year}-11-30`;
+        } else {
+          if(`${parseInt(day) - 1}`.length < 2) {
+            return `${year}-${month}-0${parseInt(day) - 1}`;
+          }
+          return `${year}-${month}-${parseInt(day) - 1}`;
+        }
+      default:
+        console.log("ERROR!");
+        return (-1);
+    }
+  }
+
+  return monthCheck();
+}
+
 const isSaturday = (date) => {
   if (new Date(date).getDay() === 6) {
     return true;
@@ -198,4 +334,4 @@ const isWeekday = (date) => {
   }
 }
 
-module.exports = { tomorrow, isSaturday, isSunday, isWeekend, isWeekday };
+module.exports = { tomorrow, yesterday, isSaturday, isSunday, isWeekend, isWeekday };
