@@ -10,6 +10,8 @@ const SendDirectoriesWithoutOverrides = require('../node-mailer/SendDirectoriesW
 const directoriesMissingOverrides = require('./directoriesMissingOverrides');
 const SendDirectoriesInWrongStatusCheckinMode = require('../node-mailer/SendDirectoriesInWrongStatusCheckinMode');
 const directoriesWrongStatusCheckinMode = require('./directoriesWrongStatusCheckinMode');
+const SendCSVToDavisAndCrumpEmail = require('../node-mailer/emailToClient/SendCSVToDavisAndCrump');
+const davisAndCrump = require('./automatedReportsToClient/davisAndCrump');
 
 // Update active accounts to the API Database
 schedule.scheduleJob('05 1 * * *', function () {
@@ -31,6 +33,13 @@ schedule.scheduleJob('00 07 01 * *', async function () {
     SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
   }
 });
+
+schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every day
+  if(process.env.SERVER_TYPE == "production") {
+    SendCSVToDavisAndCrumpEmail(await davisAndCrump());
+  }
+});
+
 
 //Test
 // schedule.scheduleJob('10 38 17 * * *', async function () {

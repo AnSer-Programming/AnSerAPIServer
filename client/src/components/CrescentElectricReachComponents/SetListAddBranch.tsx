@@ -115,19 +115,19 @@ const SetListContactsAndBranchInfo = (data: any) => {
         quaternary_contact: ''
       };
 
-      if(primaryContact) {
+      if (primaryContact) {
         branchData.primary_contact = `${primaryContact}`;
       }
 
-      if(secondaryContact) {
+      if (secondaryContact) {
         branchData.secondary_contact = `${secondaryContact}`;
       }
 
-      if(tertiaryContact) {
+      if (tertiaryContact) {
         branchData.tertiary_contact = `${tertiaryContact}`;
       }
 
-      if(quaternaryContact) {
+      if (quaternaryContact) {
         branchData.quaternary_contact = `${quaternaryContact}`;
       }
 
