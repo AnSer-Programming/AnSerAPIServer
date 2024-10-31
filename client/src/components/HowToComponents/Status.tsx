@@ -1,3 +1,7 @@
+// Contents provided by Stephen Merki
+// Page Built by Stephen Merki
+// Screenshots taken by Stephen Merki
+
 const StepOne = require('../../assets/img/HowToIMGs/Status/StepOne.png');
 const StepTwo = require('../../assets/img/HowToIMGs/Status/StepTwoNoScheduledStatus.png');
 const StepThree = require('../../assets/img/HowToIMGs/Status/StepThreeWithScheduledStatus.png');
