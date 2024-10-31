@@ -22,6 +22,7 @@ const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
 const timeConverterRoute = require('./TimeConverter');
 const vesselRouteDB = require('./VesselListDB');
+const clientInfoRoute = require('./ClientInfoRouter'); // Import ClientInfoRouter
 
 // Set Routes
 router.use('/CrescentElectricReachList', crescentElectricReachRoute);
@@ -30,6 +31,7 @@ router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);
 router.use('/timeConverter', timeConverterRoute);
 router.use('/VesselDB', vesselRouteDB);
+router.use('/ClientInfo', clientInfoRoute); // Set ClientInfo route
 
 // Data Tracker Routes
 // Declare Variables
@@ -73,7 +75,7 @@ router.use('/QGenda', qGenda);
 router.use('/BasementRepairSpecialists', basementRepairSpecialists);
 router.use('/ISHolidays', getISHolidays);
 
-// Call monitoring API
+// Call Monitoring API
 // Declare Variables
 const callInfo = require('./Speech-To-Text-API/CallInfo');
 const callList = require('./Speech-To-Text-API/CallList');
@@ -96,12 +98,12 @@ const yearToDateAccount = require('./Secret/YearToDateAccounts');
 
 router.use('/Secret/YearToDate/Accounts', yearToDateAccount);
 
-//MailGun Tools
+// MailGun Tools
 const getEvents = require('./MailGun/GetEvents');
 
 router.use('/MailGun/Events', getEvents);
 
-//NodeMailer Tools
+// NodeMailer Tools
 const sendFeedbackEmail = require('./ReportIssueFeedback');
 
 router.use('/ReportIssueFeedback', sendFeedbackEmail);
