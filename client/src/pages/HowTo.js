@@ -2,6 +2,7 @@ import {React, useState, useEffect} from 'react';
 import DocumentationPage from '../components/HowToComponents/DocumentationPage.tsx';
 import Status from '../components/HowToComponents/Status.tsx';
 import AnswerPhraseGuide from '../components/HowToComponents/AnswerPhraseGuide.tsx';
+import AlbuquerqueActivationGuide from '../components/HowToComponents/AlbuquerqueActivationGuide.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
 
@@ -32,6 +33,7 @@ const HowTo = () => {
 
   const option = [
     {value: 'DocumentationPage', label: 'Documentation'},
+    {value: 'AlbuquerqueActivationGuide', label: 'Albuquerque Activation Guide'},
     {value: 'AnswerPhraseGuide', label: `Answer Phrase Guide`},
     {value: 'Status', label: `Setting Up Status's`}
   ];
@@ -59,6 +61,7 @@ const HowTo = () => {
         {
           {/* this acts as a case branch where the options in single quotes are what we are checking for, the option in square brackets is the argument being passed in*/
             'DocumentationPage': <DocumentationPage />,
+            'AlbuquerqueActivationGuide': <AlbuquerqueActivationGuide />,
             'AnswerPhraseGuide': <AnswerPhraseGuide />,
             'Status': <Status />
           }[content]

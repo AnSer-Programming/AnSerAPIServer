@@ -15,3 +15,11 @@ h6 {
   font-weight: 300;
   font-style: italic;
 }
+
+.pageBodyHyperlink {
+  color: #99FF99;
+}
+
+.pageBodyHyperlink:hover {
+  color: #9999FF;
+}
