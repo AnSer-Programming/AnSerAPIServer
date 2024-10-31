@@ -1,0 +1,127 @@
+/* Reset and Base Styles */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Sticky Header */
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #007bff; /* Primary blue color */
+}
+
+/* Form Label Styling */
+.form-label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Form Group Spacing */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Hidden Elements */
+.hidden {
+  display: none;
+}
+
+/* Error Message Styling */
+#error-message {
+  color: red;
+  font-size: 0.875rem;
+  display: none; /* Hidden by default */
+  margin-top: 0.5rem;
+}
+
+/* Sliding Bar Animation for Interactive Elements */
+.sliding-bar {
+  position: absolute;
+  height: 3px;
+  background-color: blue;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Button Styling */
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff; /* Primary blue color */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  transition: background-color 0.3s;
+}
+
+/* Input Fields */
+input.form-control {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+}
+
+input.form-control:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #007bff;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-nav .nav-link {
+  color: white !important;
+}
+
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Accordion Styles */
+.accordion-button {
+  font-weight: bold;
+}
+
+.accordion-body {
+  background-color: #f8f9fa;
+  padding: 1rem 1.5rem;
+}
+
+/* Container and Image Styles */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.imageHolder {
+  max-width: 200px;
+  margin: auto;
+}
+
+.imageHolder img {
+  max-width: 100%;
+  height: auto;
+}
+

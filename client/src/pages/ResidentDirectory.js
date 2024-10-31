@@ -1,116 +1,121 @@
-import {React, useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import GetResidentDirectory from '../components/ResidentDirectoryComponents/GetResidentDirectory.tsx';
 import SetResidentDirectory from '../components/ResidentDirectoryComponents/SetResidentDirectory.tsx';
-// import ResidentDirectoryWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 import { getResidentDirectoryAPI } from '../utils/API';
-let accountNumPlaceHolder = null;
 
 const ResidentDirectory = () => {
   const [isEdit, setIsEdit] = useState(false);
-  const [residentDirectoryData, setResidentDirectoryData] = useState({});
+  const [editIndex, setEditIndex] = useState(null);
   const [accountNum, setAccountNum] = useState(0);
-  const editingEnabled = `Exit Editing`;
-  const editingDisabled = `Enable Editing`;
+  const [residentDirectoryData, setResidentDirectoryData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // use this to determine if `useEffect()` hook needs to run again
-  const residentDirectoryDataLength = Object.keys(residentDirectoryData).length;
-  
   useEffect(() => {
-    const getResidentDirectoryData = async() => {
-      try {
-        accountNumPlaceHolder = accountNum;
-        const response = await getResidentDirectoryAPI(accountNum);
+    const fetchResidentDirectoryData = async () => {
+      if (accountNum === 0) return;
 
+      setIsLoading(true);
+      try {
+        const response = await getResidentDirectoryAPI(accountNum);
         if (!response.ok) {
-          throw new Error('something went wrong!');
+          throw new Error('Something went wrong!');
         }
 
-        let residentData = await response.json();
-        
+        const residentData = await response.json();
         setResidentDirectoryData(residentData);
-        setIsEdit(false);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    getResidentDirectoryData();
-  }, [residentDirectoryDataLength, accountNum]);
-  
-  // if (!residentDirectoryDataLength) {
-  //   return <h2>LOADING...</h2>;
-  // }
+    fetchResidentDirectoryData();
+  }, [accountNum]);
 
-//   const residentDirectoryDisplay = () => {
-//     return(<ResidentDirectoryWalkThrough />);
-//   }
+  const handleEditMode = (index) => {
+    setEditIndex(index);
+    setIsEdit(true);
+  };
 
-  const editDisplay = () => {
-    return(
-      <>
-        {
-          isEdit ?
-            <p></p> :
-            <div>
-              <p>*If your updates don't appear right away, please refresh the page.</p> 
-              <p>The list is grouped by Contact, then sorted in reverse alphabetical order for each Vessel under that specific Contact.</p>
-            </div>
-        }
-        <div> 
-          <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br /> 
-        </div>
-        {
-          isEdit ? 
-            <SetResidentDirectory 
-              accountData={residentDirectoryData}
-              setEdit={(editBoolean) => setIsEdit(editBoolean)} /> : 
-            <GetResidentDirectory
-              accountData={residentDirectoryData} /> 
-        } 
-      </>
-    )
-  }
+  const handleAddResident = () => {
+    setResidentDirectoryData([
+      ...residentDirectoryData,
+      { resident_full_name: '', resident_room_number: '', resident_phone_number: '' },
+    ]);
+    setIsEdit(true);
+  };
 
-  const handlerChangeAccount = (event) => {
-    setAccountNum(event.value);
-  }
+  const handleChangeAccount = (selectedOption) => {
+    setAccountNum(selectedOption.value);
+  };
 
-  const editingHandler = () => {
-    if(isEdit){
-      setIsEdit(false);
-    }else{
-      setIsEdit(true);
-    }
-  }
-
-  const option = [
-    {value: '0', label: 'Walk-Through'},
-    {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '87712', label: 'Account 87712: Bell Tower Assisted Living'}
+  const accountOptions = [
+    { value: '0', label: 'Walk-Through' },
+    { value: '38', label: 'Account 38: Stephen Merki Test Account' },
+    { value: '87712', label: 'Account 87712: Bell Tower Assisted Living' },
+    { value: '39', label: 'Resident Directory Test - Cristian' },
   ];
 
   return (
     <>
-      <Menu 
-        page="Resident Directory" />
-      <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
-        <div style={{width: '50%', marginLeft: '5px'}}>
+      <Menu page="Resident Directory" />
+      <div style={{ width: '100%', padding: 20, backgroundColor: '#282c34' }}>
+        <div style={{ width: '50%', margin: '0 auto', marginBottom: 30 }}>
           <Select
-            className='text-dark'
+            className="text-dark"
             name="Account List"
-            value={option.value}
-            onChange={handlerChangeAccount}
-            options={option}
-            defaultValue={{value: '0', label: 'Walk-Through'}}
-          /> <br />
+            value={accountOptions.find(option => option.value === accountNum)}
+            onChange={handleChangeAccount}
+            options={accountOptions}
+            defaultValue={{ value: '0', label: 'Walk-Through' }}
+          />
         </div>
-        { accountNum != 0 ? editDisplay() : <p>Walk Through coming soon!</p>/*walkThroughDisplay()*/ }
-        <br />
-      </div> 
+
+        {isLoading ? (
+          <p style={{ textAlign: 'center', marginTop: 50, color: '#fff' }}>Loading data...</p>
+        ) : accountNum !== 0 ? (
+          <div style={{ padding: 20, backgroundColor: '#f4f4f4', borderRadius: 8 }}>
+            <h2 style={{ marginBottom: 20, color: '#000' }}>Resident Directory</h2>
+
+            <button
+              style={{ marginBottom: 30, padding: 10, backgroundColor: '#003366', color: '#fff' }}
+              onClick={handleAddResident}
+            >
+              Add Resident
+            </button>
+
+            {isEdit && editIndex !== null ? (
+              <SetResidentDirectory
+                accountData={residentDirectoryData}
+                setEdit={setIsEdit}
+              />
+            ) : (
+              <GetResidentDirectory
+                accountData={residentDirectoryData}
+                onEdit={handleEditMode}
+                textStyle={{ color: '#000' }} // Added prop to pass text color style
+              />
+            )}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', marginTop: 50, color: '#fff' }}>
+            Please select an account to view residents.
+          </p>
+        )}
+      </div>
     </>
   );
 };
 
 export default ResidentDirectory;
+
+
+
+
+
+
+
+

@@ -1,0 +1,79 @@
+/* Container for Resident Directory */
+.residentDirectoryContainer {
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+}
+
+/* Grid for Residents */
+.residentGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Resident Row */
+.residentRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Resident Input Fields */
+.residentInput {
+  flex: 1;
+}
+
+.residentTextfield {
+  background-color: #f9f9f9;
+}
+
+/* Top Controls */
+.topControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Search Input */
+.searchInput {
+  flex: 1;
+}
+
+/* Page Size Selector */
+.pageSizeSelector {
+  min-width: 120px;
+}
+
+/* Add Resident Button */
+.addResidentButton {
+  background-color: #003366;
+  color: #fff;
+}
+
+.addResidentButton:hover {
+  background-color: #004085;
+}
+
+/* Save & Exit Button */
+.saveExitButton {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.saveExitButton:hover {
+  background-color: #5a6268;
+}
+
+/* Button Container */
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
