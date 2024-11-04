@@ -36,6 +36,7 @@ const sendEmail = (data) => {
       cc: [
         'joe@anser.com', 'stephenm@anser.com'
       ],
+      // to: "stephenm@anser.com",
       subject: "Your Daily Report", // Subject line
       text: `Hello,\n\nYour daily report is attached.\n\nThank you,\nAnSer`, // plain text body
       html: `<p>Hello,</p>
