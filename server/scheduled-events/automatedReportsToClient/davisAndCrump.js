@@ -1,8 +1,15 @@
 const config = require('../../config/connectionProductionCustom');
 const sql = require('mssql');
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const { yesterday } = require('../../utils/dateHandler');
+const { yesterdayWithoutLeadingZero } = require('../../utils/dateHandler');
 const { twelveHourToTwentyFourHour } = require('../../utils/timeHandler');
+
+function leadingSpaceCheck(number) {
+  if(`${parseInt(number)}`.length < 2) {
+    return ` ${number}`;
+  }
+  return number;
+}
 
 async function main() {
   const csvFileData = {
@@ -11,9 +18,9 @@ async function main() {
   const date = new Date().toLocaleDateString();
   const today = `${date.split('/')[2]}-${date.split('/')[0]}-${date.split('/')[1]}`;
   const fileName = `${date.split('/')[0]}-${date.split('/')[1]}-${date.split('/')[2].slice(-2)} Morning Report`;
-  const yesterdayVariable = yesterday(today);
-  const formattedDateToday = `${months[date.split('/')[0] - 1]} ${date.split('/')[1]} ${date.split('/')[2]}`;
-  const formattedDateYesterday = `${months[yesterdayVariable.split('-')[1] - 1]} ${yesterdayVariable.split('-')[2]} ${yesterdayVariable.split('-')[0]}`;
+  const yesterdayVariable = yesterdayWithoutLeadingZero(today);
+  const formattedDateToday = `${months[date.split('/')[0] - 1]} ${leadingSpaceCheck(date.split('/')[1])} ${date.split('/')[2]}`;
+  const formattedDateYesterday = `${months[yesterdayVariable.split('-')[1] - 1]} ${leadingSpaceCheck(yesterdayVariable.split('-')[2])} ${yesterdayVariable.split('-')[0]}`;
 
   const queryToday = `SELECT *, CONVERT(NVARCHAR(MAX), [DateTime]) as date_string
       FROM [Accounts].[dbo].[8021_DavisAndCrump]
@@ -43,7 +50,9 @@ async function main() {
     return ("sql on: " + err);
   })
   const queryResultsToday = await runQuery(queryToday);
+  console.log(queryResultsToday);
   const queryResultsYesterday = await runQuery(queryYesterday);
+  console.log(queryResultsYesterday);
   let results = new Array();
   let timeOnly;
 
@@ -90,8 +99,30 @@ async function main() {
 
   let count = 1;
   let fileData;
-  const keysLength = Object.keys(csvFileData.data[0]).length;
-  const keys = Object.keys(csvFileData.data[0]);
+  let keys;
+  if(csvFileData.data[0]) {
+    keys = Object.keys(csvFileData.data[0]);
+  } else {
+    keys = [
+      'PRODUCT CODE',
+      'CALL DATE',
+      'FIRST NAME',
+      'LAST NAME',
+      'ADD1',
+      'ADD2',
+      'CITY',
+      'STATE',
+      'ZIP',
+      'PHONE',
+      'SECOND PHONE',
+      'EMAIL',
+      'c/o',
+      'care of last name',
+      'source',
+      'Davis Feder Code'
+    ];
+  }
+  const keysLength = Object.keys(keys).length;
 
   for(let i = 0; i < keysLength; i++) {
     if(keysLength == count) {
