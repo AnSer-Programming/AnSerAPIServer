@@ -126,7 +126,7 @@ async function main() {
 
   for(let i = 0; i < keysLength; i++) {
     if(keysLength == count) {
-      fileData += `${keys[i].trim()}\n`;
+      fileData += `${keys[i].trim()}\r\n`;
     } else if(count == 1) {
       fileData = `${keys[i].trim()},`;
     } else {
@@ -141,7 +141,7 @@ async function main() {
         csvFileData.data[x][keys[y]] = '';
       }
       if(y == keysLength-1) {
-        fileData += `${csvFileData.data[x][keys[y]].trim()}\n`;
+        fileData += `${csvFileData.data[x][keys[y]].trim()}\r\n`;
       } else {
         fileData += `${csvFileData.data[x][keys[y]].trim()},`;
       }
