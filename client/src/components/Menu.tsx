@@ -74,6 +74,15 @@ export default function MenuAppBar(data: any) {
               >
                 Home
               </MenuItem>
+              {/* Client Info Menu Item */}
+              <MenuItem
+                onClick={(event) => {
+                  handleClose(event, 'Client Info');
+                  handleRoutes('/ClientInfo');
+                }}
+              >
+                Client Info
+              </MenuItem>
               <hr />
               <strong>Web Tools</strong>
               <MenuItem
@@ -99,15 +108,6 @@ export default function MenuAppBar(data: any) {
                 }}
               >
                 Resident Directory
-              </MenuItem>
-              {/* Client Info Menu Item */}
-              <MenuItem
-                onClick={(event) => {
-                  handleClose(event, 'Client Info');
-                  handleRoutes('/ClientInfo');
-                }}
-              >
-                Client Info
               </MenuItem>
               <MenuItem
                 onClick={(event) => {
