@@ -32,9 +32,9 @@ const sendEmail = (data) => {
   async function main() {
     const info = await transporter.sendMail({
       from: `${process.env.EMAIL_USER_API}`, // sender address
-      to: "rnecaise@myomnitech.com; robert.cain@daviscrump.com; Trevor.Rockstad@daviscrump.com; latrisha.crump@daviscrump.com; leads@daviscrump.com", // list of receivers
+      to: "rnecaise@myomnitech.com; robert.cain@daviscrump.com; Trevor.Rockstad@daviscrump.com; latrisha.crump@daviscrump.com; martincrump@daviscrump.com; leads@daviscrump.com", // list of receivers
       cc: [
-        'joe@anser.com', 'stephenm@anser.com'
+        'stephenm@anser.com'
       ],
       // to: "stephenm@anser.com",
       subject: "Your Daily Report", // Subject line
