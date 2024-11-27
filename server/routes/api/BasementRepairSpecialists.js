@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const sha256 = require('js-sha256');
 const { basementRepairSpecialistsAppointments } = require('../../utils/xmlToJSON');
 const { tomorrow, isWeekend } = require('../../utils/dateHandler');
+const { isHoliday } = require('../../utils/holidayCheck');
 const { dataBaseData } = require('./BasementRepairSpecialistsDatabaseData');
 const days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -85,13 +86,12 @@ async function checkAvailability(appointmentData, today) {
   let time;
   let formattedDate;
   let formattedDay;
-
-  while (isWeekend(date)) { //Check if it is the weekend
+  while ((isWeekend(date) || await isHoliday(1028, date)) || (isWeekend(date) && await isHoliday(1028, date))) { //Check if it is the weekend and/or is a holiday
     date = tomorrow(date);
   }
 
   while (count < 15) { //Get 15 rows of data
-    dayObj = setDayData(date); //set time slots and saleperson for the entire day
+    dayObj = setDayData(await date); //set time slots and saleperson for the entire day
     for (let x = appointmentData.entry.length; x > 0; x--) { //Begin check to see if an appointment slot has already been filled
       if (appointmentData.entry[x]) { //Check that appointmentData.entry[x] exists
         if (parseInt(appointmentData.entry[x].content.properties.appointmentDate.split('-')[0]) == parseInt(date.split('-')[0])) { //Year check
@@ -133,7 +133,6 @@ async function checkAvailability(appointmentData, today) {
 
     for (let x = 0; x < scheduledAppointments.length; x++) { //Begin check to see if an appointment slot has already been filled by AnSer
       if (scheduledAppointments[x]) { //Check to make sure scheduledAppointment[x] does exist
-        // console.log(scheduledAppointments[x]);
         if (parseInt(scheduledAppointments[x].Date.split('-')[0]) == parseInt(date.split('-')[0])) { //Check Year
           if (parseInt(scheduledAppointments[x].Date.split('-')[1]) == parseInt(date.split('-')[1])) { //Check Month
             if (parseInt(scheduledAppointments[x].Date.split('-')[2]) == parseInt(date.split('-')[2])) { //Check Day
@@ -185,8 +184,7 @@ async function checkAvailability(appointmentData, today) {
           }
         }
 
-        formattedDate = `${days[new Date(dayObj[i].date).getDay()]} ${months[parseInt(dayObj[i].date.split('-')[1])-1]} ${formattedDay}`;
-        // console.log(`${formattedDate} ${days[new Date(dayObj[i].date).getDay()]}`);
+        formattedDate = `${days[new Date(dayObj[i].date).getDay()+1]} ${months[parseInt(dayObj[i].date.split('-')[1])-1]} ${formattedDay}`;
 
         appointments.available[count].formattedTime = time;
         appointments.available[count].value = `${formattedDate} at ${time} with ${appointments.available[count].salesPerson}`;
@@ -194,7 +192,7 @@ async function checkAvailability(appointmentData, today) {
       }
     }
     date = tomorrow(date);
-    while (isWeekend(date)) {
+    while ((isWeekend(date) || await isHoliday(1028, date)) || (isWeekend(date) && await isHoliday(1028, date))) {//Check if it is the weekend and/or is a holiday
       date = tomorrow(date);
     }
   }
@@ -225,6 +223,7 @@ router.get('/', async (req, res) => {
     });
 
     let parsedReturnData = await returnData.text();
+    console.log(parsedReturnData);
 
     let appointmentData = await basementRepairSpecialistsAppointments(parsedReturnData, today);
 

@@ -146,7 +146,7 @@ const tomorrow = (data) => {
         }
       case 12:
         if (day === '31') {
-          return `${year}-01-01`;
+          return `${parseInt(year)+1}-01-01`;
         } else {
           if(`${parseInt(day) + 1}`.length < 2) {
             return `${year}-${month}-0${parseInt(day) + 1}`;
@@ -172,7 +172,7 @@ const yesterday = (data) => {
     switch (parseInt(month)) {
       case 1:
         if (day === '1') {
-          return `${year}-12-31`;
+          return `${parseInt(year)-1}-12-31`;
         } else {
           if(`${parseInt(day) - 1}`.length < 2) {
             return `${year}-${month}-0${parseInt(day) - 1}`;
@@ -381,7 +381,7 @@ const tomorrowWithoutLeadZero = (data) => {
         }
       case 12:
         if (day === '31') {
-          return `${year}-1-1`;
+          return `${parseInt(year)+1}-1-1`;
         } else {
           return `${year}-${month}-${parseInt(day) + 1}`;
         }
@@ -404,7 +404,7 @@ const yesterdayWithoutLeadingZero = (data) => {
     switch (parseInt(month)) {
       case 1:
         if (day === '1') {
-          return `${year}-12-31`;
+          return `${parseInt(year)-1}-12-31`;
         } else {
           return `${year}-${month}-${parseInt(day) - 1}`;
         }
@@ -492,7 +492,7 @@ const yesterdayWithoutLeadingZero = (data) => {
 }
 
 const isSaturday = (date) => {
-  if (new Date(date).getDay() === 6) {
+  if (new Date(date).getDay() === 5) {
     return true;
   } else {
     return false;
@@ -500,7 +500,7 @@ const isSaturday = (date) => {
 }
 
 const isSunday = (date) => {
-  if (new Date(date).getDay() === 0) {
+  if (new Date(date).getDay() === 6) {
     return true;
   } else {
     return false;
