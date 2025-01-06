@@ -108,5 +108,9 @@ const sendFeedbackEmail = require('./ReportIssueFeedback');
 
 router.use('/ReportIssueFeedback', sendFeedbackEmail);
 
+//Reports
+const missingPermissions = require('./GetData/Reports/ISPermissionGroupsCheck');
+
+router.use('/Reports/MissingPermissions', missingPermissions);
 
 module.exports = router;
