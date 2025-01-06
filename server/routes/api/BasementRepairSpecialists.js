@@ -5,6 +5,7 @@ const { basementRepairSpecialistsAppointments } = require('../../utils/xmlToJSON
 const { tomorrow, isWeekend } = require('../../utils/dateHandler');
 const { isHoliday } = require('../../utils/holidayCheck');
 const { dataBaseData } = require('./BasementRepairSpecialistsDatabaseData');
+const { mainDataHandler } = require('./BasementRepairSpecialistsDataHandler');
 const days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 let salesPeople = ['Bob Reber', 'Dan Frost'];
@@ -236,5 +237,18 @@ router.get('/', async (req, res) => {
     res.send(err);
   }
 });
+
+router.post('/', async(req, res) => {
+  try {
+    console.log(req.body);
+    const sendData = mainDataHandler(req.body);
+
+    console.log(req.body);
+    console.log(sendData);
+    res.json(sendData);
+  } catch(err) {
+    console.err(err);
+  }
+})
 
 module.exports = router;
