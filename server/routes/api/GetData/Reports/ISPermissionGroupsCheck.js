@@ -20,8 +20,6 @@ router.get('/', async (req, res) => {
       const seq = require('sequelize');
       let result = await config.query(query, { type: seq.QueryTypes.SELECT });
 
-      console.log(result[0]);
-
       res.json(await groupCheck(result));
     } catch (err) {
       // ... error checks

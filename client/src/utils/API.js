@@ -59,7 +59,7 @@ export const deleteVesselsDBAPI = (index, data) => {
 
 // Contact Dispatch List Calls
 export const getContactDispatchAPI = () => {
-  return fetch(`/api/ContactDispatch`, {
+  return fetch(`/api/ContactDispatch/GetData`, {
     headers: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -67,18 +67,8 @@ export const getContactDispatchAPI = () => {
   });
 };
 
-export const getGroupContactDispatchAPI = (groupNum) => {
-  console.log(groupNum)
-  return fetch(`/api/ContactDispatch/${groupNum}`, {
-    headers: {
-      method: 'GET',
-      'Content-Type': 'application/json',
-    },
-  });
-};
-
-export const setContactDispatchAPI = (data) => {
-  return fetch(`/api/ContactDispatch/updateClient`, {
+export const updateContactDispatchAPI = (data, id) => {
+  return fetch(`/api/ContactDispatch/ByID/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
