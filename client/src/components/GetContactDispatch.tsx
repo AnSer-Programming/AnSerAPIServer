@@ -51,10 +51,20 @@ const GetContactDispatch = (data:any) => {
   }
 
   const contactDispatchStyles = {
+    tableHolder: {
+      height: '65vh',
+      overflow: 'auto'
+    },
     tableStyles: {
       marginLeft: '1%',
-      width: '95%'
+      width: '95%',
+      zIndex: 0,
     },
+    tableHeaderStyles: {
+      position: 'sticky',
+      top: '0px',
+      zIndex: 1,
+    } as React.CSSProperties,
     tableField: {
       borderBottom: 'solid 1px',
       fontSize: '18px',
@@ -74,10 +84,10 @@ const GetContactDispatch = (data:any) => {
 
   return (
     <>
-      <div>
+      <div style={contactDispatchStyles.tableHolder}>
         <table style={contactDispatchStyles.tableStyles}>
-          <thead>
-            <tr style={{width:"100%"}}>
+          <thead style={contactDispatchStyles.tableHeaderStyles} className='bg-dark'>
+            <tr style={{borderBottom: 'solid 1px white'}}>
               <td style={contactDispatchStyles.tableFieldSmall}>Client Number</td>
               <td style={contactDispatchStyles.tableFieldLarge}>Client Name</td>
               <td style={contactDispatchStyles.tableFieldSmall}>Billing Code</td>
