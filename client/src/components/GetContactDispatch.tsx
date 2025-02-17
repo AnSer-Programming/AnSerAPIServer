@@ -17,7 +17,8 @@ const GetContactDispatch = (data:any) => {
         const response = await getContactDispatchAPI();
 
         if (!response.ok) {
-          throw new Error('something went wrong!');
+          const error = JSON.stringify(response);
+          throw new Error(`something went wrong!: ${error}`);
         }
 
         const accounts = await response.json();
@@ -29,7 +30,7 @@ const GetContactDispatch = (data:any) => {
     
     const interval = setInterval(() => {
       getContactDispatchData();
-    }, 30000);
+    }, 10000);
     getContactDispatchData();
     data.setMax(pages);
 
@@ -49,27 +50,43 @@ const GetContactDispatch = (data:any) => {
     );
   }
 
-  const tableStyles = {
-    marginLeft: '1%',
-    width: '90%'
+  const contactDispatchStyles = {
+    tableStyles: {
+      marginLeft: '1%',
+      width: '95%'
+    },
+    tableField: {
+      borderBottom: 'solid 1px',
+      fontSize: '18px',
+      width: '10%'
+    },
+    tableFieldSmall: {
+      borderBottom: 'solid 1px',
+      fontSize: '18px',
+      width: '2%'
+    },
+    tableFieldLarge: {
+      borderBottom: 'solid 1px',
+      fontSize: '18px',
+      width: '25%'
+    }
   }
 
-  const tableField = {
-    borderBottom: 'solid 1px',
-    fontSize: '18px',
-    width: '25%'
-  }
-  
   return (
     <>
       <div>
-        <table style={tableStyles}>
+        <table style={contactDispatchStyles.tableStyles}>
           <thead>
             <tr style={{width:"100%"}}>
-              <td style={tableField}>Account</td>
-              <td style={tableField}>Status</td>
-              <td style={tableField}>Account Type</td>
-              <td style={tableField}>API</td>
+              <td style={contactDispatchStyles.tableFieldSmall}>Client Number</td>
+              <td style={contactDispatchStyles.tableFieldLarge}>Client Name</td>
+              <td style={contactDispatchStyles.tableFieldSmall}>Billing Code</td>
+              <td style={contactDispatchStyles.tableFieldSmall}>Initials</td>
+              <td style={contactDispatchStyles.tableField}>Update Start Date</td>
+              <td style={contactDispatchStyles.tableField}>Sent For Review On</td>
+              <td style={contactDispatchStyles.tableFieldSmall}>Reviewer Initials</td>
+              <td style={contactDispatchStyles.tableField}>Review Completed On</td>
+              <td style={contactDispatchStyles.tableField}>Completion Date</td>
             </tr>
           </thead>
           <tbody>
@@ -81,10 +98,15 @@ const GetContactDispatch = (data:any) => {
                 } else {
                   rows.push(
                     <tr id={`${i}`}>
-                      <td style={tableField}>{contactDispatchData[i+modifier].account}</td>
-                      <td style={tableField}>{contactDispatchData[i+modifier].status}</td>
-                      <td style={tableField}>{contactDispatchData[i+modifier].account_type}</td>
-                      <td style={tableField}>{contactDispatchData[i+modifier].api}</td>
+                      <td style={contactDispatchStyles.tableFieldSmall}>{contactDispatchData[i+modifier].client_number}</td>
+                      <td style={contactDispatchStyles.tableFieldLarge}>{contactDispatchData[i+modifier].client_name}</td>
+                      <td style={contactDispatchStyles.tableFieldSmall}>{contactDispatchData[i+modifier].billing_code}</td>
+                      <td style={contactDispatchStyles.tableFieldSmall}>{contactDispatchData[i+modifier].initials}</td>
+                      <td style={contactDispatchStyles.tableField}>{contactDispatchData[i+modifier].start_date}</td>
+                      <td style={contactDispatchStyles.tableField}>{contactDispatchData[i+modifier].review_sent_date}</td>
+                      <td style={contactDispatchStyles.tableFieldSmall}>{contactDispatchData[i+modifier].reviewer_initials}</td>
+                      <td style={contactDispatchStyles.tableField}>{contactDispatchData[i+modifier].review_complete_date}</td>
+                      <td style={contactDispatchStyles.tableField}>{contactDispatchData[i+modifier].completion_date}</td>
                     </tr>)
                 }
               }

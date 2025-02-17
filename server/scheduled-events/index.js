@@ -14,12 +14,12 @@ const SendCSVToDavisAndCrumpEmail = require('../node-mailer/emailToClient/SendCS
 const davisAndCrump = require('./automatedReportsToClient/davisAndCrump');
 
 // Update active accounts to the API Database
-schedule.scheduleJob('05 1 * * *', function () {
-  if(process.env.SERVER_TYPE == "production") {
-    const updateAccountsDB = require('./updateAccountListing');
-    updateAccountsDB;
-  }
-});
+// schedule.scheduleJob('05 1 * * *', function () {
+//   if(process.env.SERVER_TYPE == "production") {
+//     const updateAccountsDB = require('./updateAccountListing');
+//     updateAccountsDB;
+//   }
+// });
 
 // Automated Reports
 schedule.scheduleJob('00 07 01 * *', async function () {

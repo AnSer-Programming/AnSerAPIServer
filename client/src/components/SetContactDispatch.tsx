@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
-import { getContactDispatchAPI, setContactDispatchAPI } from '../utils/API';
-import SetContactDispatchAccountNum from './SetContactDispatchComponents/SetContactDispatchAccountNum';
-import SetContactDispatchAccountStatus from './SetContactDispatchComponents/SetContactDispatchAccountStatus';
-import SetContactDispatchAccountType from './SetContactDispatchComponents/SetContactDispatchAccountType';
-import SetContactDispatchAccountAPI from './SetContactDispatchComponents/SetContactDispatchAccountAPI';
+import { getContactDispatchAPI, updateContactDispatchAPI } from '../utils/API';
+import SetContacTextFieldReadOnly from './SetContactDispatchComponents/SetContacTextFieldReadOnly';
+import SetContacTextFieldInput from './SetContactDispatchComponents/SetContacTextFieldInput';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+
+interface contactDispatchJSON {
+  initials: string;
+  start_date: string;
+  review_sent_date: string;
+  reviewer_initials: string;
+  review_complete_date: string;
+  completion_date: string;
+}
 
 const SetContactDispatch = (data:any) => {
   // let updateContactDispatchData:JSON = JSON.parse('{"Data":[]}');
@@ -15,30 +22,33 @@ const SetContactDispatch = (data:any) => {
   // use this to determine if `useEffect()` hook needs to run again
   const contactDispatchDataLength = Object.keys(contactDispatchData).length;
   const pages = Math.ceil(contactDispatchDataLength / 100)-1;
-
-  let updateContactDispatchData:any = [];
     
-  useEffect(() => {
-    const getContactDispatchData = async() => {
-      try {
-        const response = await getContactDispatchAPI();
+    useEffect(() => {
+      const getContactDispatchData = async() => {
+        try {
+          const response = await getContactDispatchAPI();
   
-        if (!response.ok) {
-          throw new Error('something went wrong!');
+          if (!response.ok) {
+            const error = JSON.stringify(response);
+            throw new Error(`something went wrong!: ${error}`);
+          }
+  
+          const accounts = await response.json();
+          setContactDispatchData(accounts);
+        } catch (err) {
+          console.error(err);
         }
+      };
+      
+      const interval = setInterval(() => {
+        getContactDispatchData();
+      }, 10000);
+      getContactDispatchData();
+      data.setMax(pages);
   
-        const accounts = await response.json();
-        setContactDispatchData(accounts);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+      return () => clearInterval(interval);
   
-    getContactDispatchData();
-    data.setMax(pages);
-    setModifier(data.pageNum*100);
-  
-  }, [contactDispatchDataLength]);
+    }, [contactDispatchDataLength]);
 
   useEffect(() => {
     setModifier(data.pageNum*100);
@@ -52,51 +62,72 @@ const SetContactDispatch = (data:any) => {
     );
   }
   
-  const handleContactUpdate = async() => {
+  const handleContactUpdate = async(updateContactDispatchData:any, id:any) => {
     try {
-      const response = await setContactDispatchAPI(updateContactDispatchData);
+      const response = await updateContactDispatchAPI(updateContactDispatchData, id);
 
       if (!response.ok) {
         throw new Error('something went wrong!');
+      } else {
+        try {
+          const response = await getContactDispatchAPI();
+    
+          if (!response.ok) {
+            console.log(response);
+            throw new Error('something went wrong!');
+          }
+    
+          const accounts = await response.json();
+          setContactDispatchData(accounts);
+        } catch (err) {
+          console.error(err);
+        }
       }
-
-      const updatedContactDispatch = await response;
-      setContactDispatchData(updatedContactDispatch);
     } catch (err) {
       console.error(`Update Error: ${err}`);
     }
   };
 
   const handleContactDispatchEdit = async(data:any) => {
-    updateContactDispatchData = {data}
-    console.log(`${JSON.stringify(data)}`);
+    console.log(data);
+    let updateContactDispatchData:any = {};
+    let id = data.id;
+    updateContactDispatchData[data.type] = `${data.value}`;
+
+    handleContactUpdate(updateContactDispatchData, id)
+    // console.log(`${JSON.stringify(data)}`);
   }
 
-  const saveBtn = {
-    display: 'flex',
-    position: 'fixed' as const,
-    right: '1%',
-    textAlign: 'center' as const,
-    bottom: '5%',
-    width: '12%',
-  }
-
-  const tableStyles = {
-    marginLeft: '1%',
-    width: '75%'
-  }
-
-  const tableField = {
-    fontSize: '18px',
-    marginRight: '1%',
-    width: '25%'
+  const contactDispatchStyles = {
+    tableStyles: {
+      marginLeft: '1%',
+      padding: '0px',
+      width: '99%'
+    },
+    tableField: {
+      fontSize: '18px',
+      margin: '0px',
+      padding: '0px',
+      width: '10%'
+    },
+    tableFieldSmall: {
+      fontSize: '18px',
+      margin: '0px',
+      padding: '0px',
+      width: '7%'
+    },
+    tableFieldLarge: {
+      fontSize: '18px',
+      margin: '0px',
+      padding: '0px',
+      width: '15%'
+    }
   }
   
   return (
     <>
-      <button onClick={handleContactUpdate} style={saveBtn}>Save All Edits</button>
       <div>
-        <table style={tableStyles}>
+        <table style={contactDispatchStyles.tableStyles}>
           <tbody>
             {(function() {
               let length:number = 100;
@@ -107,34 +138,64 @@ const SetContactDispatch = (data:any) => {
                 } else {
                   rows.push(
                     <tr>
-                      <td style={tableField}>
-                        Account Number: <br />
-                        <SetContactDispatchAccountNum 
-                          accountNum={contactDispatchData[i+modifier].account}
+                      <td style={contactDispatchStyles.tableFieldSmall}>
+                        Client Number: <br />
+                        <SetContacTextFieldReadOnly 
+                          placeHolder={contactDispatchData[i+modifier].client_number}
                         />
                       </td>
-                      <td style={tableField}>
-                        Status: 
-                        <SetContactDispatchAccountStatus
-                          status={contactDispatchData[i+modifier].status}
-                          updateHandler={(accountStatusData:any) => {
-                            let data = {account: contactDispatchData[i+modifier].account, status: accountStatusData};
-                            handleContactDispatchEdit(data);
-                          }}
+                      <td style={contactDispatchStyles.tableFieldLarge}>
+                        Client Name: 
+                        <SetContacTextFieldReadOnly
+                          placeHolder={contactDispatchData[i+modifier].client_name}
                         /> 
                       </td>
-                      <td style={tableField}>
-                        Account Type: 
-                        <SetContactDispatchAccountType
-                          type={contactDispatchData[i+modifier].account_type}
-                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
+                      <td style={contactDispatchStyles.tableFieldSmall}>
+                        Billing Code: 
+                        <SetContacTextFieldReadOnly
+                          placeHolder={contactDispatchData[i+modifier].billing_code}
                         /> 
                       </td>
-                      <td style={tableField}>
-                        API: <br />
-                        <SetContactDispatchAccountAPI 
-                          api={contactDispatchData[i+modifier].api}
-                          updateHandler={(data:any) => handleContactDispatchEdit(data)}
+                      <td style={contactDispatchStyles.tableFieldSmall}>
+                        Initials: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "initials", value: data, id: contactDispatchData[i+modifier].id})}
+                        />
+                      </td>
+                      <td style={contactDispatchStyles.tableField}>
+                      Update Start Date: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "start_date", value: data, id: contactDispatchData[i+modifier].id})}
+                        />
+                      </td>
+                      <td style={contactDispatchStyles.tableField}>
+                      Sent For Review On: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "review_sent_date", value: data, id: contactDispatchData[i+modifier].id})}
+                        />
+                      </td>
+                      <td style={contactDispatchStyles.tableFieldSmall}>
+                      Reviewer Initials: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "reviewer_initials", value: data, id: contactDispatchData[i+modifier].id})}
+                        />
+                      </td>
+                      <td style={contactDispatchStyles.tableField}>
+                      Review Completed On: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "review_complete_date", value: data, id: contactDispatchData[i+modifier].id})}
+                        />
+                      </td>
+                      <td style={contactDispatchStyles.tableField}>
+                        Completion Date: <br />
+                        <SetContacTextFieldInput 
+                          placeHolder={contactDispatchData[i+modifier].initials}
+                          updateHandler={(data:any) => handleContactDispatchEdit({type: "completion_date", value: data, id: contactDispatchData[i+modifier].id})}
                         />
                       </td>
                     </tr>
