@@ -12,6 +12,8 @@ const SendDirectoriesInWrongStatusCheckinMode = require('../node-mailer/SendDire
 const directoriesWrongStatusCheckinMode = require('./directoriesWrongStatusCheckinMode');
 const SendCSVToDavisAndCrumpEmail = require('../node-mailer/emailToClient/SendCSVToDavisAndCrump');
 const davisAndCrump = require('./automatedReportsToClient/davisAndCrump');
+const contactDispatchEmail = require('../node-mailer/ContactDispatchEmail/SendContactDispatchReport');
+const contactDispatchReport = require('./ContactDispatchReports/contactDispatchReport');
 
 // Update active accounts to the API Database
 // schedule.scheduleJob('05 1 * * *', function () {
@@ -38,6 +40,14 @@ schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every d
   if(process.env.SERVER_TYPE == "production") {
     SendCSVToDavisAndCrumpEmail(await davisAndCrump());
   }
+});
+
+schedule.scheduleJob('*/5 * * * * *', async function () { // test email
+  // console.log("Test");
+  // contactDispatchEmail(await contactDispatchReport());
+  // if(process.env.SERVER_TYPE == "production") {
+  // contactDispatchEmail(await contactDispatchReport());
+  // }
 });
 
 

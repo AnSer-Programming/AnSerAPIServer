@@ -1,8 +1,6 @@
 import {React, useState, useCallback} from 'react';
 import GetContactDispatch from '../components/GetContactDispatch.tsx';
 import SetContactDispatch from '../components/SetContactDispatch.tsx';
-import Select from 'react-select';
-import Menu from '../components/Menu.tsx';
 
 const ContactDispatch = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -10,6 +8,9 @@ const ContactDispatch = () => {
   const [option, setOption] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
+
+  // const url = window.location.href.toString();
+  // const destination = url.split('/')[4];
 
   const editingHandler = () => {
     if(isEdit){
@@ -40,13 +41,11 @@ const ContactDispatch = () => {
 
   return (
     <>
-      <Menu 
-        page="Contact Dispatch List" />
-      <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
-        <button onClick={editingHandler}>{isEdit ? editingEnabled : editingDisabled}</button> <br /><br />
+      <div className='text-light bg-dark pt-2' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px', height: '100vh', margin: '0px' }}>
         <button onClick={previousPageHandler}>Previous</button>
         <span> Page: {option+1} </span>
-        <button onClick={nextPageHandler}>Next</button><br /><br />
+        <button onClick={nextPageHandler}>Next</button>
+        <button onClick={editingHandler} style={{position: 'absolute', right: '5px'}} className='mr-4'>{isEdit ? editingEnabled : editingDisabled}</button><br /><br />
         {
           isEdit ? <SetContactDispatch 
             pageNum={option}

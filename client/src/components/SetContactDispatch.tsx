@@ -109,9 +109,9 @@ const SetContactDispatch = (data: any) => {
 
   const contactDispatchStyles = {
     tableHolder: {
-      height: '65vh',
+      height: '85vh',
       overflow: 'auto',
-      zIndex: 0,
+      zIndex: 1,
     },
     tableStyles: {
       marginLeft: '1%',
@@ -121,7 +121,7 @@ const SetContactDispatch = (data: any) => {
     tableHeaderStyles: {
       position: 'sticky',
       top: '0px',
-      zIndex: 1,
+      zIndex: 2,
     } as React.CSSProperties,
     tableField: {
       fontSize: '18px',

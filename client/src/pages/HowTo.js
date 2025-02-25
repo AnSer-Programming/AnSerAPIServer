@@ -3,6 +3,7 @@ import DocumentationPage from '../components/HowToComponents/DocumentationPage.t
 import Status from '../components/HowToComponents/Status.tsx';
 import AnswerPhraseGuide from '../components/HowToComponents/AnswerPhraseGuide.tsx';
 import AlbuquerqueActivationGuide from '../components/HowToComponents/AlbuquerqueActivationGuide.tsx';
+import CarrierCodes from '../components/HowToComponents/CarrierCodes.tsx';
 import ClientSharedFieldsGuide from '../components/HowToComponents/ClientSharedFields.tsx';
 import Menu from '../components/Menu.tsx';
 import Select from 'react-select';
@@ -36,6 +37,7 @@ const HowTo = () => {
     {value: 'DocumentationPage', label: 'Documentation'},
     {value: 'AlbuquerqueActivationGuide', label: 'Albuquerque Activation Guide'},
     {value: 'AnswerPhraseGuide', label: `Answer Phrase Guide`},
+    {value: 'CarrierCodes', label: `Carrier Codes`},
     {value: 'ClientSharedFieldsGuide', label: `Client Shared Fields Guide`},
     {value: 'Status', label: `Setting Up Status's`}
   ];
@@ -65,6 +67,7 @@ const HowTo = () => {
             'DocumentationPage': <DocumentationPage />,
             'AlbuquerqueActivationGuide': <AlbuquerqueActivationGuide />,
             'AnswerPhraseGuide': <AnswerPhraseGuide />,
+            'CarrierCodes': <CarrierCodes />,
             'ClientSharedFieldsGuide': <ClientSharedFieldsGuide />,
             'Status': <Status />
           }[content]

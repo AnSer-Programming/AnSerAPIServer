@@ -52,7 +52,7 @@ const GetContactDispatch = (data:any) => {
 
   const contactDispatchStyles = {
     tableHolder: {
-      height: '65vh',
+      height: '85vh',
       overflow: 'auto'
     },
     tableStyles: {

@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "chart.js": "^4.0.0",
+    "chartjs-to-image": "^1.2.2",
     "dotenv": "^16.1.4",
     "express": "^4.17.1",
     "flatted": "^3.2.7",
