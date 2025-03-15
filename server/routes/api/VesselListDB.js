@@ -40,7 +40,7 @@ router.get('/:accountNum', async (req, res) => {
     let i = vesselData.length-1;
     let placeHolder;
     while(i > -1) {
-      console.log(JSON.stringify(placeHolder));
+      // console.log(JSON.stringify(placeHolder));
       if(vesselData[i].vessel_name == "Unlisted") {
         placeHolder = vesselData[i];
         for(let x = i; x < vesselData.length-1; x++) {
