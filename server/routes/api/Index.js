@@ -19,6 +19,7 @@ router.use('/ContactDispatch', contactDispatch);
 const crescentElectricReachRoute = require('./CrescentElectricReachList');
 const disconnectListRoute = require('./DisconnectList');
 const lomaCottagesGuestList = require('./LOMACottagesGuestList');
+const onCallGroupRoute = require('./OCGroup');
 const residentDirectoryRoute = require('./ResidentDirectory');
 const schedulerRoute = require('./Scheduler');
 const timeConverterRoute = require('./TimeConverter');
@@ -29,6 +30,7 @@ const clientInfoRoute = require('./ClientInfoRouter'); // Import ClientInfoRoute
 router.use('/CrescentElectricReachList', crescentElectricReachRoute);
 router.use('/DisconnectList', disconnectListRoute);
 router.use('/LOMACottagesGuestList', lomaCottagesGuestList);
+router.use('/OCGroup', onCallGroupRoute);
 router.use('/ResidentDirectory', residentDirectoryRoute);
 router.use('/Scheduler', schedulerRoute);
 router.use('/timeConverter', timeConverterRoute);

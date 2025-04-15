@@ -13,6 +13,7 @@ import CrescentElectricReachList from './pages/CrescentElectricReachList';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
 import HowTo from './pages/HowTo';
+import OCGroupList from './pages/OCGroupList';
 import Index from './pages/Index';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
@@ -58,6 +59,7 @@ function App() {
           <Route exact path='/HowTo/*' component={HowTo} />
           <Route exact path='/Info' component={Info} />
           <Route exact path='/Info/*' component={Info} />
+          <Route exact path='/OCGroupList' component={OCGroupList} />
           <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
           <Route exact path='/Scheduler' component={SchedulerAgent} />
           <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />

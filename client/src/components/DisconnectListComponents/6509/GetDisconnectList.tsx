@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDisconnectListAPI } from '../utils/API';
+import { getDisconnectListAPI } from '../../../utils/API';
 
 let accountNumPlaceHolder = null;
 

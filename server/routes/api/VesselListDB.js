@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { VesselListTable } = require('../../models');
-const { sequelize } = require('../../models/OnTimeTable');
+const { sequelize } = require('../../models/VesselListTable');
 
 // be sure to include its associated Products
 // router.get('/', async (req, res) => {

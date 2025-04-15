@@ -204,3 +204,23 @@ export const sendEmailReportIssueFeedback = (data) => {
     body: JSON.stringify(data),
   });
 }
+
+// OC Group API Call
+export const getOCGroupAPI = (accountNum) => {
+  return fetch(`/api/OCGroup/${accountNum}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const updateOCGroupAPI = (id, data) => {
+  return fetch(`/api/OCGroup/ByID/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+};

@@ -1,17 +1,18 @@
 import {React, useState} from 'react';
-import GetDisconnectList from '../components/DisconnectListComponents/6509/GetDisconnectList.tsx';
-import SetDisconnectList from '../components/DisconnectListComponents/6509/SetDisconnectList.tsx';
+import GetOCGroup from '../components/OCGroupComponents/GetOCGroup.tsx';
+import SetOCGroup from '../components/OCGroupComponents/SetOCGroup.tsx';
+import OCGroupListWalkThrough from '../components/WalkThrough/VesselList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 
-const DisconnectList = () => {
+const OCGroupList = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [accountNum, setAccountNum] = useState(0);
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
 
   const walkThroughDisplay = () => {
-    return(<p>This is where the walk-through will go.</p>);
+    return(<OCGroupListWalkThrough />);
   }
 
   const editDisplay = () => {
@@ -19,13 +20,10 @@ const DisconnectList = () => {
       <>
         {
           isEdit ?
+            <p></p> :
             <div>
-              <p><span className='text-warning'>*</span>If the fields turn <span className='bg-warning text-dark'>Orange</span> then you need to fill in at least one of the <span className='bg-warning text-dark'>Orange</span> fields in the group.<br />
-              <span className='text-danger'>*</span>If the fields turn <span className='bg-danger text-white'>Red</span> then you need to fill in that field.</p>
-            </div> :
-            <div>
-              <p>*If your updates don't appear right away, please refresh the page.<br /> 
-              The list is ordered in alphabetical order by Property Owner.</p>
+              <p>*If your updates don't appear right away, please refresh the page.</p> 
+              <p>The list is in alphabetical order by facility.</p>
             </div>
         }
         <div> 
@@ -33,10 +31,10 @@ const DisconnectList = () => {
         </div>
         {
           isEdit ? 
-          <SetDisconnectList
+          <SetOCGroup 
           accountNum={accountNum}
           setEdit={(editBoolean) => setIsEdit(editBoolean)}/> : 
-          <GetDisconnectList
+          <GetOCGroup
           accountNum={accountNum} />
         } 
       </>
@@ -57,15 +55,13 @@ const DisconnectList = () => {
 
   const option = [
     {value: '0', label: 'Walk-Through'},
-    {value: '38', label: 'Account 38: Stephen Merki Test Account'},
-    {value: '3618', label: 'Account 3618: Jonathan Creek Water'},
-    {value: '6509', label: 'Account 6509: Plymouth Utilities'}
-  ]
+    {value: '44233', label: 'Account 44233: Radiology Associates'}
+  ];
 
   return (
     <>
       <Menu 
-        page="Disconnect List" />
+        page="OC Group List" />
       <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
@@ -84,4 +80,4 @@ const DisconnectList = () => {
   );
 };
 
-export default DisconnectList;
+export default OCGroupList;

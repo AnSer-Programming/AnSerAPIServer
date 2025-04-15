@@ -103,6 +103,14 @@ export default function MenuAppBar(data: any) {
               </MenuItem>
               <MenuItem
                 onClick={(event) => {
+                  handleClose(event, 'On Call Group List');
+                  handleRoutes('/OCGroupList');
+                }}
+              >
+                On Call Group List
+              </MenuItem>
+              <MenuItem
+                onClick={(event) => {
                   handleClose(event, 'Resident Directory');
                   handleRoutes('/ResidentDirectory');
                 }}
