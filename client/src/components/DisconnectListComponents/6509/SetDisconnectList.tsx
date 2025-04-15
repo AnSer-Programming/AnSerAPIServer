@@ -1,6 +1,6 @@
 import React from 'react'; 
 import { useState, useEffect } from 'react';
-import { getDisconnectListAPI, setDisconnectListAPI } from '../utils/API';
+import { getDisconnectListAPI, setDisconnectListAPI } from '../../../utils/API';
 import TextField from '@mui/material/TextField';
 
 const SetDisconnectList = (data:any) => {

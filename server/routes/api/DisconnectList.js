@@ -13,7 +13,7 @@ async function disconnectWrite(accountNum, data) {
   data.DisconnectList = data.DisconnectList.sort();
 
   // Force the unlisted row for the accounts declared in the if statement
-  if (accountNum == 38 || accountNum == 6509) {
+  if (accountNum == 38 || accountNum == 6509 || accountNum == 3618) {
     for (var i = 0; i < data.DisconnectList.length; i++) {
       if (data.DisconnectList[i].PropertyOwner == "Unlisted") {
         if (data.DisconnectList[i].Notes != "Unlisted") {
