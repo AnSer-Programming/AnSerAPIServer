@@ -3,13 +3,12 @@ const config = require('../../config/connection');
 const sql = require('mssql');
 
 const dataBaseData = async () => {
-  const query = `SELECT * FROM [isapi].[dbo].[44233_OnCallGroup]`;
+  const query = `EXEC [isapi].[dbo].[spGetOnCallGroup44233]`;
   let queryResults;
   async function runQuery() {
     try {
       const seq = require('sequelize');
       let result = await config.query(query, { type: seq.QueryTypes.SELECT });
-      console.log(result);
       return result;
     } catch (err) {
       // ... error checks
