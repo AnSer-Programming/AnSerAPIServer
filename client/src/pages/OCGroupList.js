@@ -1,7 +1,7 @@
 import {React, useState} from 'react';
 import GetOCGroup from '../components/OCGroupComponents/GetOCGroup.tsx';
 import SetOCGroup from '../components/OCGroupComponents/SetOCGroup.tsx';
-import OCGroupListWalkThrough from '../components/WalkThrough/VesselList.tsx';
+import OCGroupListWalkThrough from '../components/WalkThrough/OCGroupList.tsx';
 import Select from 'react-select';
 import Menu from '../components/Menu.tsx';
 
@@ -62,7 +62,7 @@ const OCGroupList = () => {
     <>
       <Menu 
         page="OC Group List" />
-      <div className='text-light bg-dark pt-5' style={{width: '100%', paddingLeft: '5px', paddingRight: '5px'}}>
+      <div className='text-light bg-dark pt-5' style={{height: '90vh', width: '100%', paddingLeft: '5px', paddingRight: '5px', overflowY: 'scroll'}}>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
             className='text-dark'

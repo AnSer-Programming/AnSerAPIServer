@@ -68,13 +68,26 @@ router.get('/:cottage', async (req, res) => {
     let count = 0;
     for(let i = 0; i < data.length; i++) {
       if(data[i].cottage == req.params.cottage) {
-        if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1])) {
+        if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1]) && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])) {
           if(parseInt(data[i].check_in_date.split('-')[2]) <= parseInt(today.split('-')[2]) && parseInt(data[i].check_out_date.split('-')[2]) > parseInt(today.split('-')[2])) {
+            returnData[count] = data[i];
+            count++;
+          }
+        } else if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1]) && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])+1) {
+          if(parseInt(data[i].check_in_date.split('-')[2]) <= parseInt(today.split('-')[2]) && parseInt(data[i].check_out_date.split('-')[1]) > parseInt(today.split('-')[1])) {
+            returnData[count] = data[i];
+            count++;
+          }
+        } else if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1])-1 && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])) {
+          if(parseInt(data[i].check_out_date.split('-')[2]) > parseInt(today.split('-')[2])) {
             returnData[count] = data[i];
             count++;
           }
         }
       }
+    }
+    if(!returnData[0]) {
+      returnData[0] = {Empty: "No Occupancy"};
     }
     res.json(returnData);
   } catch (err) {
