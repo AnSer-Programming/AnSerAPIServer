@@ -103,7 +103,7 @@ const ReportIssue = () => {
           <Button onClick={() => { buttonHandler("bugReport") }} id="bugReport" color={urgency == "true" ? "success" : "primary"}>Bug Report</Button>
         </ButtonGroup> <br /> <br />
 
-        <TextField label="Full Name" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        <TextField label="Your Full Name" onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           reportHandler("FullName", event.target.value);
         }}
           id="fullName"

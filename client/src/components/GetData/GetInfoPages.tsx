@@ -14,6 +14,8 @@ const GetInfoPages = (data:any) => {
   const [accountName, setAccountName] = useState<string>("");
   const [clientsData, setClientsData] = useState<any>({});
   let regex: RegExp;
+  let otherRegex: RegExp;
+  let RegexWithDash: RegExp;
   let isDone: boolean = false;
 
   // use this to determine if `useEffect()` hook needs to run again
@@ -44,10 +46,18 @@ const GetInfoPages = (data:any) => {
 
           for (let x = 0; x < data[1].length; x++) {
             regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${data[1][x].cltfieldID}\]`);
+            otherRegex = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+_[0-9]+\.${data[1][x].cltfieldID}\]`);
+            RegexWithDash = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+-[A-Za-z0-9]+_[0-9]+\.${data[1][x].cltfieldID}\]`);
             for (let y = 0; y < data[0].length; y++) {
               isDone = false;
               while (!isDone) {
-                if (data[0][y].Info.match(regex)) {
+                if (data[0][y].Info.match(RegexWithDash)) {
+                  data[0][y].Info = data[0][y].Info.replace(RegexWithDash, data[1][x].Field);
+                }
+                else if (data[0][y].Info.match(otherRegex)) {
+                  data[0][y].Info = data[0][y].Info.replace(otherRegex, data[1][x].Field);
+                }
+                else if (data[0][y].Info.match(regex)) {
                   data[0][y].Info = data[0][y].Info.replace(regex, data[1][x].Field);
                 } else {
                   isDone = true;
