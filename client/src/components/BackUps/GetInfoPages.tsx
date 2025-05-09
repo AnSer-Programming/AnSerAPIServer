@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getInfoPages } from '../../utils/GetDataAPI';
+import { getBackedUpInfoPages, getBackedUpClientSharedFields } from '../../utils/GetDataAPI';
 import { toPDF, toMSWord } from '../Utility/DownloadHelper';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 
 const GetInfoPages = (data:any) => {
   const [infoPages, setData] = useState<any>({});
@@ -25,57 +21,56 @@ const GetInfoPages = (data:any) => {
   useEffect(() => {
     const getClientsData = async () => {
       try {
-        setCurrentPage(0);
-        if (accountNum === 0) {
-          setClientsData(data.clientsData);
-        } else {
-          console.log(accountNum);
-          const response = await getInfoPages(accountNum);
+        // let response = new Array();
+        let backedUpInfoPages = await getBackedUpInfoPages(data.accountNum, data.date);
 
-          if (!response.ok) {
-            throw new Error('something went wrong!');
-          }
+        if (!backedUpInfoPages.ok) {
+          throw new Error('something went wrong!');
+        }
 
-          let data = await response.json();
+        let backedUpClientSharedFields = await getBackedUpClientSharedFields(data.accountNum, data.date);
 
-          for (let i = 0; i < clientsDataLength; i++) {
-            if (clientsData[i].ClientNumber == accountNum) {
-              setAccountName(clientsData[i].ClientName);
-            }
-          }
+        if (!backedUpClientSharedFields.ok) {
+          throw new Error('something went wrong!');
+        }
 
-          for (let x = 0; x < data[1].length; x++) {
-            regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${data[1][x].cltfieldID}\]`);
-            otherRegex = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+_[0-9]+\.${data[1][x].cltfieldID}\]`);
-            RegexWithDash = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+-[A-Za-z0-9]+_[0-9]+\.${data[1][x].cltfieldID}\]`);
-            for (let y = 0; y < data[0].length; y++) {
-              isDone = false;
-              while (!isDone) {
-                if (data[0][y].Info.match(RegexWithDash)) {
-                  data[0][y].Info = data[0][y].Info.replace(RegexWithDash, data[1][x].Field);
-                }
-                else if (data[0][y].Info.match(otherRegex)) {
-                  data[0][y].Info = data[0][y].Info.replace(otherRegex, data[1][x].Field);
-                }
-                else if (data[0][y].Info.match(regex)) {
-                  data[0][y].Info = data[0][y].Info.replace(regex, data[1][x].Field);
-                } else {
-                  isDone = true;
-                }
+        let responseData = new Array();
+        responseData[0] = await backedUpInfoPages.json();
+        responseData[1] = await backedUpClientSharedFields.json();
+
+        console.log(responseData);
+
+        for (let x = 0; x < responseData[1].length; x++) {
+          regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${responseData[1][x].client_shared_field_id}\]`);
+          otherRegex = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+_[0-9]+\.${responseData[1][x].client_shared_field_id}\]`);
+          RegexWithDash = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+-[A-Za-z0-9]+_[0-9]+\.${responseData[1][x].client_shared_field_id}\]`);
+          for (let y = 0; y < responseData[0].length; y++) {
+            isDone = false;
+            while (!isDone) {
+              if (responseData[0][y].info_page_data.match(RegexWithDash)) {
+                responseData[0][y].info_page_data = await responseData[0][y].info_page_data.replace(RegexWithDash, responseData[1][x].client_shared_field_data);
+              }
+              else if (responseData[0][y].info_page_data.match(otherRegex)) {
+                responseData[0][y].info_page_data = await responseData[0][y].info_page_data.replace(otherRegex, responseData[1][x].client_shared_field_data);
+              }
+              else if (responseData[0][y].info_page_data.match(regex)) {
+                responseData[0][y].info_page_data = await responseData[0][y].info_page_data.replace(regex, responseData[1][x].client_shared_field_data);
+              } else {
+                isDone = true;
               }
             }
           }
-
-          setData(data[0]);
-          setMaxPage((data[0].length - 1));
         }
+
+        setData(responseData[0]);
+        setMaxPage((responseData[0].length - 1));
       } catch (err) {
         console.error(err);
       }
     };
 
     getClientsData();
-  }, [clientsDataLength, accountNum]);
+  }, [clientsDataLength, accountNum, data]);
 
   if (!clientsDataLength) {
     <h2>LOADING...</h2>
@@ -148,8 +143,8 @@ const GetInfoPages = (data:any) => {
     let fileName: string = `${accountNum} ${accountName} Info Pages`;
     let placeHolder: string;
     for (let i = 0; i < infoPages.length; i++) {
-      let indexArray: number[] = await findIndex(i, infoPages[i].Info);
-      placeHolder = await infoPages[i].Info;
+      let indexArray: number[] = await findIndex(i, infoPages[i].info_page_data);
+      placeHolder = await infoPages[i].info_page_data;
       placeHolder.trim();
       placeHolder.replace(/\r\n/g, "");
       if (indexArray[3] !== -1) {
@@ -197,25 +192,14 @@ const GetInfoPages = (data:any) => {
 
   return (
     <>
-      <Autocomplete
-        disablePortal
-        onChange={(event, newValue:any) => {
-          if (newValue) {
-            setAccountNum(parseInt(newValue));
-          }
-        }}
-        options={data.accountNumbers}
-        sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
-        renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{ zIndex: 0 }} />}
-      /> <br />
       {
         infoPagesLength ?
           <div>
             <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage + 1} <button onClick={() => pageHandler("next")}>Next</button> <br /><br />
-            <button onClick={downloadHandler} id="downloadCSV" value="download">
+            {/* <button onClick={downloadHandler} id="downloadCSV" value="download">
               <i className="fas fa-download" />Click Here to Download
-            </button> <br /><br />
-            <div style={{ backgroundColor: 'white', color: 'black' }} className="content" dangerouslySetInnerHTML={{ __html: (infoPages[currentPage].Info) }}>
+            </button> <br /><br /> */}
+            <div style={{ backgroundColor: 'white', color: 'black' }} className="content" dangerouslySetInnerHTML={{ __html: (infoPages[currentPage].info_page_data) }}>
             </div>
             <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage + 1} <button onClick={() => pageHandler("next")}>Next</button>
           </div> :

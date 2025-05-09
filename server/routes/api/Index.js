@@ -117,4 +117,11 @@ const missingPermissions = require('./GetData/Reports/ISPermissionGroupsCheck');
 
 router.use('/Reports/MissingPermissions', missingPermissions);
 
+//Back Ups
+const infoPageBackUp = require('./BackUps/GetBackedUpInfoPages');
+const clientSharedFieldsBackUp = require('./BackUps/GetBackedUpClientSharedFields');
+
+router.use('/BackUps/InfoPageBackUp', infoPageBackUp);
+router.use('/BackUps/ClientSharedFieldsBackUp', clientSharedFieldsBackUp);
+
 module.exports = router;
