@@ -218,3 +218,31 @@ export const getISHolidaysByName = (accountName) => {
     },
   });
 };
+
+// Get Backups
+export const getAccountsWithBackedUpInfoPages = () => {
+  return fetch(`/api/BackUps/InfoPageBackUp`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getBackedUpInfoPages = (accountNum, date) => {
+  return fetch(`/api/BackUps/InfoPageBackUp/${accountNum}/${date}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+export const getBackedUpClientSharedFields = (accountNum, date) => {
+  return fetch(`/api/BackUps/ClientSharedFieldsBackUp/${accountNum}/${date}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+}

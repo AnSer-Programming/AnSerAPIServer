@@ -14,6 +14,8 @@ const SendCSVToDavisAndCrumpEmail = require('../node-mailer/emailToClient/SendCS
 const davisAndCrump = require('./automatedReportsToClient/davisAndCrump');
 const contactDispatchEmail = require('../node-mailer/ContactDispatchEmail/SendContactDispatchReport');
 const contactDispatchReport = require('./ContactDispatchReports/contactDispatchReport');
+const infoPages = require('./BackUps/infoPagesBackup');
+const clientSharedFields = require('./BackUps/clientSharedFieldsBackup');
 
 // Update active accounts to the API Database
 // schedule.scheduleJob('05 1 * * *', function () {
@@ -33,6 +35,13 @@ schedule.scheduleJob('00 07 01 * *', async function () {
 schedule.scheduleJob('00 07 01 * *', async function () {
   if(process.env.SERVER_TYPE == "production") {
     SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
+  }
+});
+
+schedule.scheduleJob('00 02 01 * *', async function () { // run at 2AM on the first of every month
+  if(process.env.SERVER_TYPE == "development") {
+    infoPages();
+    clientSharedFields();
   }
 });
 

@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 
 // Page Navigation Components
 import AgentStats from './pages/AgentStats';
+import BackUps from './pages/BackUps';
 import Calendar from './pages/Calendar';
 import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
@@ -51,6 +52,7 @@ function App() {
         <Switch>
           <Route exact path='/' component={Index} />
           <Route exact path='/AgentStats' component={AgentStats} />
+          <Route exact path='/BackUps' component={BackUps} />
           <Route exact path='/Calendar' component={Calendar} />
           {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
           <Route exact path='/CrescentElectricReachList' component={CrescentElectricReachList} />
