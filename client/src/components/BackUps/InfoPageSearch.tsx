@@ -4,20 +4,22 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { getAccountsWithBackedUpInfoPages } from '../../utils/GetDataAPI';
 
-const InfoPageSearch = (data:any) => {
+const InfoPageSearch = (data: any) => {
   const [searchCriteria, setSearchCriteria] = useState<any>({});
   const [years, setYears] = useState<any[]>([]);
   const [months, setMonths] = useState<any[]>([]);
-  const [selectedYear, setSelectedYear] = useState<any>();
-  const [selectedMonth, setSelectedMonth] = useState<any>();
-  const [accountNum, setAccountNum] = useState<number>(0);
+  const [days, setDays] = useState<any[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(-1);
+  const [selectedMonth, setSelectedMonth] = useState<number>(-1);
+  const [selectedDay, setSelectedDay] = useState<number>(-1);
+  const [accountNum, setAccountNum] = useState<number>(-1);
   const clientsDataLength = Object.keys(searchCriteria).length;
 
   useEffect(() => {
     const getAcountNumbers = async () => {
       const response = await getAccountsWithBackedUpInfoPages();
       let accountNum = new Array();
-      let searchData:any = {};
+      let searchData: any = {};
 
       if (!response.ok) {
         throw new Error('something went wrong!');
@@ -26,16 +28,16 @@ const InfoPageSearch = (data:any) => {
       let data = await response.json();
 
       for (let x = 0; x < data.length; x++) {
-        if(!searchData[0]) {
-          searchData[data[x].client_number] = [{year: data[x].date_added.split('-')[1], month: data[x].date_added.split('-')[0]}];
+        if (!searchData[0]) {
+          searchData[data[x].client_number] = [{ year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] }];
           accountNum[x] = data[x].client_number;
         } else {
-          for(let y = 0; y < searchData.length; y++) {
-            if(searchData[y].client_number == data[x].client_number) {
-              searchData[data[x].client_number] += {year: data[x].date_added.split('-')[1], month: data[x].date_added.split('-')[0]};
-            } else if(y = searchData.length) {
+          for (let y = 0; y < searchData.length; y++) {
+            if (searchData[y].client_number == data[x].client_number) {
+              searchData[data[x].client_number] += { year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] };
+            } else if (y = searchData.length) {
               accountNum[x] = data[x].client_number;
-              searchData[data[x].client_number] = [{year: data[x].date_added.split('-')[1], month: data[x].date_added.split('-')[0]}];
+              searchData[data[x].client_number] = [{ year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] }];
             }
           }
         }
@@ -44,66 +46,131 @@ const InfoPageSearch = (data:any) => {
     }
 
     getAcountNumbers();
-  }, [clientsDataLength, accountNum, selectedMonth, selectedYear]);
+  }, [clientsDataLength, accountNum, selectedDay, selectedMonth, selectedYear, years, months, days]);
 
   if (!clientsDataLength) {
     <h2>LOADING...</h2>
   }
 
-  console.log(data);
-
-  const searchHandler = (accountNumber:any, year:any, month:any) => {
-    if(accountNumber && year && month) {
-      data.returnData(accountNumber, year, month);
+  const searchHandler = (accountNumber: any, year: any, month: any, day: any) => {
+    if (accountNumber && year != -1 && month != -1 && day != -1) {
+      data.returnData(accountNumber, year, month, day);
     }
   }
 
-  const accountHandler = async(accountNumber:number) => {
+  const accountHandler = async (accountNumber: number, year: number, month: number, day: number) => {
+    if(accountNumber != accountNum) {
+      setSelectedYear(-1);
+      setSelectedMonth(-1);
+      setSelectedDay(-1);
+    }
     setAccountNum(accountNumber);
-    searchHandler(accountNumber, selectedYear, selectedMonth);
+    searchHandler(accountNumber, year, month, day);
     let years = new Array();
     let months = new Array();
-    for(let i = 0; i < searchCriteria[accountNumber].length; i++) {
+    let days = new Array();
+    for (let i = 0; i < searchCriteria[accountNumber].length; i++) {
       years.push(searchCriteria[accountNumber][i].year);
-      months.push(searchCriteria[accountNumber][i].month);
+      if(year != -1) {
+        if(year == searchCriteria[accountNumber][i].year) {
+          months.push(searchCriteria[accountNumber][i].month);
+        }
+        if(month != -1) {
+          if(month == searchCriteria[accountNumber][i].month) {
+            days.push(searchCriteria[accountNumber][i].day);
+          }
+        }
+      }
     }
     setYears(years);
     setMonths(months);
+    setDays(days);
   }
 
-  const yearMonth = () => {
+  const year = () => {
     return (
-      <>
-        <Autocomplete
-          disablePortal
-          onChange={(event, newValue: any) => {
-            if (newValue) {
-              setSelectedYear(parseInt(newValue));
-              searchHandler(accountNum, newValue, selectedMonth);
-            }
-          }}
-          options={years}
-          sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
-          renderInput={(params) => <TextField {...params} value={selectedYear} label={"Select a Year"} variant="filled" sx={{ zIndex: 0 }} />}
-        /> 
-        <Autocomplete
-          disablePortal
-          onChange={(event, newValue: any) => {
-            if (newValue) {
-              setSelectedMonth(parseInt(newValue));
-              searchHandler(accountNum, selectedYear, newValue);
-            }
-          }}
-          options={months}
-          sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
-          renderInput={(params) => <TextField {...params} value={selectedMonth} label={"Select a Month"} variant="filled" sx={{ zIndex: 0 }} />}
-        /> 
-      </>
+      <Autocomplete
+        disablePortal
+        onChange={(event, newValue: any) => {
+          if (newValue) {
+            setSelectedYear(parseInt(newValue));
+            accountHandler(accountNum, newValue, selectedMonth, selectedDay);
+          }
+          if(!newValue) {
+            setSelectedYear(-1);
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
+          }
+        }}
+        onInputChange={(event, value, reason) => {
+          if(reason == "clear") {
+            setSelectedYear(-1);
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
+          }
+        }}
+        options={years}
+        sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
+        renderInput={(params) => <TextField {...params} value={selectedYear} label={"Select a Year"} variant="filled" sx={{ zIndex: 0 }} />}
+      />
     )
   }
 
+  const month = () => {
+    return (
+      <Autocomplete
+        disablePortal
+        onChange={(event, newValue: any) => {
+          if (newValue) {
+            setSelectedMonth(parseInt(newValue));
+            accountHandler(accountNum, selectedYear, newValue, selectedDay);
+          }
+          if(!newValue) {
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
+          }
+        }}
+        onInputChange={(event, value, reason) => {
+          if(reason == "clear") {
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
+          }
+        }}
+        options={months}
+        sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
+        renderInput={(params) => <TextField {...params} value={selectedMonth} label={"Select a Month"} variant="filled" sx={{ zIndex: 0 }} />}
+      />
+    )
+  }
+
+  const day = () => {
+    return (
+      <Autocomplete
+        disablePortal
+        onChange={(event, newValue: any) => {
+          if (newValue) {
+            setSelectedMonth(parseInt(newValue));
+            accountHandler(accountNum, selectedYear, selectedMonth, newValue);
+          }
+          if(!newValue) {
+            setSelectedDay(-1);
+          }
+        }}
+        onInputChange={(event, value, reason) => {
+          if(reason == "clear") {
+            setSelectedDay(-1);
+          }
+        }}
+        options={days}
+        sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
+        renderInput={(params) => <TextField {...params} value={selectedDay} label={"Select a Day"} variant="filled" sx={{ zIndex: 0 }} />}
+      />
+    )
+
+  }
+
   const blank = () => {
-    return(
+    return (
       <br />
     )
   }
@@ -114,14 +181,30 @@ const InfoPageSearch = (data:any) => {
         disablePortal
         onChange={(event, newValue: any) => {
           if (newValue) {
-            accountHandler(parseInt(newValue));
+            accountHandler(parseInt(newValue), -1, -1, -1);
+          }
+          if(!newValue) {
+            setAccountNum(-1);
+            setSelectedYear(-1);
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
+          }
+        }}
+        onInputChange={(event, value, reason) => {
+          if(reason == "clear") {
+            setAccountNum(-1)
+            setSelectedYear(-1);
+            setSelectedMonth(-1);
+            setSelectedDay(-1);
           }
         }}
         options={Object.keys(searchCriteria)}
         sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
         renderInput={(params) => <TextField {...params} value={accountNum} label={"Choose An Account Number"} variant="filled" sx={{ zIndex: 0 }} />}
-      /> 
-      { !accountNum ? blank() : yearMonth() }
+      />
+      {accountNum == -1 ? blank() : year()}
+      {selectedYear == -1 ? blank() : month()}
+      {selectedMonth == -1 ? blank() : day()}
     </>
   )
 }

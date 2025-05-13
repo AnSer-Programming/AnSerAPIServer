@@ -5,27 +5,28 @@ import Menu from '../components/Menu.tsx';
 
 const Info = () => {
   const [accountNum, setAccountNum] = useState();
+  const [day, setDay] = useState();
   const [month, setMonth] = useState();
   const [year, setYear] = useState();
   const [date, setDate] = useState();
 
   useEffect(() =>{},[accountNum]);
 
-  function searchHandler(accountNum, yearInput, monthInput) {
+  function searchHandler(accountNum, yearInput, monthInput, dayInput) {
     setAccountNum(accountNum);
+    setDay(dayInput);
     setMonth(monthInput);
     setYear(yearInput);
-    setDate(`${monthInput}-${yearInput}`);
-    console.log(accountNum, yearInput, monthInput);
+    setDate(`${dayInput}-${monthInput}-${yearInput}`);
   }
 
   const displayInfoPage = () => {
-    console.log("Display Info Page");
     return(
       <GetInfoPages
         accountNum = {accountNum}
         year = {year}
         month = {month}
+        day = {day}
         date = {date} />
     )
   }
@@ -40,7 +41,7 @@ const Info = () => {
     <>
       <div style={{ width: '50%' }}>
         <InfoPageSearch 
-          returnData = {(accountNum, year, month) => {searchHandler(accountNum, year, month);}} />
+          returnData = {(accountNum, year, month, day) => {searchHandler(accountNum, year, month, day);}} />
         { accountNum ? displayInfoPage() : blank()}
       </div>
     </>

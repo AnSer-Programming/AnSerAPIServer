@@ -38,8 +38,6 @@ const GetInfoPages = (data:any) => {
         responseData[0] = await backedUpInfoPages.json();
         responseData[1] = await backedUpClientSharedFields.json();
 
-        console.log(responseData);
-
         for (let x = 0; x < responseData[1].length; x++) {
           regex = new RegExp(`(\[CFld\.([A-Za-z0-9]+(_[A-Za-z0-9]+)+)\.${responseData[1][x].client_shared_field_id}\]`);
           otherRegex = new RegExp(`\[CFld\.[A-Za-z0-9]+_-_[A-Za-z0-9]+_[0-9]+\.${responseData[1][x].client_shared_field_id}\]`);
@@ -170,7 +168,6 @@ const GetInfoPages = (data:any) => {
       }
     }
     // fileData += "<header><img src='../../assets/img/AnserLogo2.png' /></header>";
-    console.log(fileData);
     await toMSWord(fileData, fileName);
   }
 
