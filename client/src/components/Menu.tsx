@@ -37,7 +37,7 @@ export default function MenuAppBar(data: any) {
             {selection}
           </Typography>
           <div>
-            Navigation Menu -{'>'}
+            Navigation Menu -{'> '}
             <IconButton
               size="large"
               edge="start"

@@ -45,6 +45,13 @@ schedule.scheduleJob('00 02 01 * *', async function () { // run at 2AM on the fi
   }
 });
 
+schedule.scheduleJob('00 02 15 * *', async function () { // run at 2AM on the fifteenth of every month
+  if(process.env.SERVER_TYPE == "development") {
+    infoPages();
+    clientSharedFields();
+  }
+});
+
 schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every day
   if(process.env.SERVER_TYPE == "production") {
     SendCSVToDavisAndCrumpEmail(await davisAndCrump());

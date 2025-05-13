@@ -20,9 +20,9 @@ function leapYearCheck(year) {
   }
 }
 
-const month_year = () => {
+const day_month_year = () => {
   const date = new Date();
-  let today = `${date.getMonth() + 1}-${date.getFullYear()}`;
+  let today = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
   console.log(today);
   return today;
 }
@@ -535,4 +535,4 @@ const isWeekday = (date) => {
   }
 }
 
-module.exports = { tomorrow, tomorrowWithoutLeadZero, yesterday, yesterdayWithoutLeadingZero, isSaturday, isSunday, isWeekend, isWeekday, month_year };
+module.exports = { tomorrow, tomorrowWithoutLeadZero, yesterday, yesterdayWithoutLeadingZero, isSaturday, isSunday, isWeekend, isWeekday, day_month_year };

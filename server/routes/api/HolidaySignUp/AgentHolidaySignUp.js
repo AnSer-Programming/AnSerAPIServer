@@ -3,10 +3,11 @@ const config = require('../../../config/connection');
 const sql = require('mssql');
 const seq = require('sequelize');
 
-async function getAccountNumbersAndDates() {
-  let query = `SELECT DISTINCT [client_number], [date_added]
-        FROM [isapi].[dbo].[monthlyClientSharedFieldsBackUp]
-        ORDER BY [client_number] ASC`;
+async function getShifts() {
+  let query = `SELECT *
+        FROM [isapi].[dbo].[holidaysShiftSignUpAdminTable]
+        WHERE [employee_type] = 'Agent'
+        ORDER BY [holiday] ASC`;
   try {
     let result = await config.query(query, { type: seq.QueryTypes.SELECT });     
     return result;
@@ -16,11 +17,12 @@ async function getAccountNumbersAndDates() {
   }
 }
 
-async function runGetQuery(accountNum, date) {
-  let query = `SELECT *
-        FROM [isapi].[dbo].[monthlyClientSharedFieldsBackUp]
-        WHERE client_number = :accountNum AND date_added = :date
-        ORDER BY [client_shared_field_id] ASC`;
+async function getSignedUp(accountNum, date) {
+  let query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
+        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
+        LEFT JOIN [isapi].[dbo].[holidaysShiftSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
+        WHERE [employee_type] = 'Agent'
+        ORDER BY [holiday_type], [agent_name] ASC`;
   try {
     let result = await config.query(query, { replacements: { accountNum: accountNum, date: date }, type: seq.QueryTypes.SELECT });     
     return result;
@@ -30,12 +32,20 @@ async function runGetQuery(accountNum, date) {
   }
 }
 
+async function postSignedUp() {
+
+}
+
+async function updateSignedUp() {
+
+}
+
 router.get('/', async(req, res) => {
-  results = await getAccountNumbersAndDates();
+  results = await getShifts();
   res.json(results);
 });
 
-router.get('/:accountNum/:date', async(req, res) => {
+router.get('/SignedUp', async(req, res) => {
   accountNum = req.params.accountNum;
   date = req.params.date;
   results = await runGetQuery(accountNum, date);

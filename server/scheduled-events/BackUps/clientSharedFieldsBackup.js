@@ -2,7 +2,7 @@ const configIS = require('../../config/connectionProductionIS');
 const configAPI = require('../../config/connection');
 const sql = require('mssql');
 const seq = require('sequelize');
-const { month_year } = require('../../utils/dateHandler');
+const { day_month_year } = require('../../utils/dateHandler');
 
 async function getAccountNumbers() { //Pull every account that we currently have in IS (this will do agent, test, live, and dead accounts)
   let query = `SELECT DISTINCT [ClientNumber]
@@ -33,7 +33,7 @@ async function runGetQuery(accountNum) { //To help the program I am setting it t
 }
 
 async function runPostQuery(data) {
-  const date = month_year(); //Get a Month+Year pattern to put help organize the database table
+  const date = day_month_year(); //Get a Month+Year pattern to put help organize the database table
   let infoPageData;
   let query;
   let result; 

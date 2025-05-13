@@ -50,6 +50,8 @@ const InfoPageSearch = (data:any) => {
     <h2>LOADING...</h2>
   }
 
+  console.log(data);
+
   const searchHandler = (accountNumber:any, year:any, month:any) => {
     if(accountNumber && year && month) {
       data.returnData(accountNumber, year, month);
