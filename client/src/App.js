@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -28,15 +28,24 @@ import ReportIssue from './pages/ReportIssue';
 import ClientInfo from './pages/ClientInfo'; // Import ClientInfo component
 
 function App() {
+  // const signedInContext = createContext(false);
   // State for handling modal visibility
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  useEffect(() => {
+  }, [signedIn]);
+
+  const loginHandler = () => {
+    setSignedIn(true);
+  }
 
   // Modal styling
   const style = {
     position: 'absolute',
-    bottom: '25px', 
+    bottom: '25px',
     right: '5px',
     width: 400,
     bgcolor: 'background.paper',
@@ -46,9 +55,38 @@ function App() {
     zIndex: '100',
   };
 
-  return (
-    <Router>
-      <div className='text-light bg-dark' style={{ minHeight: '100vh' }}>
+  const loginRequired = () => {
+    return (
+      <>
+        <Switch>
+          <Route exact path='/' component={Index} />
+          <Route exact path='/AgentStats' component={Index} />
+          <Route exact path='/BackUps' component={Index} />
+          <Route exact path='/Calendar' component={Index} />
+          {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
+          <Route exact path='/CrescentElectricReachList' component={Index} />
+          <Route exact path='/DisconnectList' component={Index} />
+          <Route exact path='/HowTo' component={Index} />
+          <Route exact path='/HowTo/*' component={Index} />
+          <Route exact path='/Info' component={Index} />
+          <Route exact path='/Info/*' component={Index} />
+          <Route exact path='/OCGroupList' component={Index} />
+          <Route exact path='/ResidentDirectory' component={Index} />
+          <Route exact path='/Scheduler' component={Index} />
+          <Route exact path='/SchedulerSupervisor' component={Index} />
+          <Route exact path='/StaticSchedule' component={Index} />
+          <Route exact path='/StatTracker' component={Index} />
+          <Route exact path='/Vessels' component={Index} />
+          <Route exact path='/ClientInfo' component={Index} /> {/* Add ClientInfo route */}
+          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
+        </Switch>
+      </>
+    )
+  }
+
+  const loggedIn = () => {
+    return (
+      <>
         <Switch>
           <Route exact path='/' component={Index} />
           <Route exact path='/AgentStats' component={AgentStats} />
@@ -71,13 +109,29 @@ function App() {
           <Route exact path='/ClientInfo' component={ClientInfo} /> {/* Add ClientInfo route */}
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
         </Switch>
+      </>
+    )
+  }
 
+  return (
+    <Router>
+      <div className='text-light bg-dark' style={{ minHeight: '100vh' }}>
+        {signedIn ? loggedIn() : loginRequired()}
+        {
+          signedIn ? <></> :
+            <>
+              <div>
+                <p>In order to access the full site you will need to sign in first!</p>
+              </div>
+              <button onClick={loginHandler}>LogIn</button>
+            </>
+        }
         {/* Report Issue Modal */}
         <div>
-          <Button 
-            onClick={handleOpen} 
-            style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }} 
-            color='secondary' 
+          <Button
+            onClick={handleOpen}
+            style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
+            color='secondary'
             variant="contained"
           >
             Report Issue
