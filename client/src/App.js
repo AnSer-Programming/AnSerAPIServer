@@ -35,8 +35,7 @@ function App() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  useEffect(() => {
-  }, [signedIn]);
+  useEffect(() => {}, [signedIn]);
 
   const loginHandler = () => {
     setSignedIn(true);
@@ -154,7 +153,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
