@@ -28,20 +28,19 @@ const InfoPageSearch = (data: any) => {
       let data = await response.json();
 
       for (let x = 0; x < data.length; x++) {
-        if (!searchData[0]) {
+        if (searchData.length == 0) {
           searchData[data[x].client_number] = [{ year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] }];
           accountNum[x] = data[x].client_number;
         } else {
-          for (let y = 0; y < searchData.length; y++) {
-            if (searchData[y].client_number == data[x].client_number) {
-              searchData[data[x].client_number] += { year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] };
-            } else if (y = searchData.length) {
-              accountNum[x] = data[x].client_number;
-              searchData[data[x].client_number] = [{ year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] }];
-            }
+          if (searchData[data[x].client_number]) {
+            searchData[data[x].client_number][searchData[data[x].client_number].length] = { year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] };
+          } else {
+            accountNum[x] = data[x].client_number;
+            searchData[data[x].client_number] = [{ year: data[x].date_added.split('-')[2], month: data[x].date_added.split('-')[1], day: data[x].date_added.split('-')[0] }];
           }
         }
       }
+
       setSearchCriteria(searchData);
     }
 
@@ -59,29 +58,61 @@ const InfoPageSearch = (data: any) => {
   }
 
   const accountHandler = async (accountNumber: number, year: number, month: number, day: number) => {
-    if(accountNumber != accountNum) {
+    if (accountNumber != accountNum) {
       setSelectedYear(-1);
       setSelectedMonth(-1);
       setSelectedDay(-1);
     }
     setAccountNum(accountNumber);
     searchHandler(accountNumber, year, month, day);
+    let yearExists = false;
+    let monthExists = false;
+    let dayExists = false;
     let years = new Array();
     let months = new Array();
     let days = new Array();
     for (let i = 0; i < searchCriteria[accountNumber].length; i++) {
-      years.push(searchCriteria[accountNumber][i].year);
-      if(year != -1) {
-        if(year == searchCriteria[accountNumber][i].year) {
-          months.push(searchCriteria[accountNumber][i].month);
+      if (years.length == 0) {
+        years.push(searchCriteria[accountNumber][i].year);
+      } else {
+        for (let x = 0; x < years.length; x++) {
+          if (years[x] == searchCriteria[accountNumber][i].year) {
+            yearExists = true;
+          }
+          if (yearExists) {
+            break;
+          } else if (x == years.length) {
+            years.push(searchCriteria[accountNumber][i].year);
+          }
         }
-        if(month != -1) {
-          if(month == searchCriteria[accountNumber][i].month) {
+      }
+      if (year != -1) {
+        if (year == searchCriteria[accountNumber][i].year) {
+          if (months.length == 0) {
+            months.push(searchCriteria[accountNumber][i].month);
+          } else {
+            for (let x = 0; x < months.length; x++) {
+              if (months[x] == searchCriteria[accountNumber][i].month) {
+                monthExists = true;
+              }
+              if (monthExists) {
+                break;
+              } else if (x == months.length) {
+                months.push(searchCriteria[accountNumber][i].month);
+              }
+            }
+          }
+        }
+        if (month != -1) {
+          if (month == searchCriteria[accountNumber][i].month) {
             days.push(searchCriteria[accountNumber][i].day);
           }
         }
       }
     }
+    years.sort((x, y) => Math.abs(x) - Math.abs(y));
+    months.sort((x, y) => Math.abs(x) - Math.abs(y));
+    days.sort((x, y) => Math.abs(x) - Math.abs(y));
     setYears(years);
     setMonths(months);
     setDays(days);
@@ -96,14 +127,14 @@ const InfoPageSearch = (data: any) => {
             setSelectedYear(parseInt(newValue));
             accountHandler(accountNum, newValue, selectedMonth, selectedDay);
           }
-          if(!newValue) {
+          if (!newValue) {
             setSelectedYear(-1);
             setSelectedMonth(-1);
             setSelectedDay(-1);
           }
         }}
         onInputChange={(event, value, reason) => {
-          if(reason == "clear") {
+          if (reason == "clear") {
             setSelectedYear(-1);
             setSelectedMonth(-1);
             setSelectedDay(-1);
@@ -125,13 +156,13 @@ const InfoPageSearch = (data: any) => {
             setSelectedMonth(parseInt(newValue));
             accountHandler(accountNum, selectedYear, newValue, selectedDay);
           }
-          if(!newValue) {
+          if (!newValue) {
             setSelectedMonth(-1);
             setSelectedDay(-1);
           }
         }}
         onInputChange={(event, value, reason) => {
-          if(reason == "clear") {
+          if (reason == "clear") {
             setSelectedMonth(-1);
             setSelectedDay(-1);
           }
@@ -149,15 +180,15 @@ const InfoPageSearch = (data: any) => {
         disablePortal
         onChange={(event, newValue: any) => {
           if (newValue) {
-            setSelectedMonth(parseInt(newValue));
+            setSelectedDay(parseInt(newValue));
             accountHandler(accountNum, selectedYear, selectedMonth, newValue);
           }
-          if(!newValue) {
+          if (!newValue) {
             setSelectedDay(-1);
           }
         }}
         onInputChange={(event, value, reason) => {
-          if(reason == "clear") {
+          if (reason == "clear") {
             setSelectedDay(-1);
           }
         }}
@@ -183,7 +214,7 @@ const InfoPageSearch = (data: any) => {
           if (newValue) {
             accountHandler(parseInt(newValue), -1, -1, -1);
           }
-          if(!newValue) {
+          if (!newValue) {
             setAccountNum(-1);
             setSelectedYear(-1);
             setSelectedMonth(-1);
@@ -191,7 +222,7 @@ const InfoPageSearch = (data: any) => {
           }
         }}
         onInputChange={(event, value, reason) => {
-          if(reason == "clear") {
+          if (reason == "clear") {
             setAccountNum(-1)
             setSelectedYear(-1);
             setSelectedMonth(-1);
