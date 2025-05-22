@@ -6,11 +6,13 @@ import CompletedCalls from '../components/TrackerComponents/GetCompletedCalls.ts
 const StatTracker = () => {
   return (
     <>
-      <Menu 
+      <Menu
         page="Stat Tracker" />
-      <p>Data updates every minute</p>
-      <ActiveAgents />
-      <CompletedCalls />
+      <div style={{ padding: "5px" }}>
+        <p>Data updates every minute</p>
+        <ActiveAgents />
+        <CompletedCalls />
+      </div>
     </>
   );
 };

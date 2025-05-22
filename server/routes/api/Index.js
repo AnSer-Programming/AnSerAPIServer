@@ -124,4 +124,9 @@ const clientSharedFieldsBackUp = require('./BackUps/GetBackedUpClientSharedField
 router.use('/BackUps/InfoPageBackUp', infoPageBackUp);
 router.use('/BackUps/ClientSharedFieldsBackUp', clientSharedFieldsBackUp);
 
+//Agent Scheduling
+const holidaySchedule = require('./HolidaySignUp/HolidaySignUpData');
+
+router.use('/AgentScheduling/HolidaySignUp', holidaySchedule);
+
 module.exports = router;

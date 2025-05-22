@@ -3,6 +3,18 @@ const config = require('../../../config/connection');
 const sql = require('mssql');
 const seq = require('sequelize');
 
+async function getHolidays(holidayType) {
+  let query = `SELECT DISTINCT holiday FROM [isapi].[dbo].[holidaysShiftSIgnUpAdminTable]`;
+  
+  try {
+    let result = await config.query(query, { replacements: { accountNum: accountNum, date: date }, type: seq.QueryTypes.SELECT });     
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
 async function getShifts() {
   let query = `SELECT *
         FROM [isapi].[dbo].[holidaysShiftSignUpAdminTable]
@@ -41,7 +53,7 @@ async function updateSignedUp() {
 }
 
 router.get('/', async(req, res) => {
-  results = await getShifts();
+  results = await getHolidays();
   res.json(results);
 });
 

@@ -1,7 +1,6 @@
 import { React, useState, useEffect } from 'react';
 import InfoPageSearch from '../components/BackUps/InfoPageSearch.tsx';
 import GetInfoPages from '../components/BackUps/GetInfoPages.tsx';
-import Menu from '../components/Menu.tsx';
 
 const Info = () => {
   const [accountNum, setAccountNum] = useState();

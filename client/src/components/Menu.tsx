@@ -126,7 +126,7 @@ export default function MenuAppBar(data: any) {
                 Vessel API
               </MenuItem>
               <hr />
-              <strong>Other</strong>
+              <strong>Resources</strong>
               <MenuItem
                 onClick={(event) => {
                   handleClose(event, 'How To');
@@ -142,6 +142,24 @@ export default function MenuAppBar(data: any) {
                 }}
               >
                 Info
+              </MenuItem>
+              <hr />
+              <strong>Agent Success</strong>
+              <MenuItem
+                onClick={(event) => {
+                  handleClose(event, 'Holiday Sign Up');
+                  handleRoutes('/HolidayScheduleSignUp');
+                }}
+              >
+                Holiday Sign Up
+              </MenuItem>
+              <MenuItem
+                onClick={(event) => {
+                  handleClose(event, 'Stat Tracker');
+                  handleRoutes('/StatTracker');
+                }}
+              >
+                Stat Tracker
               </MenuItem>
             </Menu>
           </div>
