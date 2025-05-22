@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Menu from './components/Menu.tsx';
 
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -13,6 +14,8 @@ import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
+import HolidaySchedule from './pages/HolidaySignUpAgentPage';
+import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';
 import Index from './pages/Index';
@@ -35,10 +38,28 @@ function App() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  useEffect(() => {}, [signedIn]);
+  useEffect(() => { }, [signedIn]);
 
   const loginHandler = () => {
     setSignedIn(true);
+  }
+
+  const loginButton = () => {
+    return (
+      <>
+        <Menu
+          page="Home" />
+        {
+          signedIn ? <></> :
+            <>
+              <div>
+                <p>In order to access the full site you will need to sign in first!</p>
+              </div>
+              <button onClick={loginHandler}>LogIn</button>
+            </>
+        }
+      </>
+    )
   }
 
   // Modal styling
@@ -54,77 +75,33 @@ function App() {
     zIndex: '100',
   };
 
-  const loginRequired = () => {
-    return (
-      <>
-        <Switch>
-          <Route exact path='/' component={Index} />
-          <Route exact path='/AgentStats' component={Index} />
-          <Route exact path='/BackUps' component={Index} />
-          <Route exact path='/Calendar' component={Index} />
-          {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
-          <Route exact path='/CrescentElectricReachList' component={Index} />
-          <Route exact path='/DisconnectList' component={Index} />
-          <Route exact path='/HowTo' component={Index} />
-          <Route exact path='/HowTo/*' component={Index} />
-          <Route exact path='/Info' component={Index} />
-          <Route exact path='/Info/*' component={Index} />
-          <Route exact path='/OCGroupList' component={Index} />
-          <Route exact path='/ResidentDirectory' component={Index} />
-          <Route exact path='/Scheduler' component={Index} />
-          <Route exact path='/SchedulerSupervisor' component={Index} />
-          <Route exact path='/StaticSchedule' component={Index} />
-          <Route exact path='/StatTracker' component={Index} />
-          <Route exact path='/Vessels' component={Index} />
-          <Route exact path='/ClientInfo' component={Index} /> {/* Add ClientInfo route */}
-          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
-        </Switch>
-      </>
-    )
-  }
-
-  const loggedIn = () => {
-    return (
-      <>
-        <Switch>
-          <Route exact path='/' component={Index} />
-          <Route exact path='/AgentStats' component={AgentStats} />
-          <Route exact path='/BackUps' component={BackUps} />
-          <Route exact path='/Calendar' component={Calendar} />
-          {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
-          <Route exact path='/CrescentElectricReachList' component={CrescentElectricReachList} />
-          <Route exact path='/DisconnectList' component={DisconnectList} />
-          <Route exact path='/HowTo' component={HowTo} />
-          <Route exact path='/HowTo/*' component={HowTo} />
-          <Route exact path='/Info' component={Info} />
-          <Route exact path='/Info/*' component={Info} />
-          <Route exact path='/OCGroupList' component={OCGroupList} />
-          <Route exact path='/ResidentDirectory' component={ResidentDirectory} />
-          <Route exact path='/Scheduler' component={SchedulerAgent} />
-          <Route exact path='/SchedulerSupervisor' component={SchedulerSupervisor} />
-          <Route exact path='/StaticSchedule' component={FixedScheduler} />
-          <Route exact path='/StatTracker' component={Tracker} />
-          <Route exact path='/Vessels' component={VesselsList} />
-          <Route exact path='/ClientInfo' component={ClientInfo} /> {/* Add ClientInfo route */}
-          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
-        </Switch>
-      </>
-    )
-  }
-
   return (
     <Router>
       <div className='text-light bg-dark' style={{ minHeight: '100vh' }}>
-        {signedIn ? loggedIn() : loginRequired()}
-        {
-          signedIn ? <></> :
-            <>
-              <div>
-                <p>In order to access the full site you will need to sign in first!</p>
-              </div>
-              <button onClick={loginHandler}>LogIn</button>
-            </>
-        }
+        <Switch>
+          <Route exact path='/' component={Index} />
+          <Route exact path='/AgentStats' component={signedIn ? AgentStats : loginButton} />
+          <Route exact path='/BackUps' component={signedIn ? BackUps : loginButton} />
+          <Route exact path='/Calendar' component={signedIn ? Calendar : loginButton} />
+          {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
+          <Route exact path='/CrescentElectricReachList' component={signedIn ? CrescentElectricReachList : loginButton} />
+          <Route exact path='/DisconnectList' component={signedIn ? DisconnectList : loginButton} />
+          <Route exact path='/HolidaySchedule' component={HolidaySchedule} />
+          <Route exact path='/HolidayScheduleSignUp' component={signedIn ? HolidayScheduleSignUp : loginButton} />
+          <Route exact path='/HowTo' component={signedIn ? HowTo : loginButton} />
+          <Route exact path='/HowTo/*' component={signedIn ? HowTo : loginButton} />
+          <Route exact path='/Info' component={signedIn ? Info : loginButton} />
+          <Route exact path='/Info/*' component={signedIn ? Info : loginButton} />
+          <Route exact path='/OCGroupList' component={signedIn ? OCGroupList : loginButton} />
+          <Route exact path='/ResidentDirectory' component={signedIn ? ResidentDirectory : loginButton} />
+          <Route exact path='/Scheduler' component={signedIn ? SchedulerAgent : loginButton} />
+          <Route exact path='/SchedulerSupervisor' component={signedIn ? SchedulerSupervisor : loginButton} />
+          <Route exact path='/StaticSchedule' component={signedIn ? FixedScheduler : loginButton} />
+          <Route exact path='/StatTracker' component={Tracker} />
+          <Route exact path='/Vessels' component={signedIn ? VesselsList : loginButton} />
+          <Route exact path='/ClientInfo' component={signedIn ? ClientInfo : loginButton} /> {/* Add ClientInfo route */}
+          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
+        </Switch>
         {/* Report Issue Modal */}
         <div>
           <Button

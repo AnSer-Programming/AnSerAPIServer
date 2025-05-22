@@ -48,20 +48,22 @@ const GetCompletedCallsByTimeZone = (data:any) => {
   return (
     <>
       <div>
-        <p>Calls Completed by TimeZone within the past 24 hours</p>
+        <p>
+          Calls Completed by TimeZone within the past 24 hours<br />
+          Total Calls taken in past 24 hours: {callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central}  
+        </p>
         <ul>
-          <li>Eastern: {callsCompletedByTimeZoneObj.Eastern}</li>
-          <li>Percent Eastern: {(callsCompletedByTimeZoneObj.Eastern/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li>
-          <li>Central: {callsCompletedByTimeZoneObj.Central}</li>
-          <li>Percent Central: {(callsCompletedByTimeZoneObj.Central/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li>
-          <li>Mountain: {callsCompletedByTimeZoneObj.Mountain}</li>
-          <li>Percent Mountain: {(callsCompletedByTimeZoneObj.Mountain/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li>
-          <li>Pacific: {callsCompletedByTimeZoneObj.Pacific}</li>
-          <li>Percent Pacific: {(callsCompletedByTimeZoneObj.Pacific/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li>
+          <li>Total Calls for Eastern Time Zone Clients: {callsCompletedByTimeZoneObj.Eastern}</li>
+          <li>Percent Calls from Eastern Time Zone Clients: {(callsCompletedByTimeZoneObj.Eastern/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li><br />
+          <li>Total Calls for Central Time Zone Clients: {callsCompletedByTimeZoneObj.Central}</li>
+          <li>Percent Calls from Central Time Zone Clients: {(callsCompletedByTimeZoneObj.Central/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li><br />
+          <li>Total Calls for Mountain Time Zone Clients: {callsCompletedByTimeZoneObj.Mountain}</li>
+          <li>Percent Calls from Mountain Time Zone Clients: {(callsCompletedByTimeZoneObj.Mountain/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li><br />
+          <li>Total Calls for Pacific Time Zone Clients: {callsCompletedByTimeZoneObj.Pacific}</li>
+          <li>Percent Calls from Pacific Time Zone Clients: {(callsCompletedByTimeZoneObj.Pacific/(callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central)*100).toFixed(2)}%</li><br />
         </ul>
         <PieChart
           graphData = {callsCompletedByTimeZoneObj} />
-        <p>Total Calls Completed Within the Past 24 Hours: {callsCompletedByTimeZoneObj.Pacific+callsCompletedByTimeZoneObj.Mountain+callsCompletedByTimeZoneObj.Eastern+callsCompletedByTimeZoneObj.Central}</p>
       </div>
     </>
   );

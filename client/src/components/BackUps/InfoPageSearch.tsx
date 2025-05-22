@@ -223,7 +223,7 @@ const InfoPageSearch = (data: any) => {
         }}
         onInputChange={(event, value, reason) => {
           if (reason == "clear") {
-            setAccountNum(-1)
+            setAccountNum(-1);
             setSelectedYear(-1);
             setSelectedMonth(-1);
             setSelectedDay(-1);

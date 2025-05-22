@@ -11,7 +11,7 @@ const Index = () => {
       <div className='text-light bg-dark pt-5 text-center' style={{paddingLeft: '5px', paddingRight: '5px'}}>
         <img src={logo} alt='Logo' className="mr-3"/> <br /><br /><br />
       </div>
-      {/* <HomeAccordion /> */}
+      <HomeAccordion />
     </>
   );
 };
