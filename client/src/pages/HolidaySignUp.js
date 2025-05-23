@@ -110,6 +110,16 @@ const HolidaySignUp = () => {
     } 
   }
 
+  const buttonBuilder = () => {
+    let buttons = new Array();
+    for(let i = 0; i < holiday.length; i++) {
+      buttons.push(<button onClick={() => handlerChangeHoliday(holiday[i])}>{holiday[i].value}</button>);
+    }
+     //adjust buttons to be a filter between Agent, Dispatcher, and Supervisor shifts instead of holiday buttons
+
+    return buttons;
+  }
+
   return (
     <>
       <Menu
@@ -124,6 +134,8 @@ const HolidaySignUp = () => {
           selectedHoliday = {selectedHoliday}
           handlerChangeHoliday = {(data) => {handlerChangeHoliday(data)}} />
         <p>Please share this link with Agents so they can review the holiday shifts that they have been signed up for <a target="_blank" href='/HolidaySchedule'>Agent View</a></p>
+      
+        {buttonBuilder()}
         {editDisplay()}
       </div>
     </>

@@ -7,28 +7,9 @@ const SelectHoliday = (data: any) => {
   useEffect(()=>{
   },[data.selectedHoliday]);
 
-  const buttonBuilder = () => {
-    let buttons = new Array();
-    for(let i = 0; i < data.holidays.length; i++) {
-      buttons.push(<button onClick={() => data.handlerChangeHoliday(data.holidays[i])}>{data.holidays[i].value}</button>);
-    }
-
-    return buttons;
-  }
-
   return (
     <>
       <br /><br />
-      <div style={{ width: '50%' }}>
-        <Select
-          className='text-dark'
-          name="Account List"
-          value={data.holidays.value}
-          onChange={data.handlerChangeHoliday}
-          options={data.holidays}
-          // defaultValue={{ value: 'None', label: 'None' }}
-        />
-      </div> <br />
       <Autocomplete
         disablePortal
         onChange={(event, newValue: any) => {
@@ -50,8 +31,6 @@ const SelectHoliday = (data: any) => {
         value={data.selectedHoliday}
         renderInput={(params) => <TextField {...params} label={"Holiday List"} variant="filled" sx={{ zIndex: 0 }} />}
       /><br />
-      
-      {buttonBuilder()}
     </>
   );
 }
