@@ -91,7 +91,6 @@ const HolidaySignUp = () => {
   }
 
   const handlerChangeHoliday = (event) => {
-    console.log(event);
     setSelectedHoliday(event.value);
   }
 
@@ -135,7 +134,7 @@ const HolidaySignUp = () => {
           handlerChangeHoliday = {(data) => {handlerChangeHoliday(data)}} />
         <p>Please share this link with Agents so they can review the holiday shifts that they have been signed up for <a target="_blank" href='/HolidaySchedule'>Agent View</a></p>
       
-        {buttonBuilder()}
+        {/* {buttonBuilder()} */}
         {editDisplay()}
       </div>
     </>

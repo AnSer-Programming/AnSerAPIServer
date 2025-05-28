@@ -15,7 +15,6 @@ const SetHolidaySignUp = (data: any) => {
         if (data.selectedHoliday != "None") {
           let response = await getHolidayData(data.selectedHoliday);
           let responseData = new Array();
-          // const holidays = new Array();
 
           if (!response.ok) {
             throw new Error('something went wrong!');
@@ -46,7 +45,6 @@ const SetHolidaySignUp = (data: any) => {
       const results = await setShiftData(newData);
       setUpdateData(await results.json());
     } else {
-      console.log(shiftID);
       newData = { agentName: `${newValue.value}`, id: shiftID };
       const results = await updateShiftData(newData);
       setUpdateData(await results.json());
@@ -70,7 +68,6 @@ const SetHolidaySignUp = (data: any) => {
             if (holidayData[1].length > 0) {
               if (holidayData[1][signedUpCounter]) {
                 if (holidayData[0][x].id === holidayData[1][signedUpCounter].holiday_id && signedUpCounter < holidayData[1].length) {
-                  console.log(holidayData[1][signedUpCounter].id);
                   shiftList.push(
                     <tr>
                       <td>Employee Type: {holidayData[0][x].employee_type}</td>
