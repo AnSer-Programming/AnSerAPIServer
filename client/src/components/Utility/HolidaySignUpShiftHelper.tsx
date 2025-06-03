@@ -16,26 +16,29 @@ export const shiftAssigner = async (holidayData: any) => {
   async function assignAgentToShift(data: any) {
     let combinedData: any = data;
     let found: boolean = false;
-    for (let x = 0; x < holidayData[1].length; x++) {
+    let comparisonData = holidayData[1].sort((a:any, b:any) => a.holiday_id - b.holiday_id)
+    for (let x = 0; x < comparisonData.length; x++) {
+      // console.log(holidayData[1].sort((a:any, b:any) => a.holiday_id - b.holiday_id));
       found = false;
       for (let y = 0; y < combinedData.length; y++) {
         if (!found) {
-          if (holidayData[1][x].holiday_id == combinedData[y].id && combinedData[y].agentName == "Available") {
-            combinedData[y].agentName = await holidayData[1][x].agent_name;
+          if (comparisonData[x].holiday_id == combinedData[y].id && combinedData[y].agentName == "Available") {
+            combinedData[y].agentName = await comparisonData[x].agent_name;
             found = true;
           }
         }
       }
     }
 
-    return await data;
+    console.log(combinedData);
+    return await combinedData;
   }
 
   async function main() {
     let rawShiftData: any = new Array();
     let shiftData: any = new Array();
     rawShiftData = await objectBuilder();
-    // shiftData = await assignAgentToShift(rawShiftData);
+    shiftData = await assignAgentToShift(rawShiftData);
     return shiftData;
   }
 
