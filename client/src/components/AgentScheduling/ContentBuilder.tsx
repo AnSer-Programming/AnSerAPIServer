@@ -1,28 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { shiftAssigner } from '../Utility/HolidaySignUpShiftHelper';
+import { shiftAssigner, shiftOverview } from '../Utility/HolidaySignUpShiftHelper';
 
 const ContentBuilder = (data: any) => {
   const [holidayData, setHolidayData] = useState<any>(data.holidayData);
-  const [dataBuilder, setDataBuilder] = useState<any>([]);
-  const holidayDataLength = Object.keys(holidayData).length;
+  const [shiftOverviewData, setShiftOverviewData] = useState<any>([]);
+  const [shiftData, setShiftData] = useState<any>([]);
+  const shiftDataLength = Object.keys(shiftData).length;
+  const shiftOverviewDataLength = Object.keys(shiftOverviewData).length;
 
   useEffect(() => {
-    const getData = async() => {
-      if(data.holidayData.length > 0) {
+    const getData = async () => {
+      if (data.holidayData.length > 0) {
         setHolidayData(data.holidayData);
-        setDataBuilder(await shiftAssigner(data.holidayData));
+        setShiftData(await shiftAssigner(data.holidayData));
+        setShiftOverviewData(await shiftOverview(data.holidayData));
       }
     }
 
     getData();
   }, [data]);
 
-  // console.log(holidayData);
-  // console.log(dataBuilder);
+  console.log(shiftOverviewData);
+  console.log(shiftData);
 
-  const shiftOverview = () => {
-    let signedUpCounter: number = 0;
-    let totalSignedUp: number = 0;
+  const shiftOverviewBuilder = () => {
     let shiftList = new Array();
     let tableBody = new Array();
     if (data.selectedHoliday == "None") {
@@ -39,35 +40,26 @@ const ContentBuilder = (data: any) => {
           </tr>
         </thead>
       );
-      if (holidayData.length > 0) {
-        for (let x = 0; x < holidayData[0].length; x++) {
-          totalSignedUp = 0;
-          for (let y = 0; y < holidayData[0][x].number_of_shifts; y++) {
+      if (shiftOverviewDataLength > 0) {
+        for (let x = 0; x < shiftOverviewDataLength; x++) {
+          for (let y = 0; y < shiftOverviewData[x].totalShifts; y++) {
             if (x > 1 && y == 0) {
-              if (holidayData[0][x].employee_type != holidayData[0][x - 1].employee_type) {
+              if (shiftOverviewData[x].employeeType != shiftOverviewData[x - 1].employeeType) {
                 tableBody.push(<hr />);
-              }
-            }
-            if (holidayData[1].length > 0) {
-              if (holidayData[1][signedUpCounter]) {
-                if (holidayData[0][x].id === holidayData[1][signedUpCounter].holiday_id && signedUpCounter < holidayData[1].length) {
-                  signedUpCounter++;
-                  totalSignedUp++;
-                }
               }
             }
           }
           tableBody.push(
             <tr>
-              <td>{holidayData[0][x].employee_type} Shift</td>
-              <td>{holidayData[0][x].shift_time}</td>
-              <td>{holidayData[0][x].number_of_shifts}</td>
-              <td>{totalSignedUp}</td>
-              <td>{holidayData[0][x].number_of_shifts - totalSignedUp}</td>
+              <td>{shiftOverviewData[x].employeeType} Shift</td>
+              <td>{shiftOverviewData[x].shiftTime}</td>
+              <td>{shiftOverviewData[x].totalShifts}</td>
+              <td>{shiftOverviewData[x].numberOfUnavailable}</td>
+              <td>{shiftOverviewData[x].numberOfAvailable}</td>
             </tr>
           );
         }
-        shiftList.push(<tbody>{tableBody}</tbody>)
+        shiftList.push(<tbody>{tableBody}</tbody>);
       }
     }
 
@@ -75,33 +67,35 @@ const ContentBuilder = (data: any) => {
   }
 
   const listBuilder = () => {
-    let signedUpCounter: number = 0;
     let shiftList = new Array();
     if (data.selectedHoliday == "None") {
       shiftList.push(<tr><td></td></tr>);
     } else {
-      if (holidayData.length > 0) {
-        for (let x = 0; x < holidayData[0].length; x++) {
-          for (let y = 0; y < holidayData[0][x].number_of_shifts; y++) {
-            if (x > 1 && y == 0) {
-              if (holidayData[0][x].employee_type != holidayData[0][x - 1].employee_type) {
-                shiftList.push(<hr />)
-              }
+      if (shiftDataLength > 0) {
+        for (let x = 0; x < shiftDataLength; x++) {
+          if (x > 1) {
+            if (shiftData[x].employeeType != shiftData[x - 1].employeeType) {
+              shiftList.push(<hr />)
             }
-            if (holidayData[1].length > 0) {
-              if (holidayData[1][signedUpCounter]) {
-                if (holidayData[0][x].id === holidayData[1][signedUpCounter].holiday_id && signedUpCounter < holidayData[1].length) {
-                  shiftList.push(<tr><td>Employee Type: {holidayData[0][x].employee_type}</td><td>Holiday: {holidayData[0][x].holiday}</td><td>Shift Time: {holidayData[0][x].shift_time}</td><td>Agent Name: {holidayData[1][signedUpCounter].agent_name}</td></tr>);
-                  signedUpCounter++;
-                } else {
-                  shiftList.push(<tr><td>Employee Type: {holidayData[0][x].employee_type}</td><td>Holiday: {holidayData[0][x].holiday}</td><td>Shift Time: {holidayData[0][x].shift_time}</td><td>Agent Name: <strong>Available</strong></td></tr>);
-                }
-              } else {
-                shiftList.push(<tr><td>Employee Type: {holidayData[0][x].employee_type}</td><td>Holiday: {holidayData[0][x].holiday}</td><td>Shift Time: {holidayData[0][x].shift_time}</td><td>Agent Name: <strong>Available</strong></td></tr>);
-              }
-            } else {
-              shiftList.push(<tr><td>Employee Type: {holidayData[0][x].employee_type}</td><td>Holiday: {holidayData[0][x].holiday}</td><td>Shift Time: {holidayData[0][x].shift_time}</td><td>Agent Name: <strong>Available</strong></td></tr>);
-            }
+          }
+          if (shiftData[x].agentName == "Available") {
+            shiftList.push(
+              <tr>
+                <td>Employee Type: {shiftData[x].employeeType}</td>
+                <td>Holiday: {shiftData[x].holiday}</td>
+                <td>Shift Time: {shiftData[x].shiftTime}</td>
+                <td>Agent Name: <strong>{shiftData[x].agentName}</strong></td>
+              </tr>
+            );
+          } else {
+            shiftList.push(
+              <tr>
+                <td>Employee Type: {shiftData[x].employeeType}</td>
+                <td>Holiday: {shiftData[x].holiday}</td>
+                <td>Shift Time: {shiftData[x].shiftTime}</td>
+                <td>Agent Name: {shiftData[x].agentName}</td>
+              </tr>
+            );
           }
         }
       }
@@ -113,16 +107,16 @@ const ContentBuilder = (data: any) => {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <aside style={{ marginLeft: '5px', width: '40%' }}>
-          <table style={{ width: '100%', justifyContent: 'space-evenly', borderStyle: 'solid', borderColor: '#FFFFFF', borderWidth: '2px' }}>
-            {shiftOverview()}
-          </table>
-        </aside>
         <table style={{ marginRight: '5px', width: '55%' }}>
           <tbody>
             {listBuilder()}
           </tbody>
         </table>
+        <aside style={{ marginLeft: '5px', width: '40%' }}>
+          <table style={{ width: '100%', justifyContent: 'space-evenly', borderStyle: 'solid', borderColor: '#FFFFFF', borderWidth: '2px' }}>
+            {shiftOverviewBuilder()}
+          </table>
+        </aside>
       </div>
     </>
   )

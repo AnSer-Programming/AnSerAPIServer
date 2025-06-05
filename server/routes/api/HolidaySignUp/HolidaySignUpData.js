@@ -113,9 +113,9 @@ async function getSignedUp(accountNum, date) {
 }
 
 async function setShiftData(shiftData) {
-  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES (${shiftData.holidayID}, '${shiftData.agentName}');`;
+  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES (${shiftData.holidayID}, :agentName);`;
   try {
-    let result = await config.query(query, { type: seq.QueryTypes.INSERT });
+    let result = await config.query(query, { replacements: { agentName: shiftData.agentName}, type: seq.QueryTypes.INSERT });
     return result;
   } catch (err) {
     // ... error checks
@@ -124,9 +124,9 @@ async function setShiftData(shiftData) {
 }
 
 async function updateShiftData(shiftData) {
-  let query = `UPDATE [isapi].[dbo].[holidaySignUpTakenShifts] SET agent_name = '${shiftData.agentName}' WHERE id=${shiftData.id}`;
+  let query = `UPDATE [isapi].[dbo].[holidaySignUpTakenShifts] SET agent_name = :agentName WHERE id=${shiftData.id}`;
   try {
-    let result = await config.query(query, { type: seq.QueryTypes.UPDATE });
+    let result = await config.query(query, { replacements: { agentName: shiftData.agentName}, type: seq.QueryTypes.UPDATE });
     return result;
   } catch (err) {
     // ... error checks
