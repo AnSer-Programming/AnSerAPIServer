@@ -116,7 +116,6 @@ const ContentBuilder = (data: any) => {
                   </tr>
                 );
               }
-
             }
           }
         }

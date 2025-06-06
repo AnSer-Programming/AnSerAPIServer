@@ -37,8 +37,6 @@ const GetHolidaySignUp = (data: any) => {
     getCompleteHolidayData();
   }, [holidayDataLength, data.selectedHoliday, data.selectedEmployeeType]);
 
-  console.log(data.selectedEmployeeType)
-
   return (
     <>
       <ContentBuilder
