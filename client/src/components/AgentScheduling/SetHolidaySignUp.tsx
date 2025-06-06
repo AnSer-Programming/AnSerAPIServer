@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getHolidayData, getHolidaySignUp, getAgents, setShiftData, updateShiftData } from '../../utils/AgentSuccessAPI';
+import { getHolidayData, getHolidaySignUp, setShiftData, updateShiftData, removeShiftData } from '../../utils/AgentSuccessAPI';
 import SelectAgent from './SelectAgent';
+import { shiftAssigner } from '../Utility/HolidaySignUpShiftHelper';
 
 const SetHolidaySignUp = (data: any) => {
   const [holidayData, setHolidayData] = useState<any>([]);
   const [updateData, setUpdateData] = useState<any>([]);
+  const [shiftData, setAssignedShiftData] = useState<any>([]);
   const holidayDataLength = Object.keys(holidayData).length;
   const updateDataLength = Object.keys(updateData).length;
   let newData: any = 0;
@@ -30,6 +32,7 @@ const SetHolidaySignUp = (data: any) => {
           responseData[1] = await response.json();
 
           setHolidayData(responseData);
+          setAssignedShiftData(await shiftAssigner(responseData));
         }
       } catch (err) {
         console.error(err);
@@ -37,102 +40,70 @@ const SetHolidaySignUp = (data: any) => {
     }
 
     getCompleteHolidayData();
-  }, [holidayDataLength, data.selectedHoliday]);
+  }, [holidayDataLength, data.selectedHoliday, data.selectedEmployeeType]);
 
   const handlerChangeAgent = async (newValue: any, holidayID: number, shiftID: number) => {
-    if (shiftID == -1) {
-      newData = { agentName: `${newValue.value}`, holidayID: holidayID };
-      const results = await setShiftData(newData);
+    if (newValue.value == "Available") {
+      const results = await removeShiftData(shiftID);
       setUpdateData(await results.json());
     } else {
-      newData = { agentName: `${newValue.value}`, id: shiftID };
-      const results = await updateShiftData(newData);
-      setUpdateData(await results.json());
+      if (shiftID == -1) {
+        newData = { agentName: `${newValue.value}`, holidayID: holidayID };
+        const results = await setShiftData(newData);
+        setUpdateData(await results.json());
+      } else {
+        newData = { agentName: `${newValue.value}`, id: shiftID };
+        const results = await updateShiftData(newData);
+        setUpdateData(await results.json());
+      }
     }
   }
 
   const listBuilder = () => {
-    let signedUpCounter: number = 0;
     let shiftList = new Array();
     if (data.selectedHoliday == "None") {
       shiftList.push(<tr><td></td></tr>);
     } else {
-      if (holidayData.length > 0) {
-        for (let x = 0; x < holidayData[0].length; x++) {
-          for (let y = 0; y < holidayData[0][x].number_of_shifts; y++) {
-            if (x > 1 && y == 0) {
-              if (holidayData[0][x].employee_type != holidayData[0][x - 1].employee_type) {
+      if (shiftData.length > 0) {
+        for (let x = 0; x < shiftData.length; x++) {
+          if (data.selectedEmployeeType == "All") {
+            if (x > 1) {
+              if (shiftData[x].employeeType != shiftData[x - 1].employeeType) {
                 shiftList.push(<hr />)
               }
             }
-            if (holidayData[1].length > 0) {
-              if (holidayData[1][signedUpCounter]) {
-                if (holidayData[0][x].id === holidayData[1][signedUpCounter].holiday_id && signedUpCounter < holidayData[1].length) {
-                  shiftList.push(
-                    <tr>
-                      <td>Employee Type: {holidayData[0][x].employee_type}</td>
-                      <td>Holiday: {holidayData[0][x].holiday}</td>
-                      <td>Shift Time: {holidayData[0][x].shift_time}</td>
-                      <td style={{ width: '45%' }}>
-                        Agent Name: <SelectAgent
-                          agents={data.agentData}
-                          selectedAgent={holidayData[1][signedUpCounter].agent_name}
-                          holidayID={holidayData[0][x].id}
-                          shiftID={holidayData[1][signedUpCounter].id}
-                          handlerChangeAgent={(change: any, holidayID: number, shiftID: number) => handlerChangeAgent(change, holidayID, shiftID)} />
-                      </td>
-                    </tr>);
-                  signedUpCounter++;
-                } else {
-                  shiftList.push(
-                    <tr>
-                      <td>Employee Type: {holidayData[0][x].employee_type}</td>
-                      <td>Holiday: {holidayData[0][x].holiday}</td>
-                      <td>Shift Time: {holidayData[0][x].shift_time}</td>
-                      <td style={{ width: '45%' }}>
-                        Agent Name: <SelectAgent
-                          agents={data.agentData}
-                          selectedAgent={"Available"}
-                          selectedHoliday={data.selectedHoliday}
-                          holidayID={holidayData[0][x].id}
-                          shiftID={-1}
-                          handlerChangeAgent={(change: any, holidayID: number, shiftID: number) => handlerChangeAgent(change, holidayID, shiftID)} />
-                      </td>
-                    </tr>);
-                }
-              } else {
-                shiftList.push(
-                  <tr>
-                    <td>Employee Type: {holidayData[0][x].employee_type}</td>
-                    <td>Holiday: {holidayData[0][x].holiday}</td>
-                    <td>Shift Time: {holidayData[0][x].shift_time}</td>
-                    <td style={{ width: '45%' }}>
-                      Agent Name: <SelectAgent
-                        agents={data.agentData}
-                        selectedAgent={"Available"}
-                        selectedHoliday={data.selectedHoliday}
-                        holidayID={holidayData[0][x].id}
-                        shiftID={-1}
-                        handlerChangeAgent={(change: any, holidayID: number, shiftID: number) => handlerChangeAgent(change, holidayID, shiftID)} />
-                    </td>
-                  </tr>);
-              }
-            } else {
+            shiftList.push(
+              <tr>
+                <td>Employee Type: {shiftData[x].employeeType}</td>
+                <td>Holiday: {shiftData[x].holiday}</td>
+                <td>Shift Time: {shiftData[x].shiftTime}</td>
+                <td style={{ width: '45%' }}>
+                  Agent Name: <SelectAgent
+                    agents={data.agentData}
+                    selectedAgent={shiftData[x].agentName}
+                    holidayID={shiftData[x].holidayID}
+                    shiftID={shiftData[x].shiftID}
+                    handlerChangeAgent={(change: any, holidayID: number, shiftID: number) => handlerChangeAgent(change, holidayID, shiftID)} />
+                </td>
+              </tr>
+            );
+          } else {
+            if (shiftData[x].employeeType == data.selectedEmployeeType) {
               shiftList.push(
                 <tr>
-                  <td>Employee Type: {holidayData[0][x].employee_type}</td>
-                  <td>Holiday: {holidayData[0][x].holiday}</td>
-                  <td>Shift Time: {holidayData[0][x].shift_time}</td>
+                  <td>Employee Type: {shiftData[x].employeeType}</td>
+                  <td>Holiday: {shiftData[x].holiday}</td>
+                  <td>Shift Time: {shiftData[x].shiftTime}</td>
                   <td style={{ width: '45%' }}>
                     Agent Name: <SelectAgent
                       agents={data.agentData}
-                      selectedAgent={"Available"}
-                      selectedHoliday={data.selectedHoliday}
-                      holidayID={holidayData[0][x].id}
-                      shiftID={-1}
+                      selectedAgent={shiftData[x].agentName}
+                      holidayID={shiftData[x].holidayID}
+                      shiftID={shiftData[x].shiftID}
                       handlerChangeAgent={(change: any, holidayID: number, shiftID: number) => handlerChangeAgent(change, holidayID, shiftID)} />
                   </td>
-                </tr>);
+                </tr>
+              );
             }
           }
         }
