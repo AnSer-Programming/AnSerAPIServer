@@ -15,6 +15,7 @@ export const shiftAssigner = async (holidayData: any) => {
       }
     }
 
+    console.log(objectData);
     return await objectData;
   }
 
@@ -23,6 +24,7 @@ export const shiftAssigner = async (holidayData: any) => {
     let found: boolean = false;
     let comparisonData = holidayData[1].sort((a:any, b:any) => a.holiday_id - b.holiday_id);
     for (let x = 0; x < comparisonData.length; x++) {
+      console.log(comparisonData[x]);
       found = false;
       for (let y = 0; y < combinedData.length; y++) {
         if (!found) {
