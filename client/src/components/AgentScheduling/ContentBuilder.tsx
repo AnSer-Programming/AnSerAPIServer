@@ -20,9 +20,6 @@ const ContentBuilder = (data: any) => {
     getData();
   }, [data]);
 
-  console.log(shiftOverviewData);
-  console.log(shiftData);
-
   const shiftOverviewBuilder = () => {
     let shiftList = new Array();
     let tableBody = new Array();
@@ -73,29 +70,54 @@ const ContentBuilder = (data: any) => {
     } else {
       if (shiftDataLength > 0) {
         for (let x = 0; x < shiftDataLength; x++) {
-          if (x > 1) {
-            if (shiftData[x].employeeType != shiftData[x - 1].employeeType) {
-              shiftList.push(<hr />)
+          if (data.selectedEmployeeType == "All") {
+            if (x > 1) {
+              if (shiftData[x].employeeType != shiftData[x - 1].employeeType) {
+                shiftList.push(<hr />)
+              }
             }
-          }
-          if (shiftData[x].agentName == "Available") {
-            shiftList.push(
-              <tr>
-                <td>Employee Type: {shiftData[x].employeeType}</td>
-                <td>Holiday: {shiftData[x].holiday}</td>
-                <td>Shift Time: {shiftData[x].shiftTime}</td>
-                <td>Agent Name: <strong>{shiftData[x].agentName}</strong></td>
-              </tr>
-            );
+            if (shiftData[x].agentName == "Available") {
+              shiftList.push(
+                <tr>
+                  <td>Employee Type: {shiftData[x].employeeType}</td>
+                  <td>Holiday: {shiftData[x].holiday}</td>
+                  <td>Shift Time: {shiftData[x].shiftTime}</td>
+                  <td>Agent Name: <strong>{shiftData[x].agentName}</strong></td>
+                </tr>
+              );
+            } else {
+              shiftList.push(
+                <tr>
+                  <td>Employee Type: {shiftData[x].employeeType}</td>
+                  <td>Holiday: {shiftData[x].holiday}</td>
+                  <td>Shift Time: {shiftData[x].shiftTime}</td>
+                  <td>Agent Name: {shiftData[x].agentName}</td>
+                </tr>
+              );
+            }
           } else {
-            shiftList.push(
-              <tr>
-                <td>Employee Type: {shiftData[x].employeeType}</td>
-                <td>Holiday: {shiftData[x].holiday}</td>
-                <td>Shift Time: {shiftData[x].shiftTime}</td>
-                <td>Agent Name: {shiftData[x].agentName}</td>
-              </tr>
-            );
+            if (shiftData[x].employeeType == data.selectedEmployeeType) {
+              if (shiftData[x].agentName == "Available") {
+                shiftList.push(
+                  <tr>
+                    <td>Employee Type: {shiftData[x].employeeType}</td>
+                    <td>Holiday: {shiftData[x].holiday}</td>
+                    <td>Shift Time: {shiftData[x].shiftTime}</td>
+                    <td>Agent Name: <strong>{shiftData[x].agentName}</strong></td>
+                  </tr>
+                );
+              } else {
+                shiftList.push(
+                  <tr>
+                    <td>Employee Type: {shiftData[x].employeeType}</td>
+                    <td>Holiday: {shiftData[x].holiday}</td>
+                    <td>Shift Time: {shiftData[x].shiftTime}</td>
+                    <td>Agent Name: {shiftData[x].agentName}</td>
+                  </tr>
+                );
+              }
+
+            }
           }
         }
       }
@@ -107,7 +129,7 @@ const ContentBuilder = (data: any) => {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <table style={{ marginRight: '5px', width: '55%' }}>
+        <table style={{ marginRight: '5px', width: '55%', height: '100%' }}>
           <tbody>
             {listBuilder()}
           </tbody>

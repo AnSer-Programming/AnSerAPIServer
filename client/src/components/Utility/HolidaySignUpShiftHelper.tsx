@@ -9,6 +9,7 @@ export const shiftAssigner = async (holidayData: any) => {
         objectData[counter]['employeeType'] = await holidayData[0][x].employee_type;
         objectData[counter]['holidayDate'] = await holidayData[0][x].holiday_date;
         objectData[counter]['shiftTime'] = await holidayData[0][x].shift_time;
+        objectData[counter]['shiftID'] = -1;
         objectData[counter]['agentName'] = "Available";
         counter++;
       }
@@ -27,6 +28,7 @@ export const shiftAssigner = async (holidayData: any) => {
         if (!found) {
           if (comparisonData[x].holiday_id == combinedData[y].holidayID && combinedData[y].agentName == "Available") {
             combinedData[y].agentName = await comparisonData[x].agent_name;
+            combinedData[y].shiftID = await comparisonData[x].id;
             found = true;
           }
         }

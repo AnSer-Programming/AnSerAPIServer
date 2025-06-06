@@ -8,6 +8,8 @@ import { getHolidays, getAgents } from '../utils/AgentSuccessAPI.js';
 const HolidaySignUp = () => {
   const [holiday, setHoliday] = useState([]);
   const [selectedHoliday, setSelectedHoliday] = useState("None");
+  const [employeeType, setEmployeeType] = useState([]);
+  const [selectedEmployeeType, setSelectedEmployeeType] = useState("All");
   const [isEdit, setIsEdit] = useState(false);
   const [holidayType, setHolidayType] = useState("Summer");
   const [agentData, setAgentData] = useState([]);
@@ -22,6 +24,7 @@ const HolidaySignUp = () => {
       try {
         const response = await getHolidays(holidayType);
         const holidays = new Array();
+        const employeeTypes = new Array();
 
         if (!response.ok) {
           throw new Error('something went wrong!');
@@ -29,12 +32,17 @@ const HolidaySignUp = () => {
 
         let data = await response.json();
 
-        for (let i = 0; i < data.length; i++) {
-          holidays[i] = { value: data[i].holiday, label: data[i].holiday };
+        for (let i = 0; i < data[0].length; i++) {
+          holidays[i] = { value: data[0][i].holiday, label: data[0][i].holiday };
+        }
+        for (let i = 0; i < data[1].length; i++) {
+          employeeTypes[i] = data[1][i].employee_type;
         }
 
         holidays[holidays.length] = { value: "None", label: "None" };
+        employeeTypes[employeeTypes.length] = "All";
 
+        setEmployeeType(employeeTypes);
         setHoliday(holidays);
       } catch (err) {
         console.error(err);
@@ -81,10 +89,12 @@ const HolidaySignUp = () => {
           isEdit ?
             <SetHolidaySignUp
               selectedHoliday = {selectedHoliday}
+              selectedEmployeeType = {selectedEmployeeType}
               agentData = {agentData}
               setEdit={(editBoolean) => setIsEdit(editBoolean)} /> :
             <GetHolidaySignUp
-              selectedHoliday = {selectedHoliday} />
+              selectedHoliday = {selectedHoliday}
+              selectedEmployeeType = {selectedEmployeeType}  />
         }
       </>
     )
@@ -92,6 +102,10 @@ const HolidaySignUp = () => {
 
   const handlerChangeHoliday = (event) => {
     setSelectedHoliday(event.value);
+  }
+
+  const handlerChangeEmployeeTypeFilter = (event) => {
+    setSelectedEmployeeType(event);
   }
 
   const editingHandler = () => {
@@ -111,8 +125,8 @@ const HolidaySignUp = () => {
 
   const buttonBuilder = () => {
     let buttons = new Array();
-    for(let i = 0; i < holiday.length; i++) {
-      buttons.push(<button onClick={() => handlerChangeHoliday(holiday[i])}>{holiday[i].value}</button>);
+    for(let i = 0; i < employeeType.length; i++) {
+      buttons.push(<button onClick={() => handlerChangeEmployeeTypeFilter(employeeType[i])}>{employeeType[i]}</button>);
     }
      //adjust buttons to be a filter between Agent, Dispatcher, and Supervisor shifts instead of holiday buttons
 
@@ -134,8 +148,7 @@ const HolidaySignUp = () => {
           handlerChangeHoliday = {(data) => {handlerChangeHoliday(data)}} />
         <p>Please share this link with Agents so they can review the holiday shifts that they have been signed up for <a target="_blank" href='/HolidaySchedule'>Agent View</a></p>
       
-        {/* {buttonBuilder()} */}
-        {editDisplay()}
+        {selectedHoliday == "None" ? <br /> : <>{buttonBuilder()} <br /> <br />{editDisplay()}</>}
       </div>
     </>
   );

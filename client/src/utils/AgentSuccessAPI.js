@@ -55,3 +55,12 @@ export const updateShiftData = (data) => {
     body: JSON.stringify(data),
   });
 };
+
+export const removeShiftData = (data) => {
+  return fetch(`/api/AgentScheduling/HolidaySignUp/RemoveShift/${data}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
