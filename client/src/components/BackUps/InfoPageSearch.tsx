@@ -71,6 +71,7 @@ const InfoPageSearch = (data: any) => {
     let years = new Array();
     let months = new Array();
     let days = new Array();
+    console.log(searchCriteria);
     for (let i = 0; i < searchCriteria[accountNumber].length; i++) {
       if (years.length == 0) {
         years.push(searchCriteria[accountNumber][i].year);
@@ -91,15 +92,14 @@ const InfoPageSearch = (data: any) => {
           if (months.length == 0) {
             months.push(searchCriteria[accountNumber][i].month);
           } else {
+            monthExists = false;
             for (let x = 0; x < months.length; x++) {
               if (months[x] == searchCriteria[accountNumber][i].month) {
                 monthExists = true;
               }
-              if (monthExists) {
-                break;
-              } else if (x == months.length) {
-                months.push(searchCriteria[accountNumber][i].month);
-              }
+            }
+            if (!monthExists) {
+              months.push(searchCriteria[accountNumber][i].month);
             }
           }
         }
@@ -154,6 +154,7 @@ const InfoPageSearch = (data: any) => {
         onChange={(event, newValue: any) => {
           if (newValue) {
             setSelectedMonth(parseInt(newValue));
+            setSelectedDay(-1);
             accountHandler(accountNum, selectedYear, newValue, selectedDay);
           }
           if (!newValue) {
