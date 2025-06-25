@@ -24,3 +24,11 @@ h6 {
 .pageBodyHyperlink:hover {
   color: #9999FF;
 }
+
+a {
+  color: #FECD2E;
+}
+
+a:hover {
+  color: #FFAC20;
+}

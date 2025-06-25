@@ -40,7 +40,7 @@ const SetHolidaySignUp = (data: any) => {
     }
 
     getCompleteHolidayData();
-  }, [holidayDataLength, data.selectedHoliday, data.selectedEmployeeType]);
+  }, [holidayDataLength, data.selectedHoliday, data.selectedEmployeeType, updateData]);
 
   const handlerChangeAgent = async (newValue: any, holidayID: number, shiftID: number) => {
     if (newValue.value == "Available") {
