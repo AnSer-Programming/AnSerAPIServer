@@ -26,7 +26,12 @@ async function getHolidays(holidayType) {
 }
 
 async function getHolidayData(holiday) {
-  let query = `SELECT * FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable] WHERE [holiday] = :holiday`;
+  let query;
+  if (holiday == "All") {
+    query = `SELECT * FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable]`;
+  } else {
+    query = `SELECT * FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable] WHERE [holiday] = :holiday`;
+  }
 
   try {
     let result = await config.query(query, { replacements: { holiday: holiday }, type: seq.QueryTypes.SELECT });
@@ -38,14 +43,51 @@ async function getHolidayData(holiday) {
 }
 
 async function getSignedUp(holiday) {
-  let query = `SELECT * 
-    FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
-    LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
-    WHERE [holiday] = :holiday
-    ORDER BY [holiday_id] ASC`;
+  let query;
+  if (holiday == 'Summer' || holiday == 'Winter') {
+    query = `SELECT * 
+      FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+      LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+      WHERE [holiday_type] = :holiday
+      ORDER BY [holiday_id], [agent_name] ASC`;
+  } else {
+    query = `SELECT * 
+      FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+      LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+      WHERE [holiday] = :holiday
+      ORDER BY [holiday_id] ASC`;
+  }
 
   try {
     let result = await config.query(query, { replacements: { holiday: holiday }, type: seq.QueryTypes.SELECT });
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
+async function getDataForAgentView(holidayType, holiday) {
+  let query;
+  let parameterization;
+  if (holiday == "All" || holiday == "None") {
+    query = `SELECT agent_name, holiday, holiday_date, employee_type, shift_time
+      FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+      LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+      WHERE [holiday_type] = :holidayType
+      ORDER BY [holiday_id], [agent_name] ASC`;
+    parameterization = { holidayType: holidayType };
+  } else {
+    query = `SELECT agent_name, holiday, holiday_date, employee_type, shift_time
+      FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+      LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+      WHERE [holiday] = :holiday AND [holiday_type] = :holidayType
+      ORDER BY [holiday_id], [agent_name] ASC`;
+    parameterization = { holiday: holiday, holidayType: holidayType };
+  }
+
+  try {
+    let result = await config.query(query, { replacements: parameterization, type: seq.QueryTypes.SELECT });
     return result;
   } catch (err) {
     // ... error checks
@@ -106,20 +148,6 @@ async function getShifts(employeeType) {
   }
 }
 
-async function getSignedUp(accountNum, date) {
-  let query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
-        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
-        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
-        ORDER BY [holiday_type], [agent_name] ASC`;
-  try {
-    let result = await config.query(query, { replacements: { accountNum: accountNum, date: date }, type: seq.QueryTypes.SELECT });
-    return result;
-  } catch (err) {
-    // ... error checks
-    console.log(err);
-  }
-}
-
 async function setShiftData(shiftData) {
   let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES (${shiftData.holidayID}, :agentName);`;
   try {
@@ -144,6 +172,13 @@ async function updateShiftData(shiftData) {
 
 router.get('/GetAgents', async (req, res) => {
   results = await getAgents();
+  res.json(results);
+});
+
+router.get('/GetAgentViewData/:holidayType/:holiday', async (req, res) => {
+  const holidayType = req.params.holidayType;
+  const holiday = req.params.holiday;
+  results = await getDataForAgentView(holidayType, holiday);
   res.json(results);
 });
 

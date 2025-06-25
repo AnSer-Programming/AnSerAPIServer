@@ -8,12 +8,12 @@ const getCurrentDate = async() => {
   let month;
   let day;
   const modifier = 0;
-  if(`${date.getMonth() + 1}`.length < 2) {
+  if(`${date.getMonth() + 1}`.length < 2) { //Check if month is 2-digits. If 1-digit month number then append a 0 at the beginning of the string
     month = `0${date.getMonth() + 1}`;
   } else {
     month = `${date.getMonth() + 1}`;
   }
-  if(`${date.getDate() + modifier}`.length < 2) {
+  if(`${date.getDate() + modifier}`.length < 2) { //Check if day is 2-digits. If 1-digit day number then append a 0 at the beginning of the string
     day = `0${date.getDate() + modifier}`;
   } else {
     day = `${date.getDate() + modifier}`;
@@ -67,23 +67,23 @@ router.get('/:cottage', async (req, res) => {
     let returnData = new Array();
     let count = 0;
     for(let i = 0; i < data.length; i++) {
-      if(data[i].cottage == req.params.cottage) {
+      if(data[i].cottage == req.params.cottage) { //index 1 will be month, index 2 will be day, index 0 is year
         if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1]) && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])) {
           if(parseInt(data[i].check_in_date.split('-')[2]) <= parseInt(today.split('-')[2]) && parseInt(data[i].check_out_date.split('-')[2]) > parseInt(today.split('-')[2])) {
             returnData[count] = data[i];
             count++;
-          }
+          }//day check
         } else if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1]) && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])+1) {
           if(parseInt(data[i].check_in_date.split('-')[2]) <= parseInt(today.split('-')[2]) && parseInt(data[i].check_out_date.split('-')[1]) > parseInt(today.split('-')[1])) {
             returnData[count] = data[i];
             count++;
-          }
+          }//day check
         } else if(parseInt(data[i].check_in_date.split('-')[1]) == parseInt(today.split('-')[1])-1 && parseInt(data[i].check_out_date.split('-')[1]) == parseInt(today.split('-')[1])) {
-          if(parseInt(data[i].check_out_date.split('-')[2]) > parseInt(today.split('-')[2])) {
+          if(parseInt(data[i].check_out_date.split('-')[2]) > parseInt(today.split('-')[2])) { 
             returnData[count] = data[i];
             count++;
-          }
-        }
+          }//day check
+        }//month check
       }
     }
     if(!returnData[0]) {
