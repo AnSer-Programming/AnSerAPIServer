@@ -22,9 +22,11 @@ const SelectAgent = (data: any) => {
           }
         }}
         disableClearable
+        isOptionEqualToValue={(option, value) => option.value === value}
         options={data.agents}
+        value={data.selectedAgent}
         sx={{ background: 'white', width: '50%', minWidth: '150px', zIndex: 0 }}
-        renderInput={(params) => <TextField {...params} label={data.selectedAgent} variant="filled" sx={{ zIndex: 0 }} />}
+        renderInput={(params) => <TextField {...params} label={"Agent"} variant="filled" sx={{ zIndex: 0 }} />}
       /><br />
     </>
   );

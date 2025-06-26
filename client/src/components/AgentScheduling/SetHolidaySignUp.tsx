@@ -30,6 +30,7 @@ const SetHolidaySignUp = (data: any) => {
           }
 
           responseData[1] = await response.json();
+          console.log(responseData[1]);
 
           setHolidayData(responseData);
           setAssignedShiftData(await shiftAssigner(responseData));
@@ -48,10 +49,12 @@ const SetHolidaySignUp = (data: any) => {
       setUpdateData(await results.json());
     } else {
       if (shiftID == -1) {
+        console.log("New Entry");
         newData = { agentName: `${newValue.value}`, holidayID: holidayID };
         const results = await setShiftData(newData);
         setUpdateData(await results.json());
       } else {
+        console.log("Update Entry");
         newData = { agentName: `${newValue.value}`, id: shiftID };
         const results = await updateShiftData(newData);
         setUpdateData(await results.json());
@@ -60,6 +63,7 @@ const SetHolidaySignUp = (data: any) => {
   }
 
   const listBuilder = () => {
+    console.log(shiftData);
     let shiftList = new Array();
     if (data.selectedHoliday == "None") {
       shiftList.push(<tr><td></td></tr>);

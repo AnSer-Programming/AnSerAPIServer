@@ -54,7 +54,7 @@ const HolidaySignUp = () => {
     const getAgentData = async () => {
       try {
         if (selectedHoliday != "None") {
-          let response = await getAgents();
+          let response = await getAgents(selectedEmployeeType);
           let responseData;
           let agents = new Array();
           // const holidays = new Array();
@@ -67,7 +67,7 @@ const HolidaySignUp = () => {
 
           agents.push({ value: "Available", label: "Available" });
           for (let i = 0; i < responseData.length; i++) {
-            agents.push({ value: responseData[i].Agent_Name, label: responseData[i].Agent_Name })
+            agents.push({ value: responseData[i].Agent_name, label: responseData[i].Agent_name })
           }
           agents.push({ value: "Available", label: "Available" });
 
@@ -80,7 +80,7 @@ const HolidaySignUp = () => {
 
     getHolidayData();
     getAgentData();
-  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday]);
+  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday, selectedEmployeeType]);
 
   const editDisplay = () => {
     return (
