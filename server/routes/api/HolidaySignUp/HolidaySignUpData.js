@@ -45,13 +45,13 @@ async function getHolidayData(holiday) {
 async function getSignedUp(holiday) {
   let query;
   if (holiday == 'Summer' || holiday == 'Winter') {
-    query = `SELECT * 
+    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
       FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
       LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
       WHERE [holiday_type] = :holiday
       ORDER BY [holiday_id], [agent_name] ASC`;
   } else {
-    query = `SELECT * 
+    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
       FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
       LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
       WHERE [holiday] = :holiday
@@ -107,11 +107,29 @@ async function runGetQuery(holidayType) {
   }
 }
 
-async function getAgents() {
-  let query = `SELECT DISTINCT firstTable.[EmployeeID], firstTable.[Agent_Name], firstTable.[Office], firstTable.[JobTitle] , firstTable.[Permissions] , firstTable.[Active]
-    FROM [Accounts].[dbo].[02_Agents] firstTable
-    WHERE firstTable.[Active] = 'Current' AND (firstTable.[JobTitle] != 'N/A' AND firstTable.[JobTitle] != 'Manager')
-    ORDER BY [Agent_Name]`;
+async function getAgents(agentType) {
+  let query;
+  if(agentType == "Agent") { 
+    query = `SELECT Agent_name, JobTitle, Dispatcher 
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent'
+      ORDER BY Agent_name`;
+  } else if(agentType == "Dispatcher") {
+    query = `SELECT Agent_name, JobTitle, Dispatcher 
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1
+      ORDER BY Agent_name`;
+  } else if(agentType == "Supervisor") {
+    query = `SELECT Agent_name, JobTitle, Dispatcher 
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor'
+      ORDER BY Agent_name`;
+  } else { 
+    query = `SELECT Agent_name, JobTitle, Dispatcher 
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor')
+      ORDER BY JobTitle, Dispatcher, Agent_name`;
+  }
 
   try {
     let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
@@ -170,8 +188,9 @@ async function updateShiftData(shiftData) {
   }
 }
 
-router.get('/GetAgents', async (req, res) => {
-  results = await getAgents();
+router.get('/GetAgents/:agentType', async (req, res) => {
+  const agentType = req.params.agentType;
+  results = await getAgents(agentType);
   res.json(results);
 });
 

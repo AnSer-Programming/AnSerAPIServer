@@ -24,7 +24,7 @@ const ContentBuilder = (data: any) => {
     let shiftList = new Array();
     let tableBody = new Array();
     if (data.selectedHoliday == "None") {
-      shiftList.push(<></>);
+      shiftList.push(<br />);
     } else {
       shiftList.push(
         <thead style={{ borderBottom: 'solid 1px #FFFFFF' }}>
