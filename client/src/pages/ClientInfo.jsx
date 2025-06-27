@@ -1,89 +1,88 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
-function ClientInfo() {
-  const [clientData, setClientData] = useState([]);
-  const [accountNum, setAccountNum] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function ClientInfoComponent() {
+  const [selectedForm, setSelectedForm] = useState('startNewClient');
+  const [accountData, setAccountData] = useState(null);
+  const history = useHistory();
 
-  // Function to fetch client info from the API
-  const fetchClientInfo = async () => {
-    setLoading(true);
-    setError(null);
+  // Example function to simulate account number fetch
+  const fetchClientInfo = async (accountNum) => {
     try {
-      const response = await fetch(`/api/clientInfo/${accountNum}`);
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      setClientData(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      const res = await fetch(`/api/ClientInfo/${accountNum}`);
+      if (!res.ok) throw new Error('Not Found');
+      const data = await res.json();
+      setAccountData(data);
+    } catch (error) {
+      console.warn('No client found, redirecting...');
+      setSelectedForm('clientSetUp');
     }
   };
 
-  // Handle input change
-  const handleChange = (e) => setAccountNum(e.target.value);
+  useEffect(() => {
+    const exampleAccount = '123456'; // Replace with dynamic value if needed
+    fetchClientInfo(exampleAccount);
+  }, []);
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (accountNum) {
-      fetchClientInfo();
+  const renderForm = () => {
+    let src;
+    switch (selectedForm) {
+      case 'answerCalls':
+        src = '/ClientInfo/answerCalls.html';
+        break;
+      case 'clientSetUp':
+        src = '/ClientInfo/clientSetUp.html';
+        break;
+      case 'officeReach':
+        src = '/ClientInfo/officeReach.html';
+        break;
+      case 'startNewClient':
+        src = '/ClientInfo/startNewClient.html';
+        break;
+      case 'test':
+        src = '/ClientInfo/test.html';
+        break;
+      default:
+        return <h3>Form not found</h3>;
     }
+
+    return (
+      <iframe
+        src={src}
+        title={selectedForm}
+        width="100%"
+        height="600px"
+        style={{ border: 'none' }}
+      />
+    );
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center">Client Information</h2>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="form-group">
-          <input
-            type="text"
-            value={accountNum}
-            onChange={handleChange}
-            placeholder="Enter Account Number"
-            className="form-control"
-          />
-        </div>
-        <button type="submit" className="btn btn-primary mt-2">
-          Search
+    <div className="container mt-3">
+      <h1>Client Information Management</h1>
+      <div className="btn-group mb-3" role="group">
+        <button className="btn btn-primary" onClick={() => setSelectedForm('startNewClient')}>
+          Start New Client
         </button>
-      </form>
-
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-danger">Error: {error}</p>}
-
-      {clientData.length > 0 && (
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Client Name</th>
-              <th>Contact Name</th>
-              <th>Contact Email</th>
-              <th>Contact Phone</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientData.map((client) => (
-              <tr key={client.id}>
-                <td>{client.client_name}</td>
-                <td>{client.contact_name}</td>
-                <td>{client.contact_email}</td>
-                <td>{client.contact_phone_number}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        <button className="btn btn-primary" onClick={() => setSelectedForm('clientSetUp')}>
+          Company Information
+        </button>
+        <button className="btn btn-primary" onClick={() => setSelectedForm('officeReach')}>
+          Office Reach Info
+        </button>
+        <button className="btn btn-primary" onClick={() => setSelectedForm('answerCalls')}>
+          How to Answer Calls
+        </button>
+        <button className="btn btn-secondary" onClick={() => setSelectedForm('test')}>
+          Test Form
+        </button>
+        <button className="btn btn-warning" onClick={() => setSelectedForm('clientSetUp')}>
+          🚧 Manually Go to Client Setup
+        </button>
+      </div>
+      {renderForm()}
     </div>
   );
 }
 
-export default ClientInfo;
-
-
-
-
+export default ClientInfoComponent;

@@ -3,43 +3,34 @@ import React, { useState } from 'react';
 function ClientInfoComponent() {
   const [selectedForm, setSelectedForm] = useState('startNewClient');
 
-  // Function to render the selected HTML form in an iframe
   const renderForm = () => {
-    let src;
-    switch (selectedForm) {
-      case 'answerCalls':
-        src = '/ClientInfo/answerCalls.html';
-        break;
-      case 'clientSetUp':
-        src = '/ClientInfo/clientSetUp.html';
-        break;
-      case 'officeReach':
-        src = '/ClientInfo/officeReach.html';
-        break;
-      case 'startNewClient':
-        src = '/ClientInfo/startNewClient.html';
-        break;
-      case 'test':
-        src = '/ClientInfo/test.html';
-        break;
-      default:
-        return <h3>Form not found</h3>;
-    }
+    const formPaths = {
+      answerCalls: '/ClientInfo/answerCalls.html',
+      clientSetUp: '/ClientInfo/clientSetUp.html',
+      officeReach: '/ClientInfo/officeReach.html',
+      startNewClient: '/ClientInfo/startNewClient.html',
+      test: '/ClientInfo/test.html'
+    };
 
-    return (
-      <iframe 
+    const src = formPaths[selectedForm];
+
+    return src ? (
+      <iframe
         src={src}
         title={selectedForm}
         width="100%"
         height="600px"
         style={{ border: 'none' }}
       />
+    ) : (
+      <h3>Form not found</h3>
     );
   };
 
   return (
-    <div className="container mt-3">
-      <h1>Client Information Management</h1>
+    <div className="container mt-4">
+      <h1 className="mb-4">Client Information Management</h1>
+
       <div className="btn-group mb-3" role="group">
         <button className="btn btn-primary" onClick={() => setSelectedForm('startNewClient')}>
           Start New Client
@@ -57,12 +48,19 @@ function ClientInfoComponent() {
           Test Form
         </button>
       </div>
+
       {renderForm()}
+
+      <div className="text-center mt-4">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => window.location.href = '/ClientInfo/clientSetUp.html'}
+        >
+          Go to Client Setup
+        </button>
+      </div>
     </div>
   );
 }
 
 export default ClientInfoComponent;
-
-
-

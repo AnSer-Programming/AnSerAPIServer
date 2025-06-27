@@ -12,18 +12,18 @@ import { useHistory } from 'react-router-dom';
 export default function MenuAppBar(data: any) {
   const [selection, setSelection] = useState(data.page);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const history = useHistory();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  
-  const history = useHistory();
+
   const handleRoutes = (path: string) => {
     history.push(path);
   };
 
   const handleClose = (event: any, item: string) => {
-    if (item !== "backdropClick") {
+    if (item !== 'backdropClick') {
       setSelection(item);
     }
     setAnchorEl(null);
@@ -85,6 +85,7 @@ export default function MenuAppBar(data: any) {
               </MenuItem>
               <hr />
               <strong>Web Tools</strong>
+
               <MenuItem
                 onClick={(event) => {
                   handleClose(event, 'Crescent Electric Reach List');
@@ -117,6 +118,26 @@ export default function MenuAppBar(data: any) {
               >
                 Resident Directory
               </MenuItem>
+
+              {/* 🔗 Static HTML-based Client Info */}
+              <MenuItem
+                component="a"
+                href="/ClientInfo/startNewClient.html"
+                onClick={(event) => handleClose(event, 'Client Info')}
+              >
+                Client Info
+              </MenuItem>
+
+              {/* 🧪 React version of Client Info */}
+              <MenuItem
+                onClick={(event) => {
+                  handleClose(event, 'Client Info - REACT');
+                  handleRoutes('/ClientInfoReact');
+                }}
+              >
+                Client Info - REACT
+              </MenuItem>
+
               <MenuItem
                 onClick={(event) => {
                   handleClose(event, 'Vessel API');
@@ -125,6 +146,7 @@ export default function MenuAppBar(data: any) {
               >
                 Vessel API
               </MenuItem>
+
               <hr />
               <strong>Resources</strong>
               <MenuItem
@@ -168,4 +190,3 @@ export default function MenuAppBar(data: any) {
     </Box>
   );
 }
-

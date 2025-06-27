@@ -166,6 +166,21 @@ async function getShifts(employeeType) {
   }
 }
 
+async function getSignedUp(accountNum, date) {
+  let query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
+        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
+        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
+        WHERE [employee_type] = 'Agent'
+        ORDER BY [holiday_type], [agent_name] ASC`;
+  try {
+    let result = await config.query(query, { replacements: { accountNum: accountNum, date: date }, type: seq.QueryTypes.SELECT });
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
 async function setShiftData(shiftData) {
   let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES (${shiftData.holidayID}, :agentName);`;
   try {
