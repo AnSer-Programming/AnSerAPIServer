@@ -21,42 +21,49 @@ const ContentBuilder = (data: any) => {
   }, [data]);
 
   const shiftOverviewBuilder = () => {
+    console.log(holidayData);
+    console.log(shiftOverviewData);
     let shiftList = new Array();
     let tableBody = new Array();
     if (data.selectedHoliday == "None") {
       shiftList.push(<br />);
     } else {
-      shiftList.push(
-        <thead style={{ borderBottom: 'solid 1px #FFFFFF' }}>
-          <tr>
-            <td>Shift Type</td>
-            <td>Shift Time</td>
-            <td>Total Shifts</td>
-            <td>Taken Shifts</td>
-            <td>Available Shifts</td>
-          </tr>
-        </thead>
-      );
-      if (shiftOverviewDataLength > 0) {
-        for (let x = 0; x < shiftOverviewDataLength; x++) {
-          for (let y = 0; y < shiftOverviewData[x].totalShifts; y++) {
-            if (x > 1 && y == 0) {
-              if (shiftOverviewData[x].employeeType != shiftOverviewData[x - 1].employeeType) {
-                tableBody.push(<hr />);
+      if (holidayData[0] && shiftOverviewData) {
+        shiftList.push(
+          <thead style={{ borderBottom: 'solid 1px #FFFFFF' }}>
+            <tr>
+              <th colSpan={5} style={{ textAlign: 'center' }} className="holidaySignUpItem">{holidayData[0][0].holiday}</th>
+            </tr>
+            <tr>
+              <td className="holidaySignUpItem">Shift Type</td>
+              <td className="holidaySignUpItem">Shift Time</td>
+              <td className="holidaySignUpItem">Available Shifts</td>
+              <td className="holidaySignUpItem">Taken Shifts</td>
+              <td className="holidaySignUpItem">Total Shifts</td>
+            </tr>
+          </thead>
+        );
+        if (shiftOverviewDataLength > 0) {
+          for (let x = 0; x < shiftOverviewDataLength; x++) {
+            for (let y = 0; y < shiftOverviewData[x].totalShifts; y++) {
+              if (x > 1 && y == 0) {
+                if (shiftOverviewData[x].employeeType != shiftOverviewData[x - 1].employeeType) {
+                  tableBody.push(<tr><td colSpan={5}><hr /></td></tr>);
+                }
               }
             }
+            tableBody.push(
+              <tr>
+                <td className="holidaySignUpItem">{shiftOverviewData[x].employeeType}</td>
+                <td className="holidaySignUpItem">{shiftOverviewData[x].shiftTime}</td>
+                <td className="holidaySignUpItem">{shiftOverviewData[x].numberOfAvailable}</td>
+                <td className="holidaySignUpItem">{shiftOverviewData[x].numberOfUnavailable}</td>
+                <td className="holidaySignUpItem">{shiftOverviewData[x].totalShifts}</td>
+              </tr>
+            );
           }
-          tableBody.push(
-            <tr>
-              <td>{shiftOverviewData[x].employeeType} Shift</td>
-              <td>{shiftOverviewData[x].shiftTime}</td>
-              <td>{shiftOverviewData[x].totalShifts}</td>
-              <td>{shiftOverviewData[x].numberOfUnavailable}</td>
-              <td>{shiftOverviewData[x].numberOfAvailable}</td>
-            </tr>
-          );
+          shiftList.push(<tbody>{tableBody}</tbody>);
         }
-        shiftList.push(<tbody>{tableBody}</tbody>);
       }
     }
 
@@ -73,7 +80,7 @@ const ContentBuilder = (data: any) => {
           if (data.selectedEmployeeType == "All") {
             if (x > 1) {
               if (shiftData[x].employeeType != shiftData[x - 1].employeeType) {
-                shiftList.push(<hr />)
+                shiftList.push(<tr><td colSpan={4}><hr /></td></tr>)
               }
             }
             if (shiftData[x].agentName == "Available") {
@@ -133,7 +140,7 @@ const ContentBuilder = (data: any) => {
             {listBuilder()}
           </tbody>
         </table>
-        <aside style={{ marginLeft: '5px', width: '40%' }}>
+        <aside style={{ marginLeft: '5px', width: '40%', marginRight: '1%' }}>
           <table style={{ width: '100%', justifyContent: 'space-evenly', borderStyle: 'solid', borderColor: '#FFFFFF', borderWidth: '2px' }}>
             {shiftOverviewBuilder()}
           </table>

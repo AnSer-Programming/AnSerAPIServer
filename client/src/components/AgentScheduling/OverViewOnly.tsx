@@ -76,9 +76,9 @@ const OverviewOnly = (data: any) => {
             <tr>
               <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].employeeType}</td>
               <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].shiftTime}</td>
-              <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].totalShifts}</td>
-              <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].takenShifts}</td>
               <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].availableShifts}</td>
+              <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].takenShifts}</td>
+              <td className="holidaySignUpItem">{shiftOverviewData[shiftOverviewKeys[x]][y].totalShifts}</td>
             </tr>
           );
           if (y == shiftOverviewData[shiftOverviewKeys[x]].length - 1) {
@@ -91,9 +91,9 @@ const OverviewOnly = (data: any) => {
                   <tr style={{ borderBottom: 'solid 1px #FFFFFF' }}>
                     <td className="holidaySignUpItem">Shift Type</td>
                     <td className="holidaySignUpItem">Shift Time</td>
-                    <td className="holidaySignUpItem">Total Shifts</td>
-                    <td className="holidaySignUpItem">Taken Shifts</td>
                     <td className="holidaySignUpItem">Available Shifts</td>
+                    <td className="holidaySignUpItem">Taken Shifts</td>
+                    <td className="holidaySignUpItem">Total Shifts</td>
                   </tr>
                 </thead>
                 <tbody>{tableBody}</tbody>
