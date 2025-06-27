@@ -36,7 +36,7 @@ import AnswerCalls from './pages/ClientInfo/AnswerCalls';
 import TestPage from './pages/ClientInfo/TestPage';
 import NewFormWizard from './pages/ClientInfo/NewFormWizard';
 import ATools from './pages/ClientInfo/ATools';
-import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
+// import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
 
 function App() {
   // const signedInContext = createContext(false);
