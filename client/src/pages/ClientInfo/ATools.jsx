@@ -1,7 +1,7 @@
 // src/pages/ClientInfo/ATools.jsx
 
-import React, { useContext } from 'react';
-import { ClientInfoThemeContext } from '../../contexts/ClientInfoThemeContext';
+import React from 'react';
+import { useClientInfoTheme } from './ClientInfoThemeContext';
 import { LightMode, DarkMode } from '@mui/icons-material';
 import {
   AppBar,
@@ -15,7 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 
 function ATools() {
-  const { themeMode, toggleTheme } = useContext(ClientInfoThemeContext);
+  const { darkMode, toggleTheme } = useClientInfoTheme();
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -44,7 +44,7 @@ function ATools() {
               AnSer API
             </Button>
             <IconButton color="inherit" onClick={toggleTheme}>
-              {themeMode === 'light' ? <DarkMode /> : <LightMode />}
+              {darkMode ? <LightMode /> : <DarkMode />}
             </IconButton>
           </Stack>
         </Toolbar>

@@ -17,7 +17,6 @@ import HolidaySchedule from './pages/HolidaySignUpAgentPageSummer';
 import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';
-import OCGroupList from './pages/OCGroupList';
 import Index from './pages/Index';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
