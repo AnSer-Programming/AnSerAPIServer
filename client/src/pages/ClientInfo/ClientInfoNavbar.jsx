@@ -38,7 +38,7 @@ const ClientInfoNavbar = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <Link to="/ClientInfoReact/StartNewClient">
             <img
-              src="/ClientInfo/images/AnSerLogoStar.png"
+              src="../ClientInfo/images/AnSerLogoStar.png"
               alt="AnSer Logo"
               style={{ height: 32 }}
             />

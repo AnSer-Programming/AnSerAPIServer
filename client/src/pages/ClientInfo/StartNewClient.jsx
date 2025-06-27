@@ -17,7 +17,7 @@ const StartNewClient = () => {
         {/* Logo */}
         <div className="imageHolder mb-4">
           <img
-            src="/ClientInfo/images/AnSerLogo.png"
+            src="../ClientInfo/images/AnSerLogo.png"
             alt="AnSer Logo"
             style={{ maxWidth: '280px', width: '100%', height: 'auto' }}
           />
