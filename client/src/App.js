@@ -8,7 +8,6 @@ import Button from '@mui/material/Button';
 
 import AgentStats from './pages/AgentStats';
 import BackUps from './pages/BackUps';
-import BackUps from './pages/BackUps';
 import Calendar from './pages/Calendar';
 import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
