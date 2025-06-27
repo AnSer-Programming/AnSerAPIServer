@@ -21,8 +21,6 @@ const ContentBuilder = (data: any) => {
   }, [data]);
 
   const shiftOverviewBuilder = () => {
-    console.log(holidayData);
-    console.log(shiftOverviewData);
     let shiftList = new Array();
     let tableBody = new Array();
     if (data.selectedHoliday == "None") {
