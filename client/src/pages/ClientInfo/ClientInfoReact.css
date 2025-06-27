@@ -1,0 +1,141 @@
+/* Root container */
+.client-info-react-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme */
+.client-info-react-container.light {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Dark Theme */
+.client-info-react-container.dark {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+/* Logo container */
+.imageHolder img {
+  max-width: 250px;
+  height: auto;
+  margin: 1rem auto;
+}
+
+/* Breadcrumb area */
+.breadcrumbNav {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.breadcrumbNav h4 {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+/* Page titles */
+.pageTitle h2,
+.pageTitle h4 {
+  text-align: center;
+  font-weight: 700;
+}
+
+.pageTitle h4 {
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive button layout */
+.row.justify-content-center .btn {
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 5px;
+}
+
+/* Accordion styling */
+.accordion-button {
+  font-weight: 600;
+  background-color: #e7f1ff;
+  color: #0d6efd;
+}
+
+.accordion-body {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* Sticky top navbar */
+.header .navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  z-index: 1030;
+}
+
+/* Footer */
+footer {
+  background-color: #0d6efd;
+  color: #ffffff;
+  padding: 1.5rem 0;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: auto;
+}
+
+footer img {
+  height: 32px;
+  margin-bottom: 0.5rem;
+}
+
+footer a {
+  color: #ffffff;
+  text-decoration: underline;
+  margin: 0 0.5rem;
+}
+
+footer a:hover {
+  color: #ffdd57;
+}
+
+footer .footer-meta {
+  font-size: 0.75rem;
+  color: #e6e6e6;
+  margin-top: 0.5rem;
+}
+
+/* Dark footer */
+.client-info-react-container.dark footer {
+  background-color: #1e1e1e;
+  color: #ccc;
+}
+
+.client-info-react-container.dark footer a {
+  color: #ccc;
+}
+
+.client-info-react-container.dark footer a:hover {
+  color: #ffcc00;
+}
+
+.client-info-react-container.dark footer .footer-meta {
+  color: #999;
+}
+
+/* Optional floating footer (use footer.footer-floating if needed) */
+footer.footer-floating {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  left: 0;
+  z-index: 999;
+}
+
+/* Theme transition for button hover in dark mode */
+.client-info-react-container.dark .btn:hover {
+  opacity: 0.9;
+}

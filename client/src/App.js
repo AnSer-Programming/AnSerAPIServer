@@ -6,8 +6,8 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Button from '@mui/material/Button';
 
-// Page Navigation Components
 import AgentStats from './pages/AgentStats';
+import BackUps from './pages/BackUps';
 import BackUps from './pages/BackUps';
 import Calendar from './pages/Calendar';
 import ContactDispatch from './pages/ContactDispatch';
@@ -18,6 +18,7 @@ import HolidaySchedule from './pages/HolidaySignUpAgentPage';
 import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';
+import OCGroupList from './pages/OCGroupList';
 import Index from './pages/Index';
 import Info from './pages/Info';
 import ResidentDirectory from './pages/ResidentDirectory';
@@ -26,9 +27,18 @@ import SchedulerAgent from './pages/SchedulerAgent';
 import Tracker from './pages/TrackerPages';
 import VesselsList from './pages/VesselList';
 
-// Features
 import ReportIssue from './pages/ReportIssue';
-import ClientInfo from './pages/ClientInfo'; // Import ClientInfo component
+import ClientInfo from './pages/ClientInfo'; // Legacy Client Info
+
+// React Client Info Pages
+import StartNewClient from './pages/ClientInfo/StartNewClient';
+import ClientSetUp from './pages/ClientInfo/ClientSetUp';
+import OfficeReach from './pages/ClientInfo/OfficeReach';
+import AnswerCalls from './pages/ClientInfo/AnswerCalls';
+import TestPage from './pages/ClientInfo/TestPage';
+import NewFormWizard from './pages/ClientInfo/NewFormWizard';
+import ATools from './pages/ClientInfo/ATools';
+import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
 
 function App() {
   // const signedInContext = createContext(false);
@@ -98,8 +108,26 @@ function App() {
           <Route exact path='/SchedulerSupervisor' component={signedIn ? SchedulerSupervisor : loginButton} />
           <Route exact path='/StaticSchedule' component={signedIn ? FixedScheduler : loginButton} />
           <Route exact path='/StatTracker' component={Tracker} />
-          <Route exact path='/Vessels' component={signedIn ? VesselsList : loginButton} />
-          <Route exact path='/ClientInfo' component={signedIn ? ClientInfo : loginButton} /> {/* Add ClientInfo route */}
+          <Route exact path='/Vessels' component={signedIn ? signedIn ? VesselsList : loginButton : loginButton} />
+          <Route exact path='/ClientInfo' component={signedIn ? signedIn ? ClientInfo : loginButton : loginButton} />
+
+          {/* React Client Info Routes */}
+          <Route path='/ClientInfoReact'>
+            <ClientInfoThemeProvider>
+              <Switch>
+                <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
+                <Route exact path='/ClientInfoReact/StartNewClient' component={signedIn ? StartNewClient : loginButton} />
+                <Route exact path='/ClientInfoReact/ClientSetUp' component={signedIn ? ClientSetUp : loginButton} />
+                <Route exact path='/ClientInfoReact/OfficeReach' component={signedIn ? OfficeReach : loginButton} />
+                <Route exact path='/ClientInfoReact/AnswerCalls' component={signedIn ? AnswerCalls : loginButton} />
+                <Route exact path='/ClientInfoReact/TestPage' component={signedIn ? TestPage : loginButton} />
+                <Route exact path='/ClientInfoReact/NewFormWizard' component={signedIn ? NewFormWizard : loginButton} />
+                <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
+              </Switch>
+            </ClientInfoThemeProvider>
+          </Route>
+
+          {/* Catch-all */}
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
         </Switch>
         {/* Report Issue Modal */}

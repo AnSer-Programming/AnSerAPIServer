@@ -19,18 +19,16 @@ router.get('/:accountNum', async (req, res) => {
   `;
 
   try {
-    // Execute the query to fetch data based on account number
     const result = await config.query(query, {
       replacements: { accountNum },
       type: seq.QueryTypes.SELECT,
     });
 
-    // If no records are found, return a 404 status
+    // Redirect to clientSetUp page if no results found
     if (result.length === 0) {
-      return res.status(404).json({ message: 'No ClientInfo records found for this account number.' });
+      return res.redirect('/ClientInfo/clientSetUp.html');
     }
 
-    // Return the fetched records as a JSON response
     res.json(result);
   } catch (err) {
     console.error('Error fetching ClientInfo:', err);
@@ -49,13 +47,11 @@ router.post('/', async (req, res) => {
   `;
 
   try {
-    // Execute the query to insert a new record
     await config.query(query, {
       replacements: { account_number, client_name, contact_name, contact_email, contact_phone_number },
       type: seq.QueryTypes.INSERT,
     });
 
-    // Return success message after successful insertion
     res.status(201).send('ClientInfo record created successfully.');
   } catch (err) {
     console.error('Error creating ClientInfo:', err);
@@ -77,13 +73,11 @@ router.put('/:id', async (req, res) => {
   `;
 
   try {
-    // Execute the query to update the record
     await config.query(query, {
       replacements: { client_name, contact_name, contact_email, contact_phone_number, id },
       type: seq.QueryTypes.UPDATE,
     });
 
-    // Return success message after successful update
     res.send('ClientInfo record updated successfully.');
   } catch (err) {
     console.error('Error updating ClientInfo:', err);
@@ -100,13 +94,11 @@ router.delete('/:id', async (req, res) => {
   `;
 
   try {
-    // Execute the query to delete the record
     await config.query(query, {
       replacements: { id },
       type: seq.QueryTypes.DELETE,
     });
 
-    // Return success message after successful deletion
     res.send('ClientInfo record deleted successfully.');
   } catch (err) {
     console.error('Error deleting ClientInfo:', err);
@@ -114,8 +106,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Export the router to be used in the main server file
 module.exports = router;
-
-
-
