@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import GetHolidaySignUp from '../components/AgentScheduling/GetHolidaySignUp.tsx';
 import SetHolidaySignUp from '../components/AgentScheduling/SetHolidaySignUp.tsx';
+import OverViewOnly from '../components/AgentScheduling/OverViewOnly.tsx'
 import SelectHoliday from '../components/AgentScheduling/SelectHoliday.tsx';
 import Menu from '../components/Menu';
 import { getHolidays, getAgents } from '../utils/AgentSuccessAPI.js';
+import { toCSV, toMSWord, toPDF } from '../components/Utility/DownloadHelper';
 
 const HolidaySignUp = () => {
   const [holiday, setHoliday] = useState([]);
@@ -52,7 +54,7 @@ const HolidaySignUp = () => {
     const getAgentData = async () => {
       try {
         if (selectedHoliday != "None") {
-          let response = await getAgents();
+          let response = await getAgents(selectedEmployeeType);
           let responseData;
           let agents = new Array();
           // const holidays = new Array();
@@ -63,10 +65,11 @@ const HolidaySignUp = () => {
 
           responseData = await response.json();
 
+          agents.push({ value: "Available", label: "Available" });
           for (let i = 0; i < responseData.length; i++) {
-            agents.push({ value: responseData[i].Agent_Name, label: responseData[i].Agent_Name })
+            agents.push({ value: responseData[i].Agent_name, label: responseData[i].Agent_name })
           }
-          agents.push({ value: "Available", label: "Available" })
+          agents.push({ value: "Available", label: "Available" });
 
           setAgentData(agents);
         }
@@ -77,7 +80,7 @@ const HolidaySignUp = () => {
 
     getHolidayData();
     getAgentData();
-  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday]);
+  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday, selectedEmployeeType]);
 
   const editDisplay = () => {
     return (
@@ -88,16 +91,36 @@ const HolidaySignUp = () => {
         {
           isEdit ?
             <SetHolidaySignUp
-              selectedHoliday = {selectedHoliday}
-              selectedEmployeeType = {selectedEmployeeType}
-              agentData = {agentData}
+              selectedHoliday={selectedHoliday}
+              selectedEmployeeType={selectedEmployeeType}
+              agentData={agentData}
               setEdit={(editBoolean) => setIsEdit(editBoolean)} /> :
-            <GetHolidaySignUp
-              selectedHoliday = {selectedHoliday}
-              selectedEmployeeType = {selectedEmployeeType}  />
+            <div>
+              {/* Download buttons go here */}
+              <GetHolidaySignUp
+                selectedHoliday={selectedHoliday}
+                selectedEmployeeType={selectedEmployeeType} />
+            </div>
         }
       </>
     )
+  }
+
+  const downloadHelper = (downloadType) => {
+    const fileName = `${holidayType}HolidaySchedule2025`;
+    switch (downloadType) {
+      case "CSV":
+
+        break;
+      case "Word":
+
+        break;
+      case "PDF":
+
+        break;
+      default:
+        break;
+    }
   }
 
   const handlerChangeHoliday = (event) => {
@@ -120,15 +143,14 @@ const HolidaySignUp = () => {
     if (holidayType != value) {
       setHolidayType(value);
       setSelectedHoliday("None");
-    } 
+    }
   }
 
   const buttonBuilder = () => {
     let buttons = new Array();
-    for(let i = 0; i < employeeType.length; i++) {
+    for (let i = 0; i < employeeType.length; i++) {
       buttons.push(<button onClick={() => handlerChangeEmployeeTypeFilter(employeeType[i])}>{employeeType[i]}</button>);
     }
-     //adjust buttons to be a filter between Agent, Dispatcher, and Supervisor shifts instead of holiday buttons
 
     return buttons;
   }
@@ -140,15 +162,23 @@ const HolidaySignUp = () => {
       <div style={{ height: '90vh', width: '100%', padding: '5px', overflow: 'auto' }}>
         <h1>Current Holiday Mode {holidayType}</h1>
         <h1>Current Holiday Selected {selectedHoliday ? selectedHoliday : "None"}</h1>
-        <button onClick={() => holidayTypeHandler("Summer")} id="setToSummer">Summer Holidays</button>
-        <button onClick={() => holidayTypeHandler("Winter")} id="setToWinter">Winter Holidays</button>
-        <SelectHoliday
-          holidays = {holiday}
-          selectedHoliday = {selectedHoliday}
-          handlerChangeHoliday = {(data) => {handlerChangeHoliday(data)}} />
-        <p>Please share this link with Agents so they can review the holiday shifts that they have been signed up for <a target="_blank" href='/HolidaySchedule'>Agent View</a></p>
-      
-        {selectedHoliday == "None" ? <br /> : <>{buttonBuilder()} <br /> <br />{editDisplay()}</>}
+        {!isEdit ?
+          <div>
+            <button onClick={() => holidayTypeHandler("Summer")} id="setToSummer">Summer Holidays</button>
+            <button onClick={() => holidayTypeHandler("Winter")} id="setToWinter">Winter Holidays</button>
+            <div style={{ width: '25%' }}>
+              <SelectHoliday
+                holidays={holiday}
+                selectedHoliday={selectedHoliday}
+                handlerChangeHoliday={(data) => { handlerChangeHoliday(data) }} />
+            </div>
+          </div>
+          :
+          <hr />
+        }
+        <p><a target="_blank" href='/HolidaySchedule'>Click here for Agent View</a></p>
+
+        {selectedHoliday == "None" ? <OverViewOnly holidayType={holidayType} /> : <>{buttonBuilder()} <br /> <br />{editDisplay()}</>}
       </div>
     </>
   );

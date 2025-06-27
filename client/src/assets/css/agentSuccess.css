@@ -1,0 +1,38 @@
+table.agentViewTable {
+  color: #000000;
+  background-color: #FFFFFF;
+  border: solid 2px #000000;
+  margin-bottom: 100px;
+  text-align: center;
+  width: 30%;
+}
+
+td.agentViewTableData {
+  border: solid 2px #000000;
+}
+
+th.agentViewTableHead {
+  border-top: solid 2px #000000;
+}
+
+div.holidaySignUpAgentView {
+  flex-direction: column;
+  display: flex;
+  height: 100vh; 
+  justify-content: space-around;
+  padding-left: 1%;
+  padding-top: 1%;
+  overflow: auto;
+  width: 100vw; 
+}
+
+div.holidaySignUpAgentViewContentHolder {
+  flex-direction: row;
+  display: flex; 
+  width: 100%; 
+}
+
+td.holidaySignUpItem {
+  border: 1px solid #FFFFFF;
+  text-align: center;
+}

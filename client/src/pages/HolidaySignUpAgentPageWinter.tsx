@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getHolidayData, getHolidaySignUp, getHolidays, getAgentViewData } from '../utils/AgentSuccessAPI';
+import { shiftAssigner, shiftOverview } from '../components/Utility/HolidaySignUpShiftHelper';
 import SelectHoliday from '../components/AgentScheduling/SelectHoliday';
 
 const HolidaySignUpAgentPage = () => {
@@ -11,9 +12,9 @@ const HolidaySignUpAgentPage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await getHolidays("Summer");
+        const response = await getHolidays("Winter");
         const holidays = new Array();
-        const agentDataResponse = await getAgentViewData("Summer", selectedHoliday);
+        const agentDataResponse = await getAgentViewData();
 
         if (!response.ok) {
           throw new Error('something went wrong!');
@@ -31,7 +32,7 @@ const HolidaySignUpAgentPage = () => {
         setAgentData(data);
 
         setHoliday(holidays);
-        if (selectedHoliday != "None" && selectedHoliday != "All") {
+        if (selectedHoliday != "None") {
           let response = await getHolidayData(selectedHoliday);
           let responseData = new Array();
           // const holidays = new Array();
@@ -83,63 +84,42 @@ const HolidaySignUpAgentPage = () => {
     const tableBuilder = new Array();
     let tableRowBuilder = new Array();
 
-    if (selectedHoliday == "None" || selectedHoliday == "All") {
-      for (let x = 0; x < agentData.length; x++) {
-        if (x > 0 && agentData[x].holiday != agentData[x - 1].holiday) {
-          tableBuilder.push(
-            <table className="agentViewTable">
-              <thead>
-                <tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x - 1].holiday}</th></tr>
-              </thead>
-              <tbody>{tableRowBuilder}</tbody>
-            </table>);
+    if (selectedHoliday == "None") {
+      for (let x = 0; x < holidayData[0].length; x++) {
+        if (x > 0 && holidayData[0][x].holiday != holidayData[0][x - 1].holiday) {
+          tableBuilder.push(<table className="agentViewTable"><thead><tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{holidayData[0][x - 1].holiday}</th></tr></thead><tbody>{tableRowBuilder}</tbody></table>);
           tableRowBuilder = new Array();
+        } else if (x == holidayData[0].length - 1) {
+          tableBuilder.push(<table className="agentViewTable"><thead><tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{holidayData[0][x].holiday}</th></tr></thead><tbody>{tableRowBuilder}</tbody></table>);
         }
         if (x == 0) {
-          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x].employee_type}</th></tr>);
-        } else if (agentData[x].employee_type != agentData[x - 1].employee_type) {
-          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x].employee_type}</th></tr>);
+          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{holidayData[0][x].employee_type}</th></tr>);
+        } else if (holidayData[0][x].employee_type != holidayData[0][x - 1].employee_type) {
+          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{holidayData[0][x].employee_type}</th></tr>);
         }
-        tableRowBuilder.push(
-          <tr className="agentViewRow">
-            <td className="agentViewTableData">{agentData[x].agent_name}</td>
-            <td className="agentViewTableData">{agentData[x].shift_time}</td>
-          </tr>);
-        if (x == agentData.length-1) {
-          tableBuilder.push(
-            <table className="agentViewTable">
-              <thead>
-                <tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x - 1].holiday}</th></tr>
-              </thead>
-              <tbody>{tableRowBuilder}</tbody>
-            </table>);
+        for (let y = 0; y < holidayData[0][x].number_of_shifts; y++) {
+          if (x > 0 && holidayData[0][x].holiday != holidayData[0][x - 1].holiday && y == 0) {
+            tableRowBuilder.push(<tr className="agentViewRow"><td className="agentViewTableData">New Table</td><td className="agentViewTableData">{holidayData[0][x].shift_time}</td></tr>);
+          } else if (y == 0 && x == holidayData[0].length - 1) {
+            tableRowBuilder.push(<tr className="agentViewRow"><td className="agentViewTableData">Last Data</td><td className="agentViewTableData">{holidayData[0][x].shift_time}</td></tr>);
+          } else {
+            tableRowBuilder.push(<tr className="agentViewRow"><td className="agentViewTableData">Some Data</td><td className="agentViewTableData">{holidayData[0][x].shift_time}</td></tr>);
+          }
         }
       }
     } else {
-      for (let x = 0; x < agentData.length; x++) {
-        if (x == 0) {
-          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x].employee_type}</th></tr>);
-        } else if (agentData[x].employee_type != agentData[x - 1].employee_type) {
-          tableRowBuilder.push(<tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x].employee_type}</th></tr>);
-        }
-        tableRowBuilder.push(
-          <tr className="agentViewRow">
-            <td className="agentViewTableData">{agentData[x].agent_name}</td>
-            <td className="agentViewTableData">{agentData[x].shift_time}</td>
-          </tr>);
-        if (x == agentData.length - 1) {
-          tableBuilder.push(
-            <table className="agentViewTable">
-              <thead>
-                <tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{agentData[x].holiday}</th></tr>
-              </thead>
-              <tbody>{tableRowBuilder}</tbody>
-            </table>);
+      for (let x = 0; x < holidayData[0].length; x++) {
+        for (let y = 0; y < holidayData[0][x].number_of_shifts; y++) {
+          if (x == holidayData[0].length - 1 && y == holidayData[0][x].number_of_shifts - 1) {
+            tableBuilder.push(<table className="agentViewTable"><thead><tr className="agentViewRow"><th className="agentViewTableHead" colSpan={2}>{holidayData[0][x].holiday}</th></tr></thead><tbody>{tableRowBuilder}</tbody></table>);
+          } else {
+            tableRowBuilder.push(<tr className="agentViewRow"><td className="agentViewTableData">Some Data</td><td className="agentViewTableData">{holidayData[0][x].shift_time}</td></tr>);
+          }
         }
       }
     }
 
-    return tableBuilder;
+    return (tableBuilder)
   }
 
   const blank = () => {
@@ -159,6 +139,7 @@ const HolidaySignUpAgentPage = () => {
       <div className="holidaySignUpAgentView">
         <div className="holidaySignUpAgentViewContentHolder">
           <div style={{ width: '20%', justifySelf: 'start' }}>
+            Share this link with Agents
             <SelectHoliday
               holidays={holiday}
               selectedHoliday={selectedHoliday}

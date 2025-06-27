@@ -13,7 +13,7 @@ import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
-import HolidaySchedule from './pages/HolidaySignUpAgentPage';
+import HolidaySchedule from './pages/HolidaySignUpAgentPageSummer';
 import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';

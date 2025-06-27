@@ -39,10 +39,12 @@ const GetHolidaySignUp = (data: any) => {
 
   return (
     <>
-      <ContentBuilder
-        holidayData={holidayData}
-        selectedHoliday={data.selectedHoliday}
-        selectedEmployeeType={data.selectedEmployeeType} />
+      <div>
+        <ContentBuilder
+          holidayData={holidayData}
+          selectedHoliday={data.selectedHoliday}
+          selectedEmployeeType={data.selectedEmployeeType} />
+      </div>
     </>
   )
 }

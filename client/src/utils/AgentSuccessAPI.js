@@ -1,6 +1,6 @@
 //Get Agents
-export const getAgents = () => {
-  return fetch(`/api/AgentScheduling/HolidaySignUp/GetAgents/`, {
+export const getAgents = (agentType) => {
+  return fetch(`/api/AgentScheduling/HolidaySignUp/GetAgents/${agentType}`, {
     headers: {
       method: 'GET',
       'Content-Type': 'application/json',
@@ -9,6 +9,15 @@ export const getAgents = () => {
 };
 
 //Holiday Sign Up
+export const getAgentViewData = (holidayType, holiday) => {
+  return fetch(`/api/AgentScheduling/HolidaySignUp/GetAgentViewData/${holidayType}/${holiday}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 export const getHolidays = (holidayType) => {
   return fetch(`/api/AgentScheduling/HolidaySignUp/${holidayType}`, {
     headers: {
