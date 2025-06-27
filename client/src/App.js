@@ -36,11 +36,9 @@ import AnswerCalls from './pages/ClientInfo/AnswerCalls';
 import TestPage from './pages/ClientInfo/TestPage';
 import NewFormWizard from './pages/ClientInfo/NewFormWizard';
 import ATools from './pages/ClientInfo/ATools';
-// import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
+import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
 
 function App() {
-  // const signedInContext = createContext(false);
-  // State for handling modal visibility
   const [open, setOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -50,27 +48,22 @@ function App() {
 
   const loginHandler = () => {
     setSignedIn(true);
-  }
+  };
 
-  const loginButton = () => {
-    return (
-      <>
-        <Menu
-          page="Home" />
-        {
-          signedIn ? <></> :
-            <>
-              <div>
-                <p>In order to access the full site you will need to sign in first!</p>
-              </div>
-              <button onClick={loginHandler}>LogIn</button>
-            </>
-        }
-      </>
-    )
-  }
+  const loginButton = () => (
+    <>
+      <Menu page="Home" />
+      {!signedIn && (
+        <>
+          <div>
+            <p>In order to access the full site you will need to sign in first!</p>
+          </div>
+          <button onClick={loginHandler}>LogIn</button>
+        </>
+      )}
+    </>
+  );
 
-  // Modal styling
   const style = {
     position: 'absolute',
     bottom: '25px',
@@ -108,17 +101,9 @@ function App() {
           <Route exact path='/StatTracker' component={Tracker} />
           <Route exact path='/Vessels' component={signedIn ? VesselsList : loginButton} />
           <Route exact path='/ClientInfo' component={signedIn ? ClientInfo : loginButton} />
-          <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
-          <Route exact path='/ClientInfoReact/StartNewClient' component={signedIn ? StartNewClient : loginButton} />
-          <Route exact path='/ClientInfoReact/ClientSetUp' component={signedIn ? ClientSetUp : loginButton} />
-          <Route exact path='/ClientInfoReact/OfficeReach' component={signedIn ? OfficeReach : loginButton} />
-          <Route exact path='/ClientInfoReact/AnswerCalls' component={signedIn ? AnswerCalls : loginButton} />
-          <Route exact path='/ClientInfoReact/TestPage' component={signedIn ? TestPage : loginButton} />
-          <Route exact path='/ClientInfoReact/NewFormWizard' component={signedIn ? NewFormWizard : loginButton} />
-          <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
 
-          {/* React Client Info Routes */}
-          {/* <Route path='/ClientInfoReact'>
+          {/* 🌗 React Client Info Themed Routes */}
+          <Route path='/ClientInfoReact'>
             <ClientInfoThemeProvider>
               <Switch>
                 <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
@@ -131,33 +116,32 @@ function App() {
                 <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
               </Switch>
             </ClientInfoThemeProvider>
-          </Route> */}
+          </Route>
 
           {/* Catch-all */}
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
         </Switch>
-        {/* Report Issue Modal */}
-        <div>
-          <Button
-            onClick={handleOpen}
-            style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
-            color='secondary'
-            variant="contained"
-          >
-            Report Issue
-          </Button>
-          <Modal
-            keepMounted
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="report-issue-modal"
-            aria-describedby="modal-window-to-allow-users-to-report-feedback"
-          >
-            <Box sx={style}>
-              <ReportIssue />
-            </Box>
-          </Modal>
-        </div>
+
+        {/* Floating Report Issue Modal */}
+        <Button
+          onClick={handleOpen}
+          style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
+          color='secondary'
+          variant="contained"
+        >
+          Report Issue
+        </Button>
+        <Modal
+          keepMounted
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="report-issue-modal"
+          aria-describedby="modal-window-to-allow-users-to-report-feedback"
+        >
+          <Box sx={style}>
+            <ReportIssue />
+          </Box>
+        </Modal>
       </div>
     </Router>
   );
