@@ -106,11 +106,19 @@ function App() {
           <Route exact path='/SchedulerSupervisor' component={signedIn ? SchedulerSupervisor : loginButton} />
           <Route exact path='/StaticSchedule' component={signedIn ? FixedScheduler : loginButton} />
           <Route exact path='/StatTracker' component={Tracker} />
-          <Route exact path='/Vessels' component={signedIn ? signedIn ? VesselsList : loginButton : loginButton} />
-          <Route exact path='/ClientInfo' component={signedIn ? signedIn ? ClientInfo : loginButton : loginButton} />
+          <Route exact path='/Vessels' component={signedIn ? VesselsList : loginButton} />
+          <Route exact path='/ClientInfo' component={signedIn ? ClientInfo : loginButton} />
+          <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
+          <Route exact path='/ClientInfoReact/StartNewClient' component={signedIn ? StartNewClient : loginButton} />
+          <Route exact path='/ClientInfoReact/ClientSetUp' component={signedIn ? ClientSetUp : loginButton} />
+          <Route exact path='/ClientInfoReact/OfficeReach' component={signedIn ? OfficeReach : loginButton} />
+          <Route exact path='/ClientInfoReact/AnswerCalls' component={signedIn ? AnswerCalls : loginButton} />
+          <Route exact path='/ClientInfoReact/TestPage' component={signedIn ? TestPage : loginButton} />
+          <Route exact path='/ClientInfoReact/NewFormWizard' component={signedIn ? NewFormWizard : loginButton} />
+          <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
 
           {/* React Client Info Routes */}
-          <Route path='/ClientInfoReact'>
+          {/* <Route path='/ClientInfoReact'>
             <ClientInfoThemeProvider>
               <Switch>
                 <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
@@ -123,7 +131,7 @@ function App() {
                 <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
               </Switch>
             </ClientInfoThemeProvider>
-          </Route>
+          </Route> */}
 
           {/* Catch-all */}
           <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
