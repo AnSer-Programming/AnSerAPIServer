@@ -1,22 +1,30 @@
+// src/pages/ClientInfo/NewFormWizard.jsx
 import React from 'react';
-import ClientInfoNavbar from './ClientInfoNavbar';
-import ClientInfoFooter from './ClientInfoFooter';
-import { useClientInfoTheme } from './ClientInfoThemeContext';
+import { Switch, Route, useRouteMatch, Redirect } from 'react-router-dom';
+
+import ClientSetUp from './ClientSetUp';
+import OfficeReach from './OfficeReach';
+import AnswerCalls from './AnswerCalls';
+import ReviewStep from './ReviewStep';
+
 import './ClientInfoReact.css';
 
 const NewFormWizard = () => {
-  const { darkMode } = useClientInfoTheme();
+  const { path } = useRouteMatch();
 
   return (
-    <div className={`client-info-react-container d-flex flex-column min-vh-100 ${darkMode ? 'dark' : 'light'}`}>
-      <ClientInfoNavbar />
-      <div className="container my-5">
-        <h2 className="text-center fw-bold mb-4">New Form Wizard</h2>
-        <p className="text-center text-muted">This page will guide you through setting up a new form step by step.</p>
-        {/* TODO: Wizard component goes here */}
-      </div>
-      <ClientInfoFooter />
-    </div>
+    <Switch>
+      <Route exact path={`${path}`}>
+        <Redirect to={`${path}/ClientSetUp`} />
+      </Route>
+      <Route exact path={`${path}/ClientSetUp`} component={ClientSetUp} />
+      <Route exact path={`${path}/OfficeReach`} component={OfficeReach} />
+      <Route exact path={`${path}/AnswerCalls`} component={AnswerCalls} />
+      <Route exact path={`${path}/Review`} component={ReviewStep} />
+      <Route>
+        <h2 className="text-danger text-center mt-5">Step not found</h2>
+      </Route>
+    </Switch>
   );
 };
 

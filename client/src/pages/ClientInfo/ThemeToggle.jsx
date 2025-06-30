@@ -1,20 +1,24 @@
 // src/pages/ClientInfo/ThemeToggle.jsx
 import React from 'react';
 import { useClientInfoTheme } from './ClientInfoThemeContext';
-import { Button } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 const ThemeToggle = () => {
   const { darkMode, toggleDarkMode } = useClientInfoTheme();
 
   return (
-    <Button
-      onClick={toggleDarkMode}
-      variant="outlined"
-      color="secondary"
-      style={{ float: 'right', marginBottom: '10px' }}
-    >
-      {darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-    </Button>
+    <Tooltip title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+      <IconButton
+        onClick={toggleDarkMode}
+        color="inherit"
+        sx={{ float: 'right', mb: 1 }}
+        aria-label="toggle theme"
+      >
+        {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+      </IconButton>
+    </Tooltip>
   );
 };
 

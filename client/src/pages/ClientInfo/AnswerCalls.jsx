@@ -1,24 +1,60 @@
 // src/pages/ClientInfo/AnswerCalls.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Typography
+  Typography,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Button
 } from '@mui/material';
 import { useClientInfoTheme } from './ClientInfoThemeContext';
+import { useWizard } from './WizardContext';
+import { useHistory } from 'react-router-dom';
 import ClientInfoNavbar from './ClientInfoNavbar';
+import ClientInfoFooter from './ClientInfoFooter';
+import Breadcrumb from './Breadcrumb';
 import './ClientInfoReact.css';
 
 const AnswerCalls = () => {
   const { darkMode } = useClientInfoTheme();
+  const history = useHistory();
+  const { formData, updateSection } = useWizard();
+
+  const [form, setForm] = useState(() =>
+    formData.AnswerCalls || {
+      useBasicPhrase: false,
+      useCustomPhrase: false,
+      customPhrase: '',
+      useAutoGreeting: false,
+      autoGreeting: '',
+      specialInstructions: ''
+    }
+  );
+
+  useEffect(() => {
+    updateSection('AnswerCalls', form);
+  }, [form]);
+
+  const handleChange = (e) => {
+    const { name, type, checked, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleContinue = () => {
+    updateSection('AnswerCalls', form);
+    history.push('/ClientInfoReact/NewFormWizard/Review');
+  };
 
   return (
-    <div className={`client-info-react-container ${darkMode ? 'dark' : 'light'}`}>
+    <div className={`client-info-react-container d-flex flex-column min-vh-100 ${darkMode ? 'dark' : 'light'}`}>
       <ClientInfoNavbar />
 
-      <div className="container mt-4">
-        <div className="breadcrumbNav d-flex justify-content-between align-items-center">
-          <Typography variant="h5" id="breadcrumb">How to Answer Your Calls</Typography>
-        </div>
+      <Box className="container mt-4 flex-grow-1">
+        <Breadcrumb />
 
         <div className="pageTitle mb-4">
           <Typography variant="h4">How to Answer Your Calls</Typography>
@@ -28,23 +64,91 @@ const AnswerCalls = () => {
           </p>
         </div>
 
-        <div className="card p-3 mb-4">
-          <Typography variant="h6">What do you want us to say when answering the phone?</Typography>
-          <p>Example: “Thank you for calling XYZ Pediatrics, how may I help you?”</p>
+        <Box className="card p-4">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.useBasicPhrase}
+                onChange={handleChange}
+                name="useBasicPhrase"
+              />
+            }
+            label={
+              <span>
+                <strong>Use Live Agent basic phrase:</strong>{' '}
+                <i>“Thank you for calling [Business Name]…”</i>
+              </span>
+            }
+          />
 
-          <Typography variant="h6">Should we announce who we are when we call your staff?</Typography>
-          <p>Example: “This is AnSer on behalf of XYZ Pediatrics with a message.”</p>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.useCustomPhrase}
+                onChange={handleChange}
+                name="useCustomPhrase"
+              />
+            }
+            label={<strong>Use Live Agent custom phrase:</strong>}
+          />
 
-          <Typography variant="h6">Should we say we’re your answering service or your office?</Typography>
-          <p>Example: “This is your answering service calling” vs “This is XYZ Pediatrics calling”</p>
+          {form.useCustomPhrase && (
+            <TextField
+              fullWidth
+              name="customPhrase"
+              value={form.customPhrase}
+              onChange={handleChange}
+              margin="normal"
+              placeholder="Enter your custom greeting"
+            />
+          )}
 
-          <Typography variant="h6">How should we handle multiple calls or repeated calls?</Typography>
-          <p>Should we page a different person, wait between calls, or note patterns?</p>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.useAutoGreeting}
+                onChange={handleChange}
+                name="useAutoGreeting"
+              />
+            }
+            label={<strong>Use Automated Greeting</strong>}
+          />
 
-          <Typography variant="h6">Are there any special scripts, tone, or language we should use?</Typography>
-          <p>Let us know about preferred greetings, sensitive topics, or legal wording.</p>
-        </div>
-      </div>
+          {form.useAutoGreeting && (
+            <TextField
+              fullWidth
+              name="autoGreeting"
+              value={form.autoGreeting}
+              onChange={handleChange}
+              margin="normal"
+              placeholder="Custom automated greeting (optional)"
+            />
+          )}
+
+          <TextField
+            label="Special instructions (tone, escalation, legal language, etc.)"
+            name="specialInstructions"
+            value={form.specialInstructions}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={4}
+            margin="normal"
+          />
+
+          <Box mt={3} display="flex" justifyContent="space-between">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleContinue}
+            >
+              Continue to Review
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+
+      <ClientInfoFooter />
     </div>
   );
 };

@@ -1,17 +1,24 @@
 // src/components/Breadcrumb.jsx
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-const capitalize = (str) =>
-  str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+const formatSegment = (segment) => {
+  // Convert "newFormWizard" or "review-step" to "New Form Wizard" or "Review Step"
+  return decodeURIComponent(
+    segment
+      .replace(/-/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+  ).replace(/\b\w/g, (char) => char.toUpperCase());
+};
 
 const Breadcrumb = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split('/').filter(Boolean);
 
-  const breadcrumbString = ['Home', ...pathSegments.map(capitalize)].join(' > ');
+  const breadcrumbItems = ['Home', ...pathSegments.map(formatSegment)];
+  const breadcrumbString = breadcrumbItems.join(' > ');
 
   return (
     <Box id="breadcrumb" sx={{ p: 1, mb: 2, backgroundColor: '#e0e0e0', borderRadius: 1 }}>

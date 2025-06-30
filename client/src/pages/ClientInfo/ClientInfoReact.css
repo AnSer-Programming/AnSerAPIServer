@@ -21,6 +21,31 @@
   color: #f1f1f1;
 }
 
+/* Container layout */
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Card styling */
+.card {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+/* Card styling for dark mode */
+.client-info-react-container.dark .card {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+  border: 1px solid #333;
+}
+
 /* Logo container */
 .imageHolder img {
   max-width: 250px;
@@ -40,6 +65,14 @@
   color: #6c757d;
 }
 
+/* Breadcrumb style override for OfficeReach */
+#breadcrumb {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
 /* Page titles */
 .pageTitle h2,
 .pageTitle h4 {
@@ -52,11 +85,29 @@
   margin-top: 0.5rem;
 }
 
-/* Responsive button layout */
-.row.justify-content-center .btn {
+.pageTitle p {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.row.justify-content-center .btn,
+.btn {
   font-size: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 5px;
+}
+
+/* Right-aligned button inside card */
+.card .MuiButton-root {
+  margin-top: 1rem;
+  float: right;
+}
+
+/* Dark mode button hover */
+.client-info-react-container.dark .btn:hover,
+.client-info-react-container.dark .MuiButton-root:hover {
+  opacity: 0.9;
 }
 
 /* Accordion styling */
@@ -71,7 +122,7 @@
   color: #333;
 }
 
-/* Sticky top navbar */
+/* Navbar shadow */
 .header .navbar {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   z-index: 1030;
@@ -108,7 +159,7 @@ footer .footer-meta {
   margin-top: 0.5rem;
 }
 
-/* Dark footer */
+/* Dark Footer */
 .client-info-react-container.dark footer {
   background-color: #1e1e1e;
   color: #ccc;
@@ -126,7 +177,7 @@ footer .footer-meta {
   color: #999;
 }
 
-/* Optional floating footer (use footer.footer-floating if needed) */
+/* Optional fixed footer */
 footer.footer-floating {
   position: fixed;
   bottom: 0;
@@ -135,7 +186,23 @@ footer.footer-floating {
   z-index: 999;
 }
 
-/* Theme transition for button hover in dark mode */
-.client-info-react-container.dark .btn:hover {
-  opacity: 0.9;
+/* Responsive form field spacing */
+.MuiTextField-root {
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .container .card {
+    padding: 1rem;
+  }
+
+  .pageTitle h2 {
+    font-size: 1.5rem;
+  }
+
+  .MuiButton-root {
+    width: 100%;
+    float: none;
+  }
 }

@@ -1,87 +1,102 @@
 // src/pages/ClientInfo/OfficeReach.jsx
-import React from 'react';
-import { Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Typography, TextField, Box, Button } from '@mui/material';
 import { useClientInfoTheme } from './ClientInfoThemeContext';
+import { useWizard } from './WizardContext';
+import { useHistory } from 'react-router-dom';
 import ClientInfoNavbar from './ClientInfoNavbar';
+import ClientInfoFooter from './ClientInfoFooter';
+import Breadcrumb from './Breadcrumb';
 import './ClientInfoReact.css';
 
 const OfficeReach = () => {
   const { darkMode } = useClientInfoTheme();
+  const history = useHistory();
+  const { formData, updateSection } = useWizard();
+
+  const [form, setForm] = useState(() =>
+    formData.officeReach || {
+      regularHours: '',
+      noAlertTimes: '',
+      holidayRules: ''
+    }
+  );
+
+  useEffect(() => {
+    updateSection('officeReach', form);
+  }, [form]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleContinue = () => {
+    updateSection('officeReach', form);
+    history.push('/ClientInfoReact/NewFormWizard/AnswerCalls');
+  };
 
   return (
-    <div className={`client-info-react-container ${darkMode ? 'dark' : 'light'}`}>
+    <div className={`client-info-react-container d-flex flex-column min-vh-100 ${darkMode ? 'dark' : 'light'}`}>
       <ClientInfoNavbar />
 
-      {/* Main Content */}
-      <div className="container mt-4">
-        <div className="breadcrumbNav">
-          <h4 id="breadcrumb">Office Reach</h4>
-        </div>
+      <div className="container flex-grow-1 mt-4 mb-5">
+        <Breadcrumb />
 
         <div className="pageTitle mb-4">
-          <h2>Office Reach Information</h2>
-          <p>
+          <Typography variant="h4">Office Reach Information</Typography>
+          <Typography variant="body1" className="text-muted mt-2">
             The questions below help define where and how a message gets delivered depending on the day and time.
             This is useful when determining availability and routing needs.
-          </p>
+          </Typography>
         </div>
 
-        <div className="container mb-5">
-          <div className="accordion" id="officeReachAccordion">
-            <div className="accordion-item">
-              <h2 className="accordion-header" id="headingOne">
-                <button
-                  className="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseOne"
-                  aria-expanded="true"
-                  aria-controls="collapseOne"
-                >
-                  What are your regular office hours?
-                </button>
-              </h2>
-              <div
-                id="collapseOne"
-                className="accordion-collapse collapse show"
-                aria-labelledby="headingOne"
-                data-bs-parent="#officeReachAccordion"
-              >
-                <div className="accordion-body">
-                  Include standard hours the office is open each day.
-                </div>
-              </div>
-            </div>
+        <Box className="card p-4">
+          <TextField
+            label="What are your regular office hours?"
+            name="regularHours"
+            value={form.regularHours}
+            onChange={handleChange}
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            placeholder="e.g., Mon–Fri 9am–5pm"
+          />
 
-            <div className="accordion-item">
-              <h2 className="accordion-header" id="headingTwo">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseTwo"
-                  aria-expanded="false"
-                  aria-controls="collapseTwo"
-                >
-                  Are there times when calls should go directly to voicemail or skip alerting staff?
-                </button>
-              </h2>
-              <div
-                id="collapseTwo"
-                className="accordion-collapse collapse"
-                aria-labelledby="headingTwo"
-                data-bs-parent="#officeReachAccordion"
-              >
-                <div className="accordion-body">
-                  Identify after-hours policies or holidays where staff should not be contacted.
-                </div>
-              </div>
-            </div>
+          <TextField
+            label="Are there times when calls should go directly to voicemail or skip alerting staff?"
+            name="noAlertTimes"
+            value={form.noAlertTimes}
+            onChange={handleChange}
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            placeholder="e.g., after 10pm on weekdays, all day Sunday"
+          />
 
-            {/* Additional sections can go here */}
-          </div>
-        </div>
+          <TextField
+            label="Holiday or exception rules?"
+            name="holidayRules"
+            value={form.holidayRules}
+            onChange={handleChange}
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            placeholder="e.g., Do not alert staff on major holidays unless emergency"
+          />
+
+          <Box mt={3} display="flex" justifyContent="flex-end">
+            <Button variant="contained" color="primary" onClick={handleContinue}>
+              Continue to Call Answering
+            </Button>
+          </Box>
+        </Box>
       </div>
+
+      <ClientInfoFooter />
     </div>
   );
 };

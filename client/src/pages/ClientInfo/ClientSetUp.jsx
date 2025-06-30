@@ -6,7 +6,10 @@ import {
   Grid, InputLabel, MenuItem, Select, TextField, Typography
 } from '@mui/material';
 import { useClientInfoTheme } from './ClientInfoThemeContext';
+import { useWizard } from './WizardContext';
+import { useHistory } from 'react-router-dom';
 import ClientInfoNavbar from './ClientInfoNavbar';
+import ClientInfoFooter from './ClientInfoFooter';
 import './ClientInfoReact.css';
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -15,6 +18,9 @@ const ampm = ['AM', 'PM'];
 
 const ClientSetUp = () => {
   const { darkMode } = useClientInfoTheme();
+  const history = useHistory();
+const { updateSection } = useWizard();
+
 
   const [companyList, setCompanyList] = useState([]);
   const [form, setForm] = useState({
@@ -84,111 +90,115 @@ const ClientSetUp = () => {
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Submitted Form:', form);
-    // Add backend submission logic here
+  const handleContinue = () => {
+    updateSection('companyInfo', form); // ✅ match the key used in ReviewStep, OfficeReach, etc.
+
+    history.push('/ClientInfoReact/NewFormWizard/OfficeReach');
   };
 
   return (
-    <Box className={`client-info-react-container ${darkMode ? 'dark' : 'light'}`}>
+    <Box className={`client-info-react-container d-flex flex-column min-vh-100 ${darkMode ? 'dark' : 'light'}`}>
       <ClientInfoNavbar />
 
-      <Typography variant="h4" sx={{ my: 2 }}>Company Information</Typography>
+      <Box className="container flex-grow-1 mt-3">
+        <Typography variant="h4" sx={{ my: 2 }}>Company Information</Typography>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Select Company</InputLabel>
-        <Select
-          name="company"
-          value={form.company}
-          label="Select Company"
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Select Company</InputLabel>
+          <Select
+            name="company"
+            value={form.company}
+            label="Select Company"
+            onChange={handleInputChange}
+          >
+            {Array.isArray(companyList) && companyList.map((c, i) => (
+              <MenuItem key={i} value={c}>{c}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <TextField
+          label="Physical Address"
+          name="physicalAddress"
+          fullWidth
+          margin="normal"
+          value={form.physicalAddress}
           onChange={handleInputChange}
-        >
-          {Array.isArray(companyList) && companyList.map((c, i) => (
-            <MenuItem key={i} value={c}>{c}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <TextField
-        label="Physical Address"
-        name="physicalAddress"
-        fullWidth
-        margin="normal"
-        value={form.physicalAddress}
-        onChange={handleInputChange}
-      />
-      <TextField
-        label="Billing Address"
-        name="billingAddress"
-        fullWidth
-        margin="normal"
-        value={form.billingAddress}
-        onChange={handleInputChange}
-      />
-
-      <Typography variant="h6" mt={4}>Office Hours</Typography>
-      {Object.keys(form.officeHours).map(day => (
-        <Grid container spacing={1} alignItems="center" key={day} sx={{ mb: 2 }}>
-          <Grid item xs={1.5}><Typography>{day.charAt(0).toUpperCase() + day.slice(1)}</Typography></Grid>
-
-          {["startHour", "startMinute", "startAmPm", "endHour", "endMinute", "endAmPm"].map((fieldKey) => (
-            <Grid item xs={1.5} key={`${day}-${fieldKey}`}>
-              <FormControl fullWidth size="small">
-                <InputLabel>
-                  {fieldKey.includes('Hour') ? (fieldKey.includes('start') ? 'Start Hour' : 'End Hour') :
-                    fieldKey.includes('Minute') ? 'Minute' : 'AM/PM'}
-                </InputLabel>
-                <Select
-                  value={form.officeHours[day][fieldKey] || ''}
-                  onChange={(e) => handleTimeChange(day, fieldKey, e.target.value)}
-                >
-                  {(fieldKey.includes('Hour') ? hours :
-                    fieldKey.includes('Minute') ? minutes : ampm).map(opt => (
-                      <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          ))}
-        </Grid>
-      ))}
-
-      <Box mt={2}>
-        <FormControlLabel
-          control={<Checkbox checked={form.isOfficeContact} onChange={() => handleCheckboxToggle('isOfficeContact')} />}
-          label="Office Contact"
         />
-        <FormControlLabel
-          control={<Checkbox checked={form.isBillingContact} onChange={() => handleCheckboxToggle('isBillingContact')} />}
-          label="Billing Contact"
+        <TextField
+          label="Billing Address"
+          name="billingAddress"
+          fullWidth
+          margin="normal"
+          value={form.billingAddress}
+          onChange={handleInputChange}
         />
-      </Box>
 
-      <Box mt={2}>
-        <Typography variant="h6">Services Offered</Typography>
-        {availableServices.map((svc, i) => (
-          <FormControlLabel
-            key={i}
-            control={<Checkbox checked={form.services.includes(svc)} onChange={() => handleServiceToggle(svc)} />}
-            label={svc}
-          />
+        <Typography variant="h6" mt={4}>Office Hours</Typography>
+        {Object.keys(form.officeHours).map(day => (
+          <Grid container spacing={1} alignItems="center" key={day} sx={{ mb: 2 }}>
+            <Grid item xs={1.5}><Typography>{day.charAt(0).toUpperCase() + day.slice(1)}</Typography></Grid>
+            {["startHour", "startMinute", "startAmPm", "endHour", "endMinute", "endAmPm"].map((fieldKey) => (
+              <Grid item xs={1.5} key={`${day}-${fieldKey}`}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>
+                    {fieldKey.includes('Hour') ? (fieldKey.includes('start') ? 'Start Hour' : 'End Hour') :
+                      fieldKey.includes('Minute') ? 'Minute' : 'AM/PM'}
+                  </InputLabel>
+                  <Select
+                    value={form.officeHours[day][fieldKey] || ''}
+                    onChange={(e) => handleTimeChange(day, fieldKey, e.target.value)}
+                  >
+                    {(fieldKey.includes('Hour') ? hours :
+                      fieldKey.includes('Minute') ? minutes : ampm).map(opt => (
+                        <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            ))}
+          </Grid>
         ))}
+
+        <Box mt={2}>
+          <FormControlLabel
+            control={<Checkbox checked={form.isOfficeContact} onChange={() => handleCheckboxToggle('isOfficeContact')} />}
+            label="Office Contact"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={form.isBillingContact} onChange={() => handleCheckboxToggle('isBillingContact')} />}
+            label="Billing Contact"
+          />
+        </Box>
+
+        <Box mt={2}>
+          <Typography variant="h6">Services Offered</Typography>
+          {availableServices.map((svc, i) => (
+            <FormControlLabel
+              key={i}
+              control={<Checkbox checked={form.services.includes(svc)} onChange={() => handleServiceToggle(svc)} />}
+              label={svc}
+            />
+          ))}
+        </Box>
+
+        <TextField
+          label="Business Notes"
+          name="notes"
+          fullWidth
+          multiline
+          rows={4}
+          margin="normal"
+          value={form.notes}
+          onChange={handleInputChange}
+        />
+
+        <Button variant="contained" color="primary" onClick={handleContinue} sx={{ mt: 3 }}>
+          Continue to Office Reach
+        </Button>
       </Box>
 
-      <TextField
-        label="Business Notes"
-        name="notes"
-        fullWidth
-        multiline
-        rows={4}
-        margin="normal"
-        value={form.notes}
-        onChange={handleInputChange}
-      />
-
-      <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 3 }}>
-        Submit & Continue
-      </Button>
+      <ClientInfoFooter />
     </Box>
   );
 };

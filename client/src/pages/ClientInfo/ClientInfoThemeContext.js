@@ -1,12 +1,20 @@
-// src/pages/ClientInfo/ClientInfoThemeContext.js
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // 1. Create the context with a default value of null
 const ClientInfoThemeContext = createContext(null);
 
 // 2. Provider component
 export const ClientInfoThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
+  // Load initial value from localStorage or default to false
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem('clientInfoDarkMode');
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  // Persist value to localStorage on change
+  useEffect(() => {
+    localStorage.setItem('clientInfoDarkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
