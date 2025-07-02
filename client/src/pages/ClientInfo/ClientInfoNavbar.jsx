@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import "./ClientInfoReact.css";
+
 
 const ClientInfoNavbar = () => {
   const { darkMode, toggleDarkMode } = useClientInfoTheme();
@@ -39,11 +39,7 @@ const ClientInfoNavbar = () => {
   ];
 
   return (
-    <AppBar
-      position="sticky"
-      color="primary"
-      className={`client-info-navbar ${darkMode ? "dark" : "light"}`}
-    >
+    <AppBar position="sticky" color="primary">
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Left: Logo and Title */}
         <Box display="flex" alignItems="center" gap={1}>
@@ -51,7 +47,7 @@ const ClientInfoNavbar = () => {
             <img
               src={AnSerLogoStar}
               alt="AnSer Logo"
-              style={{ maxWidth: "280px", width: "100%", height: "auto" }}
+              style={{ height: "40px" }}
             />
           </Link>
           <Typography variant="h6" color="inherit" noWrap>

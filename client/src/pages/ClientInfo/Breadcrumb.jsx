@@ -2,6 +2,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 const formatSegment = (segment) => {
@@ -15,13 +16,24 @@ const formatSegment = (segment) => {
 
 const Breadcrumb = () => {
   const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const theme = useTheme();
+  // Filter out segments that are not relevant for the user-facing breadcrumb
+  const pathSegments = location.pathname
+    .split('/')
+    .filter(Boolean)
+    .filter(segment => !['ClientInfoReact', 'NewFormWizard'].includes(segment));
 
-  const breadcrumbItems = ['Home', ...pathSegments.map(formatSegment)];
+  const breadcrumbItems = ['Start New Client', ...pathSegments.map(formatSegment)];
   const breadcrumbString = breadcrumbItems.join(' > ');
 
   return (
-    <Box id="breadcrumb" sx={{ p: 1, mb: 2, backgroundColor: '#e0e0e0', borderRadius: 1 }}>
+    <Box
+      id="breadcrumb"
+      sx={{
+        p: 1, mb: 2,
+        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
+        borderRadius: 1
+      }}>
       <Typography variant="body2" color="textSecondary">
         {breadcrumbString}
       </Typography>
