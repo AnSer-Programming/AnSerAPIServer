@@ -6,7 +6,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-const GetInfoPages = (data:any) => {
+const GetInfoPages = (data: any) => {
   const [infoPages, setData] = useState<any>({});
   const [maxPage, setMaxPage] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
@@ -143,40 +143,53 @@ const GetInfoPages = (data:any) => {
     return data;
   }
 
-  async function downloadHandler() {
-    let fileData: string = " ";
+  async function downloadHandler(docType: any) {
+    console.log(docType);
+    let fileData: any;
     let fileName: string = `${accountNum} ${accountName} Info Pages`;
     let placeHolder: string;
-    for (let i = 0; i < infoPages.length; i++) {
-      let indexArray: number[] = await findIndex(i, infoPages[i].Info);
-      placeHolder = await infoPages[i].Info;
-      placeHolder.trim();
-      placeHolder.replace(/\r\n/g, "");
-      if (indexArray[3] !== -1) {
-        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[3], indexArray[3] + 7), "");
+    if (docType == "wordDoc") {
+      fileData = " ";
+      for (let i = 0; i < infoPages.length; i++) {
+        let indexArray: number[] = await findIndex(i, infoPages[i].Info);
+        placeHolder = await infoPages[i].Info;
+        placeHolder.trim();
+        placeHolder.replace(/\r\n/g, "");
+        if (indexArray[3] !== -1) {
+          placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[3], indexArray[3] + 7), "");
+        }
+        if (indexArray[5] !== -1) {
+          placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[5], indexArray[5] + 7), "");
+        }
+        if (indexArray[4] !== -1) {
+          placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[4], indexArray[4] + 6), `<br style="page-break-before: always">`);
+        }
+        if (indexArray[0] !== -1 && indexArray[1] !== -1) {
+          placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[0], indexArray[1] + 7), "");
+        }
+        if (indexArray[2] !== -1) {
+          placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[2], indexArray[2] + 6), "");
+        }
+        placeHolder = purgeImages(placeHolder);
+        if (i === 0) {
+          fileData = await placeHolder;
+        } else {
+          fileData += await placeHolder;
+        }
       }
-      if (indexArray[5] !== -1) {
-        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[5], indexArray[5] + 7), "");
-      }
-      if (indexArray[4] !== -1) {
-        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[4], indexArray[4] + 6), `<br style="page-break-before: always">`);
-      }
-      if (indexArray[0] !== -1 && indexArray[1] !== -1) {
-        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[0], indexArray[1] + 7), "");
-      }
-      if (indexArray[2] !== -1) {
-        placeHolder = await placeHolder.replace(placeHolder.slice(indexArray[2], indexArray[2] + 6), "");
-      }
-      placeHolder = purgeImages(placeHolder);
-      if (i === 0) {
-        fileData = await placeHolder;
-      } else {
-        fileData += await placeHolder;
+    } else {
+      fileData = new Array();
+      for (let i = 0; i < infoPages.length; i++) {
+        fileData[i] = await infoPages[i].Info;
       }
     }
     // fileData += "<header><img src='../../assets/img/AnserLogo2.png' /></header>";
-    console.log(fileData);
-    await toMSWord(fileData, fileName);
+    console.log(`${fileName} \n${fileData}`);
+    if (docType == "wordDoc") {
+      await toMSWord(fileData, fileName);
+    } else {
+      await toPDF(fileData, fileName);
+    }
   }
 
   const pageHandler = (direction: string) => {
@@ -199,7 +212,7 @@ const GetInfoPages = (data:any) => {
     <>
       <Autocomplete
         disablePortal
-        onChange={(event, newValue:any) => {
+        onChange={(event, newValue: any) => {
           if (newValue) {
             setAccountNum(parseInt(newValue));
           }
@@ -212,8 +225,11 @@ const GetInfoPages = (data:any) => {
         infoPagesLength ?
           <div>
             <button onClick={() => pageHandler("previous")}>Previous</button> Page: {currentPage + 1} <button onClick={() => pageHandler("next")}>Next</button> <br /><br />
-            <button onClick={downloadHandler} id="downloadCSV" value="download">
-              <i className="fas fa-download" />Click Here to Download
+            <button onClick={() => downloadHandler("wordDoc")} id="downloadWordDoc" value="download">
+              <i className="fas fa-download" />Click Here to Download for MS Word
+            </button>
+            <button style={{marginLeft: '10px'}} onClick={() => downloadHandler("pdf")} id="downloadPDF" value="download">
+              <i className="fas fa-download" />Click Here to Download PDF
             </button> <br /><br />
             <div style={{ backgroundColor: 'white', color: 'black' }} className="content" dangerouslySetInnerHTML={{ __html: (infoPages[currentPage].Info) }}>
             </div>
