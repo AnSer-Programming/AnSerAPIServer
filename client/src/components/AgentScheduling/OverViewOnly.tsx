@@ -60,6 +60,7 @@ const OverviewOnly = (data: any) => {
   const shiftOverviewBuilder = () => {
     const shiftOverviewData: any = buildOverviewObj();
     const shiftOverviewKeys = Object.keys(shiftOverviewData);
+    console.log(shiftOverviewData);
     let shiftList = new Array();
     let tableBody = new Array();
     if (data.selectedHoliday == "None") {
