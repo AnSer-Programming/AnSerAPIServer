@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Menu from './components/Menu.tsx';
 
@@ -28,25 +28,13 @@ import VesselsList from './pages/VesselList';
 import ReportIssue from './pages/ReportIssue';
 import ClientInfo from './pages/ClientInfo'; // Legacy Client Info
 
-// React Client Info Pages
-import StartNewClient from './pages/ClientInfo/StartNewClient';
-import ClientSetUp from './pages/ClientInfo/ClientSetUp';
-import OfficeReach from './pages/ClientInfo/OfficeReach';
-import AnswerCalls from './pages/ClientInfo/AnswerCalls';
-import TestPage from './pages/ClientInfo/TestPage';
-import NewFormWizard from './pages/ClientInfo/NewFormWizard';
-import ATools from './pages/ClientInfo/ATools';
-
-import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
-import { WizardProvider } from './pages/ClientInfo/WizardContext';
+import ClientInfoReactRoutes from './pages/ClientInfo/ClientInfoReactRoutes';
 
 function App() {
   const [open, setOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  useEffect(() => {}, [signedIn]);
 
   const loginHandler = () => setSignedIn(true);
 
@@ -102,26 +90,7 @@ function App() {
           <Route exact path="/ClientInfo" component={signedIn ? ClientInfo : loginButton} />
 
           {/* 🌗 React Client Info Themed Routes */}
-          <Route path="/ClientInfoReact">
-            <ClientInfoThemeProvider>
-              <Switch>
-                <Route exact path="/ClientInfoReact" component={signedIn ? StartNewClient : loginButton} />
-                <Route exact path="/ClientInfoReact/StartNewClient" component={signedIn ? StartNewClient : loginButton} />
-                <Route exact path="/ClientInfoReact/TestPage" component={signedIn ? TestPage : loginButton} />
-                <Route exact path="/ClientInfoReact/ATools" component={signedIn ? ATools : loginButton} />
-
-                <Route path="/ClientInfoReact/NewFormWizard">
-                  {signedIn ? (
-                    <WizardProvider>
-                      <NewFormWizard />
-                    </WizardProvider>
-                  ) : (
-                    loginButton
-                  )}
-                </Route>
-              </Switch>
-            </ClientInfoThemeProvider>
-          </Route>
+          <Route path="/ClientInfoReact" component={ClientInfoReactRoutes} />
 
           {/* Catch-all */}
           <Route render={() => <h1 className="display-2">Wrong page!</h1>} />

@@ -1,442 +1,272 @@
-// src/pages/ClientInfo/ClientSetUp.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Box, Button, Checkbox, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Typography, FormHelperText, Paper, Container, CircularProgress, Divider, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import debounce from 'lodash.debounce';
+import {
+  Box, Button, Snackbar, Alert, Checkbox, FormControlLabel, Typography, Paper,
+  Container, Divider, Accordion, AccordionSummary, AccordionDetails, FormControl, Select, MenuItem, TextField
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useClientInfoTheme } from './ClientInfoThemeContext';
 import { useWizard } from './WizardContext';
 import { useHistory } from 'react-router-dom';
 import ClientInfoNavbar from './ClientInfoNavbar';
 import ClientInfoFooter from './ClientInfoFooter';
-import PhoneMaskInput from './PhoneMaskInput';
 import DayTimeRangePicker from './DayTimeRangePicker';
+import { useClientInfoTheme } from './ClientInfoThemeContext';
+
+const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+const minutes = ['00', '15', '30', '45'];
+const meridiems = ['AM', 'PM'];
 
 const ClientSetUp = () => {
-  const { darkMode } = useClientInfoTheme();
   const history = useHistory();
   const { formData, updateSection } = useWizard();
+  const { darkMode } = useClientInfoTheme();
 
-  const [companyList, setCompanyList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [form, setForm] = useState(() => {
-    const defaultState = {
+    const initialOfficeHours = {};
+    const initialLunchHours = {};
+    daysOfWeek.forEach(day => {
+      initialOfficeHours[day] = {};
+      initialLunchHours[day] = {};
+    });
+    return {
       company: '',
       complexName: '',
       physicalAddress: '',
-      billingAddress: '', // Corresponds to MAILING ADDRESS in PDF
-      primaryOfficeLine: '',
-      tollFree: '',
-      secondaryBackLine: '',
-      fax: '',
-      officeEmail: '',
-      website: '',
-      officeHours: { mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {} },
-      lunchBreak: { mon: {}, tue: {}, wed: {}, thu: {}, fri: {}, sat: {}, sun: {} },
-      plannedUsage: [],
-      holidays: '',
-      otherUsage: '',
-      personnel: [{ name: '', title: '', email: '', office: '', cell: '', other: '' }],
-      dailySummary: {
-        email: '',
-        fax: '',
-        days: [],
-        time: ''
-      }
+      billingAddress: '',
+      timeZone: '',
+      takeLunchCalls: false,
+      officeHours: initialOfficeHours,
+      lunchHours: initialLunchHours,
+      ...formData.companyInfo
     };
-    return { ...defaultState, ...(formData.companyInfo || {}) };
   });
+
+  const [bulkOffice, setBulkOffice] = useState({ start: {}, end: {} });
+  const [bulkOfficeDays, setBulkOfficeDays] = useState([]);
+  const [bulkLunch, setBulkLunch] = useState({ start: {}, end: {} });
+  const [bulkLunchDays, setBulkLunchDays] = useState([]);
+
   const [errors, setErrors] = useState({});
 
-  const [plannedUsageOptions] = useState([
-    '24/7/365',
-    'Outside business hours',
-    'Business hours overflow',
-    'Lunch',
-    'Emergency Times'
-  ]);
+  const debouncedUpdate = debounce(data => updateSection('companyInfo', data), 300);
+  useEffect(() => { debouncedUpdate(form); }, [form]);
 
-  useEffect(() => {
-    setLoading(true);
-    axios.get('/api/companies')
-      .then(res => {
-        const list = Array.isArray(res.data) ? res.data : res.data.companies || [];
-        setCompanyList(list);
-      })
-      .catch(err => {
-        console.error('Error fetching company list:', err);
-        setCompanyList([]);
-      })
-      .finally(() => {
-        setLoading(false);
+  const handleInputChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleTakeLunchCallsChange = e => setForm({ ...form, takeLunchCalls: e.target.checked });
+
+  const handleApplyBulk = (type, time, days) => {
+    const timeObj = {
+      startHour: time.start.hour,
+      startMinute: time.start.minute,
+      startMeridiem: time.start.meridiem,
+      endHour: time.end.hour,
+      endMinute: time.end.minute,
+      endMeridiem: time.end.meridiem
+    };
+    setForm(prev => {
+      const updated = { ...prev[type] };
+      days.forEach(day => {
+        updated[day] = { ...timeObj };
       });
-  }, []);
-
-  useEffect(() => {
-    updateSection('companyInfo', form);
-  }, [form]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleTimeChange = (type, day, key, value) => {
-    setForm(prev => ({
-      ...prev,
-      [type]: {
-        ...prev[type],
-        [day]: {
-          ...prev[type][day],
-          [key]: value
-        }
-      }
-    }));
-  };
-
-  const handlePlannedUsageToggle = (option) => {
-    setForm(prev => {
-      const current = new Set(prev.plannedUsage);
-      current.has(option) ? current.delete(option) : current.add(option);
-      return { ...prev, plannedUsage: Array.from(current) };
+      return { ...prev, [type]: updated };
     });
-  };
-
-  const handlePersonnelChange = (index, e) => {
-    const { name, value } = e.target;
-    const list = [...form.personnel];
-    list[index][name] = value;
-    setForm(prev => ({ ...prev, personnel: list }));
-  };
-
-  const addPersonnel = () => {
-    setForm(prev => ({ ...prev, personnel: [...prev.personnel, { name: '', title: '', email: '', office: '', cell: '', other: '' }] }));
-  };
-
-  const removePersonnel = (index) => {
-    const list = [...form.personnel];
-    list.splice(index, 1);
-    setForm(prev => ({ ...prev, personnel: list }));
-  };
-
-  const handleSummaryChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({
-      ...prev,
-      dailySummary: {
-        ...prev.dailySummary,
-        [name]: value
-      }
-    }));
-  };
-
-  const handleSummaryDayToggle = (day) => {
-    setForm(prev => {
-      const current = new Set(prev.dailySummary.days);
-      current.has(day) ? current.delete(day) : current.add(day);
-      return {
-        ...prev,
-        dailySummary: {
-          ...prev.dailySummary,
-          days: Array.from(current)
-        }
-      };
-    });
+    if (type === 'officeHours') {
+      setBulkOffice({ start: {}, end: {} });
+      setBulkOfficeDays([]);
+    } else {
+      setBulkLunch({ start: {}, end: {} });
+      setBulkLunchDays([]);
+    }
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!form.company) newErrors.company = "Company selection is required.";
-    if (!form.physicalAddress.trim()) newErrors.physicalAddress = "Physical address is required.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const errs = {};
+    if (!form.company.trim()) errs.company = 'Company Name is required';
+    if (!form.physicalAddress.trim()) errs.physicalAddress = 'Physical Address is required';
+    if (!form.timeZone) errs.timeZone = 'Time Zone is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSaveExit = () => {
+    if (!validate()) return;
+    localStorage.setItem('ClientWizardDraft', JSON.stringify(form));
+    setShowSnackbar(true);
   };
 
   const handleContinue = () => {
-    if (validate()) {
-      updateSection('companyInfo', form);
-      history.push('/ClientInfoReact/NewFormWizard/OfficeReach');
-    }
+    if (!validate()) return;
+    history.push('/ClientInfoReact/NewFormWizard/OfficeReach');
   };
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <ClientInfoNavbar />
-        <Container sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <CircularProgress />
-          <Typography sx={{ ml: 2 }}>Loading Company Data...</Typography>
-        </Container>
-        <ClientInfoFooter />
+
+  const renderSummary = () => (
+    <Paper sx={{ mt: 3, p: 2 }}>
+      <Typography variant="h6">✅ Confirmed Summary</Typography>
+      <Typography><strong>Time Zone:</strong> {form.timeZone}</Typography>
+      {daysOfWeek.map(day => {
+        const office = form.officeHours[day];
+        const lunch = form.lunchHours[day];
+        return (
+          <Typography key={day}>
+            {day.toUpperCase()} - Start: {office.startHour}:{office.startMinute} {office.startMeridiem} 
+            , End: {office.endHour}:{office.endMinute} {office.endMeridiem}
+            {form.takeLunchCalls && lunch.startHour && ` | Lunch: ${lunch.startHour}:${lunch.startMinute} ${lunch.startMeridiem} - ${lunch.endHour}:${lunch.endMinute} ${lunch.endMeridiem}`}
+          </Typography>
+        );
+      })}
+    </Paper>
+  );
+
+  const renderTimeSelects = (label, time, setTime, which) => (
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Typography variant="caption" sx={{ minWidth: 50 }}>{label}</Typography>
+      <FormControl size="small">
+        <Select value={time[which].hour || ''} onChange={e => setTime(prev => ({ ...prev, [which]: { ...prev[which], hour: e.target.value } }))} displayEmpty>
+          <MenuItem value="">Hr</MenuItem>
+          {hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl size="small">
+        <Select value={time[which].minute || ''} onChange={e => setTime(prev => ({ ...prev, [which]: { ...prev[which], minute: e.target.value } }))} displayEmpty>
+          <MenuItem value="">Min</MenuItem>
+          {minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl size="small">
+        <Select value={time[which].meridiem || ''} onChange={e => setTime(prev => ({ ...prev, [which]: { ...prev[which], meridiem: e.target.value } }))} displayEmpty>
+          <MenuItem value="">AM/PM</MenuItem>
+          {meridiems.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+        </Select>
+      </FormControl>
+    </Box>
+  );
+
+  const renderBulkSelector = (label, time, setTime, days, setDays, type) => (
+    <>
+      <Typography variant="subtitle2" sx={{ mt: 1 }}>{label} - Bulk Apply</Typography>
+      {renderTimeSelects("Start", time, setTime, "start")}
+      {renderTimeSelects("End", time, setTime, "end")}
+      <Button sx={{ mt:1 }} size="small" variant="contained" onClick={() => handleApplyBulk(type, time, days)}>Apply</Button>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+        {daysOfWeek.map(day => (
+          <FormControlLabel
+            key={day}
+            control={<Checkbox
+              checked={days.includes(day)}
+              onChange={e => {
+                setDays(prev => e.target.checked ? [...prev, day] : prev.filter(d => d !== day));
+              }}
+            />}
+            label={day.toUpperCase()}
+          />
+        ))}
       </Box>
-    );
-  }
+      <Divider sx={{ my: 2 }} />
+    </>
+  );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      bgcolor: darkMode ? '#121212' : '#f5f5f5',
+      minHeight: '100vh',
+      color: darkMode ? '#fff' : '#000'
+    }}>
       <ClientInfoNavbar />
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, bgcolor: darkMode ? '#1e1e1e' : '#fff' }}>
+          <Typography variant="h4" gutterBottom>New Company Information</Typography>
+          <Divider sx={{ mb: 3 }} />
 
-      <Container component="main" maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: { xs: 2, md: 4 } }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Company Information
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Please fill out the primary details for the new client. All fields marked with * are required.
-          </Typography>
+          <TextField label="Company Name *" name="company" error={!!errors.company} helperText={errors.company} fullWidth sx={{ mb: 2 }} value={form.company} onChange={handleInputChange} />
+          <TextField label="Complex Name" name="complexName" fullWidth sx={{ mb: 2 }} value={form.complexName} onChange={handleInputChange} />
+          <TextField label="Physical Address *" name="physicalAddress" error={!!errors.physicalAddress} helperText={errors.physicalAddress} fullWidth sx={{ mb: 2 }} value={form.physicalAddress} onChange={handleInputChange} />
+          <TextField label="Billing Address" name="billingAddress" fullWidth sx={{ mb: 2 }} value={form.billingAddress} onChange={handleInputChange} />
+          
+          <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.timeZone}>
+            <Typography variant="caption">Time Zone *</Typography>
+            <Select name="timeZone" value={form.timeZone} onChange={handleInputChange}>
+              <MenuItem value="">Select Time Zone</MenuItem>
+              <MenuItem value="EST">Eastern</MenuItem>
+              <MenuItem value="CST">Central</MenuItem>
+              <MenuItem value="MST">Mountain</MenuItem>
+              <MenuItem value="PST">Pacific</MenuItem>
+            </Select>
+            {errors.timeZone && <Typography variant="caption" color="error">{errors.timeZone}</Typography>}
+          </FormControl>
 
-          {/* --- Company Details --- */}
-          <Typography variant="h6" gutterBottom>Company Details</Typography>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={!!errors.company}>
-                <InputLabel id="company-select-label">Select Company *</InputLabel>
-                <Select
-                  labelId="company-select-label"
-                  name="company"
-                  value={form.company}
-                  label="Select Company *"
-                  onChange={handleInputChange}
-                >
-                  {Array.isArray(companyList) && companyList.map((c, i) => (
-                    <MenuItem key={i} value={c}>{c}</MenuItem>
-                  ))}
-                </Select>
-                {errors.company && <FormHelperText>{errors.company}</FormHelperText>}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Complex Name (if applicable)"
-                name="complexName"
-                fullWidth
-                value={form.complexName}
-                onChange={handleInputChange}
-              />
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* --- Address Information --- */}
-          <Typography variant="h6" gutterBottom>Address Information</Typography>
-          <TextField
-            label="Physical Address"
-            name="physicalAddress"
-            required
-            fullWidth
-            value={form.physicalAddress}
-            onChange={handleInputChange}
-            error={!!errors.physicalAddress}
-            helperText={errors.physicalAddress}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Billing Address"
-            name="billingAddress"
-            fullWidth
-            value={form.billingAddress}
-            onChange={handleInputChange}
-          />
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* --- Contact Information --- */}
-          <Typography variant="h6" gutterBottom>Contact Information</Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Primary Office Line"
-                name="primaryOfficeLine"
-                fullWidth
-                value={form.primaryOfficeLine}
-                onChange={handleInputChange}
-                InputProps={{ inputComponent: PhoneMaskInput }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Toll Free"
-                name="tollFree"
-                fullWidth
-                value={form.tollFree}
-                onChange={handleInputChange}
-                InputProps={{ inputComponent: PhoneMaskInput }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Secondary/Back Line"
-                name="secondaryBackLine"
-                fullWidth
-                value={form.secondaryBackLine}
-                onChange={handleInputChange}
-                InputProps={{ inputComponent: PhoneMaskInput }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <TextField
-                label="Fax"
-                name="fax"
-                fullWidth
-                value={form.fax}
-                onChange={handleInputChange}
-                InputProps={{ inputComponent: PhoneMaskInput }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}><TextField label="Office Email" name="officeEmail" fullWidth value={form.officeEmail} onChange={handleInputChange} /></Grid>
-            <Grid item xs={12} sm={6} md={4}><TextField label="Website" name="website" fullWidth value={form.website} onChange={handleInputChange} /></Grid>
-          </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* --- Office Hours & Breaks --- */}
-          <Accordion>
+          {/* Office Hours */}
+          <Accordion defaultExpanded sx={{ mt: 3 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">Office Hours & Breaks</Typography>
+              <Typography variant="h6">Office Hours</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography variant="subtitle1" gutterBottom>Office Hours</Typography>
-              {Object.keys(form.officeHours).map((day) => (
+              {renderBulkSelector('Office Hours', bulkOffice, setBulkOffice, bulkOfficeDays, setBulkOfficeDays, 'officeHours')}
+              {daysOfWeek.map((day, idx) => (
                 <DayTimeRangePicker
-                  key={day}
+                  key={`office-${day}`}
                   day={day}
                   type="officeHours"
                   values={form.officeHours[day]}
-                  onChange={handleTimeChange}
-                />
-              ))}
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" gutterBottom>Lunch Break</Typography>
-              {Object.keys(form.lunchBreak).map((day) => (
-                <DayTimeRangePicker
-                  key={`${day}-lunch`}
-                  day={day}
-                  type="lunchBreak"
-                  values={form.lunchBreak[day]}
-                  onChange={handleTimeChange}
+                  onChange={(type, d, k, v) => {
+                    setForm(prev => ({
+                      ...prev,
+                      [type]: { ...prev[type], [day]: { ...prev[type][day], [k]: v } }
+                    }));
+                  }}
+                  showHeader={idx === 0}
                 />
               ))}
             </AccordionDetails>
           </Accordion>
 
-          <Divider sx={{ my: 4 }} />
+          <FormControlLabel
+            sx={{ mt: 3 }}
+            control={<Checkbox checked={form.takeLunchCalls} onChange={handleTakeLunchCallsChange} />}
+            label="Do you need us to take calls during your lunch hours?"
+          />
 
-          {/* --- Service Usage --- */}
-          <Box>
-            <Typography variant="h6" gutterBottom>Planned Service Usage</Typography>
-            {plannedUsageOptions.map((opt, i) => (
-              <FormControlLabel
-                key={i}
-                control={<Checkbox checked={form.plannedUsage.includes(opt)} onChange={() => handlePlannedUsageToggle(opt)} />}
-                label={opt}
-              />
-            ))}
-            <TextField label="Holidays (please list)" name="holidays" fullWidth value={form.holidays} onChange={handleInputChange} sx={{ mt: 1 }} />
-            <TextField label="Other (please explain)" name="otherUsage" fullWidth value={form.otherUsage} onChange={handleInputChange} sx={{ mt: 2 }} />
-          </Box>
+          {form.takeLunchCalls && (
+            <Accordion defaultExpanded sx={{ mt: 3 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h6">Lunch Breaks</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {renderBulkSelector('Lunch Breaks', bulkLunch, setBulkLunch, bulkLunchDays, setBulkLunchDays, 'lunchHours')}
+                {daysOfWeek.map((day, idx) => (
+                  <DayTimeRangePicker
+                    key={`lunch-${day}`}
+                    day={day}
+                    type="lunchHours"
+                    values={form.lunchHours[day]}
+                    onChange={(type, d, k, v) => {
+                      setForm(prev => ({
+                        ...prev,
+                        [type]: { ...prev[type], [day]: { ...prev[type][day], [k]: v } }
+                      }));
+                    }}
+                    showHeader={idx === 0}
+                  />
+                ))}
+              </AccordionDetails>
+            </Accordion>
+          )}
 
-          <Divider sx={{ my: 4 }} />
+          {renderSummary()}
 
-          {/* --- Primary Office Personnel --- */}
-          <Box>
-            <Typography variant="h6" gutterBottom>Primary Office Personnel</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              List the main contacts at the office. This is not for on-call staff.
-            </Typography>
-            {form.personnel.map((p, index) => (
-              <Paper key={index} variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}><TextField label="Name" name="name" fullWidth size="small" value={p.name} onChange={e => handlePersonnelChange(index, e)} /></Grid>
-                  <Grid item xs={12} sm={6}><TextField label="Title" name="title" fullWidth size="small" value={p.title} onChange={e => handlePersonnelChange(index, e)} /></Grid>
-                  <Grid item xs={12}><TextField label="Email" name="email" fullWidth size="small" value={p.email} onChange={e => handlePersonnelChange(index, e)} /></Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Office Phone"
-                      name="office"
-                      fullWidth
-                      size="small"
-                      value={p.office}
-                      onChange={e => handlePersonnelChange(index, e)}
-                      InputProps={{ inputComponent: PhoneMaskInput }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Cell Phone"
-                      name="cell"
-                      fullWidth
-                      size="small"
-                      value={p.cell}
-                      onChange={e => handlePersonnelChange(index, e)}
-                      InputProps={{ inputComponent: PhoneMaskInput }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Other Phone"
-                      name="other"
-                      fullWidth
-                      size="small"
-                      value={p.other}
-                      onChange={e => handlePersonnelChange(index, e)}
-                      InputProps={{ inputComponent: PhoneMaskInput }}
-                    />
-                  </Grid>
-                </Grid>
-                {form.personnel.length > 1 && (
-                  <Button variant="outlined" color="error" onClick={() => removePersonnel(index)} sx={{ mt: 2 }} size="small">
-                    Remove Personnel
-                  </Button>
-                )}
-              </Paper>
-            ))}
-            <Button variant="contained" onClick={addPersonnel} sx={{ mt: 1 }}>
-              Add Personnel
-            </Button>
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* --- Daily Message Summary --- */}
-          <Box>
-            <Typography variant="h6" gutterBottom>Daily Message Summary</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Configure where and when to send the daily summary of all messages.
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}><TextField label="Via Email Address(es)" name="email" fullWidth value={form.dailySummary.email} onChange={handleSummaryChange} /></Grid>
-              <Grid item xs={12} sm={6}><TextField label="Via Fax Number" name="fax" fullWidth value={form.dailySummary.fax} onChange={handleSummaryChange} /></Grid>
-            </Grid>
-            <Typography variant="subtitle1" mt={2}>Days to receive summary:</Typography>
-            <Box>
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                <FormControlLabel
-                  key={day}
-                  control={<Checkbox checked={form.dailySummary.days.includes(day)} onChange={() => handleSummaryDayToggle(day)} />}
-                  label={day}
-                />
-              ))}
-            </Box>
-            <TextField
-              label="Time (can be multiple times daily)"
-              name="time"
-              fullWidth
-              value={form.dailySummary.time}
-              onChange={handleSummaryChange}
-              sx={{ mt: 1 }}
-            />
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* --- Navigation --- */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-            <Button variant="contained" color="primary" size="large" onClick={handleContinue}>
-              Continue to Office Reach
-            </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Button variant="outlined" onClick={handleSaveExit}>Save & Exit</Button>
+            <Button variant="contained" onClick={handleContinue}>Continue</Button>
           </Box>
         </Paper>
       </Container>
       <ClientInfoFooter />
+      <Snackbar open={showSnackbar} autoHideDuration={3000} onClose={() => setShowSnackbar(false)}>
+        <Alert onClose={() => setShowSnackbar(false)} severity="info">Changes saved</Alert>
+      </Snackbar>
     </Box>
   );
 };

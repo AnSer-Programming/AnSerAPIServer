@@ -1,69 +1,210 @@
 // src/pages/ClientInfo/StartNewClient.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Paper, Typography, Box, Stack, Divider } from "@mui/material";
+import {
+  Button,
+  Container,
+  Paper,
+  Typography,
+  Box,
+  Stack,
+  Divider
+} from "@mui/material";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import SettingsIcon from "@mui/icons-material/Settings";
 import AnSerLogo from "../../assets/img/ClientInfo/AnSerLogo.png";
 import { useClientInfoTheme } from "./ClientInfoThemeContext";
+import { useAuth } from "./AuthContext";
 import ClientInfoNavbar from "./ClientInfoNavbar";
 import ClientInfoFooter from "./ClientInfoFooter";
 
 const StartNewClient = () => {
   const { darkMode } = useClientInfoTheme();
+  const { user } = useAuth();
+
+  const isNew = user?.isNew ?? false;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        bgcolor: darkMode ? "#121212" : "#f5f5f5"
+      }}
+    >
       <ClientInfoNavbar />
 
-      <Container component="main" maxWidth="sm" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-        <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          {/* Logo */}
-          <Box className="imageHolder mb-4">
+      <Container
+        component="main"
+        maxWidth="sm"
+        sx={{
+          mt: 4,
+          mb: 4,
+          flexGrow: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <Paper
+          elevation={4}
+          sx={{
+            p: 4,
+            width: "100%",
+            maxWidth: 500,
+            bgcolor: darkMode ? "#1e1e1e" : "#fff",
+            textAlign: "center"
+          }}
+        >
+          <Box mb={2}>
             <img
               src={AnSerLogo}
               alt="AnSer Logo"
-              style={{ maxWidth: "280px", width: "100%", height: "auto" }}
+              style={{
+                maxWidth: 200,
+                width: "100%",
+                height: "auto",
+                marginBottom: 8
+              }}
             />
           </Box>
 
-          {/* Title */}
-          <Box className="pageTitle mb-4">
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              New Client Setup
-            </Typography>
-            <Typography variant="h6" color="textSecondary">
-              Start the new client wizard or access other tools.
-            </Typography>
-          </Box>
+          <Typography variant="h5" gutterBottom fontWeight="bold">
+            {isNew
+              ? `Welcome, ${user?.name || "new client"}!`
+              : `Welcome back, ${user?.name || "client"}!`}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            {isNew
+              ? `Let’s get started with your setup wizard.`
+              : `Here are your tools and resources.`}
+          </Typography>
 
-          {/* Navigation Buttons */}
-          <Stack spacing={2} sx={{ width: '100%', maxWidth: '400px' }}>
-            <Button
-              component={Link}
-              to="/ClientInfoReact/NewFormWizard/ClientSetUp"
-              variant="contained"
-              size="large"
+          <Stack spacing={2} sx={{ width: "100%", mx: "auto" }}>
+            {isNew && (
+              <Button
+                component={Link}
+                to="/ClientInfoReact/NewFormWizard/ClientSetUp"
+                variant="contained"
+                size="large"
+                color="primary"
+              >
+                Start New Client Wizard
+              </Button>
+            )}
+
+            {!isNew && (
+              <Button
+                component={Link}
+                to="/ClientInfoReact/AccountInformation"
+                variant="contained"
+                color="primary"
+              >
+                View / Edit Account Info
+              </Button>
+            )}
+
+            {user?.hasUnsubmittedChanges && (
+              <Button
+                component={Link}
+                to="/ClientInfoReact/NewFormWizard/Review"
+                variant="outlined"
+                color="success"
+              >
+                Review & Submit Changes
+              </Button>
+            )}
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={1}
             >
-              Start New Client Wizard
+              <InsertDriveFileIcon fontSize="small" /> Account & Documents
+            </Typography>
+            <Button component={Link} to="/ClientInfoReact/Documents/WelcomePacket">
+              Download Welcome Packet
             </Button>
-            <Typography variant="body2" color="text.secondary">or jump to a specific section:</Typography>
-            <Button component={Link} to="/ClientInfoReact/NewFormWizard/OfficeReach" variant="outlined">Office Reach Information</Button>
-            <Button component={Link} to="/ClientInfoReact/NewFormWizard/AnswerCalls" variant="outlined">How to Answer Your Calls</Button>
-            <Button component={Link} to="/ClientInfoReact/NewFormWizard/Review" variant="outlined" color="success">Review & Submit</Button>
-            <Divider sx={{ width: '80%', my: 2, mx: 'auto' }} />
-            <Button
-              component={Link}
-              to="/ClientInfoReact/ATools"
-              variant="contained"
-              color="secondary"
+            <Button component={Link} to="/ClientInfoReact/Documents/Signed">
+              View Signed Documents
+            </Button>
+            <Button component={Link} to="/ClientInfoReact/Documents/Upload">
+              Upload Additional Paperwork
+            </Button>
+            <Button component={Link} to="/ClientInfoReact/ServiceChanges">
+              Request Service Changes
+            </Button>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={1}
             >
-              Admin Tools
+              <BarChartIcon fontSize="small" /> Reports & Stats
+            </Typography>
+            <Button component={Link} to="/ClientInfoReact/Reports/CallLogs">
+              View Call Logs / Summary
             </Button>
-            <Button component={Link} to="/ClientInfoReact/TestPage" variant="outlined" color="warning">Test Page</Button>
+            <Button component={Link} to="/ClientInfoReact/Reports/Monthly">
+              Monthly Service Usage Report
+            </Button>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={1}
+            >
+              <SupportAgentIcon fontSize="small" /> Support
+            </Typography>
+            <Button component={Link} to="/ClientInfoReact/Support/Ticket">
+              Open a Support Ticket
+            </Button>
+            <Button component={Link} to="/ClientInfoReact/Support/ContactManager">
+              Contact Account Manager
+            </Button>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              display="flex"
+              alignItems="center"
+              gap={1}
+            >
+              <SettingsIcon fontSize="small" /> Admin / Settings
+            </Typography>
+            <Button component={Link} to="/ClientInfoReact/Settings/Password">
+              Change Password
+            </Button>
+            <Button component={Link} to="/ClientInfoReact/Settings/Notifications">
+              Notification Settings
+            </Button>
+            <Button component={Link} to="/ClientInfoReact/Settings/Users">
+              Manage Authorized Users
+            </Button>
           </Stack>
         </Paper>
       </Container>
 
-      <ClientInfoFooter />
+      <Box sx={{ mt: 2 }}>
+        <ClientInfoFooter />
+      </Box>
     </Box>
   );
 };

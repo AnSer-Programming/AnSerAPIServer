@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // 1. Create the context with a default value of null
 const ClientInfoThemeContext = createContext(null);
@@ -18,9 +19,18 @@ export const ClientInfoThemeProvider = ({ children }) => {
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
+  // Create MUI theme based on darkMode
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+    },
+  });
+
   return (
     <ClientInfoThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
-      {children}
+      <ThemeProvider theme={theme}>
+        {children}
+      </ThemeProvider>
     </ClientInfoThemeContext.Provider>
   );
 };

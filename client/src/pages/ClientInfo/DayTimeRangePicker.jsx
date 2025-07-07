@@ -1,48 +1,124 @@
-// src/pages/ClientInfo/DayTimeRangePicker.jsx
 import React from 'react';
-import { Grid, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Grid, Select, MenuItem, Typography, FormControl } from '@mui/material';
 
-const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
 const minutes = ['00', '15', '30', '45'];
-const ampm = ['AM', 'PM'];
+const meridiems = ['AM', 'PM'];
 
-const timeFieldLabelMap = {
-  startHour: 'Start Hour',
-  startMinute: 'Minute',
-  startAmPm: 'AM/PM',
-  endHour: 'End Hour',
-  endMinute: 'Minute',
-  endAmPm: 'AM/PM',
-};
-
-const DayTimeRangePicker = ({ day, type, values, onChange }) => {
-  const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
+  const handleChange = (field, value) => {
+    onChange(type, day, field, value);
+  };
 
   return (
-    <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
-      <Grid item xs={12} sm={1.5}>
-        <Typography>{dayLabel}</Typography>
-      </Grid>
-      {["startHour", "startMinute", "startAmPm", "endHour", "endMinute", "endAmPm"].map((fieldKey) => (
-        <Grid item xs={6} sm={1.5} key={`${day}-${type}-${fieldKey}`}>
-          <FormControl fullWidth size="small">
-            <InputLabel>{timeFieldLabelMap[fieldKey]}</InputLabel>
-            <Select
-              value={values?.[fieldKey] || ''}
-              onChange={(e) => onChange(type, day, fieldKey, e.target.value)}
-              label={timeFieldLabelMap[fieldKey]}
-            >
-              {(fieldKey.includes('Hour') ? hours :
-                fieldKey.includes('Minute') ? minutes : ampm).map(opt => (
-                  <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+    <>
+      {showHeader && (
+        <Grid container spacing={1} sx={{ mb: 1 }}>
+          <Grid item xs={2}></Grid>
+
+          <Grid item xs={5}>
+            <Typography align="center" variant="subtitle2" fontWeight="bold">
+              Start Time
+            </Typography>
+            <Grid container>
+              <Grid item xs={4}><Typography variant="caption" align="center">Hour</Typography></Grid>
+              <Grid item xs={4}><Typography variant="caption" align="center">Minute</Typography></Grid>
+              <Grid item xs={4}><Typography variant="caption" align="center">AM/PM</Typography></Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={5}>
+            <Typography align="center" variant="subtitle2" fontWeight="bold">
+              End Time
+            </Typography>
+            <Grid container>
+              <Grid item xs={4}><Typography variant="caption" align="center">Hour</Typography></Grid>
+              <Grid item xs={4}><Typography variant="caption" align="center">Minute</Typography></Grid>
+              <Grid item xs={4}><Typography variant="caption" align="center">AM/PM</Typography></Grid>
+            </Grid>
+          </Grid>
         </Grid>
-      ))}
-    </Grid>
+      )}
+
+      <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+        <Grid item xs={2}>
+          <Typography>{day.charAt(0).toUpperCase() + day.slice(1)}</Typography>
+        </Grid>
+
+        {/* Start Time */}
+        <Grid item xs={5}>
+          <Grid container spacing={1}>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.startHour || ''}
+                  onChange={(e) => handleChange('startHour', e.target.value)}
+                >
+                  {hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.startMinute || ''}
+                  onChange={(e) => handleChange('startMinute', e.target.value)}
+                >
+                  {minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.startMeridiem || ''}
+                  onChange={(e) => handleChange('startMeridiem', e.target.value)}
+                >
+                  {meridiems.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Grid>
+
+        {/* End Time */}
+        <Grid item xs={5}>
+          <Grid container spacing={1}>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.endHour || ''}
+                  onChange={(e) => handleChange('endHour', e.target.value)}
+                >
+                  {hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.endMinute || ''}
+                  onChange={(e) => handleChange('endMinute', e.target.value)}
+                >
+                  {minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={values.endMeridiem || ''}
+                  onChange={(e) => handleChange('endMeridiem', e.target.value)}
+                >
+                  {meridiems.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
 export default DayTimeRangePicker;
-
