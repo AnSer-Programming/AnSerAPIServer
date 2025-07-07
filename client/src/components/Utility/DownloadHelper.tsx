@@ -10,19 +10,19 @@ export const toCSV = (data: any, fileName: string) => {
   element.click();
 }
 
-export const toPDF = async(data: any, fileName: string) => {
+export const toPDF = async (data: any, fileName: string) => {
   const doc = new jsPDF();
   let pageHeight = doc.internal.pageSize.getHeight();
   await doc.html(data[0], {
     callback: async function (doc) {
       // Save the PDF
-      if(data.length > 0) {
-        for(let i = 1; i < data.length; i++) {
+      if (data.length > 0) {
+        for (let i = 1; i < data.length; i++) {
           doc.addPage();
           await doc.html(data[i], {
             margin: [10, 10, 10, 10],
             x: 0,
-            y: i * pageHeight,
+            y: i * pageHeight - (i * 20),
             width: 190, //target width in the PDF document
             windowWidth: 675 //window width in CSS pixels
           });
@@ -38,7 +38,7 @@ export const toPDF = async(data: any, fileName: string) => {
   });
 }
 
-export const toMSWord = async(data: any, fileName: string) => {
+export const toMSWord = async (data: any, fileName: string) => {
   let fileType = 'application/msword';
   let blob = new Blob([data as BlobPart], { type: fileType });
   const element = document.createElement("a");
