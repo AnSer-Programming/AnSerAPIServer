@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Switch, Route, useLocation } from 'react-router-dom';
 import Menu from './components/Menu.tsx';
 
 import Box from '@mui/material/Box';
@@ -28,27 +28,17 @@ import VesselsList from './pages/VesselList';
 import ReportIssue from './pages/ReportIssue';
 import ClientInfo from './pages/ClientInfo'; // Legacy Client Info
 
-// React Client Info Pages
-import StartNewClient from './pages/ClientInfo/StartNewClient';
-import ClientSetUp from './pages/ClientInfo/ClientSetUp';
-import OfficeReach from './pages/ClientInfo/OfficeReach';
-import AnswerCalls from './pages/ClientInfo/AnswerCalls';
-import TestPage from './pages/ClientInfo/TestPage';
-import NewFormWizard from './pages/ClientInfo/NewFormWizard';
-import ATools from './pages/ClientInfo/ATools';
-import { ClientInfoThemeProvider } from './pages/ClientInfo/ClientInfoThemeContext';
+import ClientInfoReactRoutes from './pages/ClientInfo/ClientInfoReactRoutes';
 
-function App() {
+const AppContent = () => {
   const [open, setOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const location = useLocation();
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  useEffect(() => { }, [signedIn]);
-
-  const loginHandler = () => {
-    setSignedIn(true);
-  };
+  const loginHandler = () => setSignedIn(true);
 
   const loginButton = () => (
     <>
@@ -76,75 +66,65 @@ function App() {
     zIndex: '100',
   };
 
+  const isClientInfoReact = location.pathname.startsWith('/ClientInfoReact');
+
   return (
-    <Router>
-      <div className='text-light bg-dark' style={{ minHeight: '100vh' }}>
-        <Switch>
-          <Route exact path='/' component={Index} />
-          <Route exact path='/AgentStats' component={signedIn ? AgentStats : loginButton} />
-          <Route exact path='/BackUps' component={signedIn ? BackUps : loginButton} />
-          <Route exact path='/Calendar' component={signedIn ? Calendar : loginButton} />
-          {/* <Route exact path='/ContactDispatch' component={ContactDispatch} /> */}
-          <Route exact path='/CrescentElectricReachList' component={signedIn ? CrescentElectricReachList : loginButton} />
-          <Route exact path='/DisconnectList' component={signedIn ? DisconnectList : loginButton} />
-          <Route exact path='/HolidaySchedule' component={HolidaySchedule} />
-          <Route exact path='/HolidayScheduleSignUp' component={signedIn ? HolidayScheduleSignUp : loginButton} />
-          <Route exact path='/HowTo' component={signedIn ? HowTo : loginButton} />
-          <Route exact path='/HowTo/*' component={signedIn ? HowTo : loginButton} />
-          <Route exact path='/Info' component={signedIn ? Info : loginButton} />
-          <Route exact path='/Info/*' component={signedIn ? Info : loginButton} />
-          <Route exact path='/OCGroupList' component={signedIn ? OCGroupList : loginButton} />
-          <Route exact path='/ResidentDirectory' component={signedIn ? ResidentDirectory : loginButton} />
-          <Route exact path='/Scheduler' component={signedIn ? SchedulerAgent : loginButton} />
-          <Route exact path='/SchedulerSupervisor' component={signedIn ? SchedulerSupervisor : loginButton} />
-          <Route exact path='/StaticSchedule' component={signedIn ? FixedScheduler : loginButton} />
-          <Route exact path='/StatTracker' component={Tracker} />
-          <Route exact path='/Vessels' component={signedIn ? VesselsList : loginButton} />
-          <Route exact path='/ClientInfo' component={signedIn ? ClientInfo : loginButton} />
+    <div className="text-light bg-dark" style={{ minHeight: '100vh' }}>
+      <Switch>
+        <Route exact path="/" component={Index} />
+        <Route exact path="/AgentStats" component={signedIn ? AgentStats : loginButton} />
+        <Route exact path="/BackUps" component={signedIn ? BackUps : loginButton} />
+        <Route exact path="/Calendar" component={signedIn ? Calendar : loginButton} />
+        <Route exact path="/CrescentElectricReachList" component={signedIn ? CrescentElectricReachList : loginButton} />
+        <Route exact path="/DisconnectList" component={signedIn ? DisconnectList : loginButton} />
+        <Route exact path="/HolidaySchedule" component={HolidaySchedule} />
+        <Route exact path="/HolidayScheduleSignUp" component={signedIn ? HolidayScheduleSignUp : loginButton} />
+        <Route exact path="/HowTo" component={signedIn ? HowTo : loginButton} />
+        <Route exact path="/HowTo/*" component={signedIn ? HowTo : loginButton} />
+        <Route exact path="/Info" component={signedIn ? Info : loginButton} />
+        <Route exact path="/Info/*" component={signedIn ? Info : loginButton} />
+        <Route exact path="/OCGroupList" component={signedIn ? OCGroupList : loginButton} />
+        <Route exact path="/ResidentDirectory" component={signedIn ? ResidentDirectory : loginButton} />
+        <Route exact path="/Scheduler" component={signedIn ? SchedulerAgent : loginButton} />
+        <Route exact path="/SchedulerSupervisor" component={signedIn ? SchedulerSupervisor : loginButton} />
+        <Route exact path="/StaticSchedule" component={signedIn ? FixedScheduler : loginButton} />
+        <Route exact path="/StatTracker" component={Tracker} />
+        <Route exact path="/Vessels" component={signedIn ? VesselsList : loginButton} />
+        <Route exact path="/ClientInfo" component={signedIn ? ClientInfo : loginButton} />
 
-          {/* 🌗 React Client Info Themed Routes */}
-          <Route path='/ClientInfoReact'>
-            <ClientInfoThemeProvider>
-              <Switch>
-                <Route exact path='/ClientInfoReact' component={signedIn ? StartNewClient : loginButton} />
-                <Route exact path='/ClientInfoReact/StartNewClient' component={signedIn ? StartNewClient : loginButton} />
-                <Route exact path='/ClientInfoReact/ClientSetUp' component={signedIn ? ClientSetUp : loginButton} />
-                <Route exact path='/ClientInfoReact/OfficeReach' component={signedIn ? OfficeReach : loginButton} />
-                <Route exact path='/ClientInfoReact/AnswerCalls' component={signedIn ? AnswerCalls : loginButton} />
-                <Route exact path='/ClientInfoReact/TestPage' component={signedIn ? TestPage : loginButton} />
-                <Route exact path='/ClientInfoReact/NewFormWizard' component={signedIn ? NewFormWizard : loginButton} />
-                <Route exact path='/ClientInfoReact/ATools' component={signedIn ? ATools : loginButton} />
-              </Switch>
-            </ClientInfoThemeProvider>
-          </Route>
+        {/* React Client Info Themed Routes */}
+        <Route path="/ClientInfoReact" component={ClientInfoReactRoutes} />
 
-          {/* Catch-all */}
-          <Route render={() => <h1 className='display-2'>Wrong page!</h1>} />
-        </Switch>
+        {/* Catch-all */}
+        <Route render={() => <h1 className="display-2">Wrong page!</h1>} />
+      </Switch>
 
-        {/* Floating Report Issue Modal */}
-        <Button
-          onClick={handleOpen}
-          style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
-          color='secondary'
-          variant="contained"
-        >
-          Report Issue
-        </Button>
-        <Modal
-          keepMounted
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="report-issue-modal"
-          aria-describedby="modal-window-to-allow-users-to-report-feedback"
-        >
-          <Box sx={style}>
-            <ReportIssue />
-          </Box>
-        </Modal>
-      </div>
-    </Router>
+      {/* Floating Report Issue Modal (only if NOT in ClientInfoReact) */}
+      {!isClientInfoReact && (
+        <>
+          <Button
+            onClick={handleOpen}
+            style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
+            color="secondary"
+            variant="contained"
+          >
+            Report Issue
+          </Button>
+          <Modal keepMounted open={open} onClose={handleClose}>
+            <Box sx={style}>
+              <ReportIssue />
+            </Box>
+          </Modal>
+        </>
+      )}
+    </div>
   );
-}
+};
+
+const App = () => (
+  <Router>
+    <AppContent />
+  </Router>
+);
 
 export default App;
