@@ -1,3 +1,4 @@
+// src/pages/ClientInfo/ClientInfoNavbar.jsx
 import React, { useState } from "react";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import {
@@ -59,7 +60,7 @@ const ClientInfoNavbar = () => {
     { label: "Company Information", path: "/ClientInfoReact/NewFormWizard/ClientSetUp" },
     { label: "Office Reach Information", path: "/ClientInfoReact/NewFormWizard/OfficeReach" },
     { label: "How to Answer Your Calls", path: "/ClientInfoReact/NewFormWizard/AnswerCalls" },
-    { label: "Test Page", path: "/ClientInfoReact/TestPage" },
+    { label: "Site Overview", path: "/ClientInfoReact/SiteOverview" },
   ];
 
   const dropdownLinks = [
@@ -139,7 +140,7 @@ const ClientInfoNavbar = () => {
                 AnSer
               </Typography>
               <Typography variant="caption" color="inherit">
-                Client Info Portal
+                Client Portal
               </Typography>
             </Box>
           </Box>
@@ -212,7 +213,6 @@ const ClientInfoNavbar = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Theme-aware Logout Confirmation Dialog */}
       <Dialog
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
@@ -231,11 +231,7 @@ const ClientInfoNavbar = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogoutDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={confirmLogout}
-            color="error"
-            variant="contained"
-          >
+          <Button onClick={confirmLogout} color="error" variant="contained">
             Logout
           </Button>
         </DialogActions>

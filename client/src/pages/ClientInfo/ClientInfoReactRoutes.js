@@ -4,7 +4,7 @@ import { Switch, Route, Redirect, useLocation } from 'react-router-dom';
 import Auth from './Auth';
 import ForgotPassword from './ForgotPassword';
 import StartNewClient from './StartNewClient';
-import TestPage from './TestPage';
+import SiteOverview from './SiteOverview';
 import ATools from './ATools';
 import AccountInformation from './AccountInformation';
 import OnboardingComplete from './OnboardingComplete';
@@ -27,6 +27,7 @@ import { ClientInfoThemeProvider } from './ClientInfoThemeContext';
 import { WizardProvider } from './WizardContext';
 import { AuthProvider, useAuth } from './AuthContext';
 
+// Higher-order route that checks if the user is logged in
 const ProtectedRoute = ({ children, ...rest }) => {
   const { loggedIn } = useAuth();
   const location = useLocation();
@@ -56,12 +57,18 @@ const ClientInfoReactRoutes = () => {
     <ClientInfoThemeProvider>
       <AuthProvider>
         <Switch>
+          {/* Public Routes */}
           <Route exact path="/ClientInfoReact" component={Auth} />
           <Route exact path="/ClientInfoReact/Auth" component={Auth} />
           <Route exact path="/ClientInfoReact/ForgotPassword" component={ForgotPassword} />
 
+          {/* Core App Routes */}
           <ProtectedRoute exact path="/ClientInfoReact/StartNewClient">
             <StartNewClient />
+          </ProtectedRoute>
+
+          <ProtectedRoute exact path="/ClientInfoReact/SiteOverview">
+            <SiteOverview />
           </ProtectedRoute>
 
           <ProtectedRoute exact path="/ClientInfoReact/AccountInformation">
@@ -72,15 +79,11 @@ const ClientInfoReactRoutes = () => {
             <OnboardingComplete />
           </ProtectedRoute>
 
-          <ProtectedRoute exact path="/ClientInfoReact/TestPage">
-            <TestPage />
-          </ProtectedRoute>
-
           <ProtectedRoute exact path="/ClientInfoReact/ATools">
             <ATools />
           </ProtectedRoute>
 
-          {/* 📄 New Tool Routes */}
+          {/* Documents & Service */}
           <ProtectedRoute exact path="/ClientInfoReact/Documents/WelcomePacket">
             <WelcomePacket />
           </ProtectedRoute>
@@ -97,6 +100,7 @@ const ClientInfoReactRoutes = () => {
             <ServiceChanges />
           </ProtectedRoute>
 
+          {/* Reports */}
           <ProtectedRoute exact path="/ClientInfoReact/Reports/CallLogs">
             <CallLogs />
           </ProtectedRoute>
@@ -105,6 +109,7 @@ const ClientInfoReactRoutes = () => {
             <MonthlyReport />
           </ProtectedRoute>
 
+          {/* Support */}
           <ProtectedRoute exact path="/ClientInfoReact/Support/Ticket">
             <SupportTicket />
           </ProtectedRoute>
@@ -113,6 +118,7 @@ const ClientInfoReactRoutes = () => {
             <ContactManager />
           </ProtectedRoute>
 
+          {/* Settings */}
           <ProtectedRoute exact path="/ClientInfoReact/Settings/Password">
             <ChangePassword />
           </ProtectedRoute>
@@ -125,12 +131,14 @@ const ClientInfoReactRoutes = () => {
             <ManageUsers />
           </ProtectedRoute>
 
+          {/* Onboarding Wizard */}
           <Route path="/ClientInfoReact/NewFormWizard">
             <WizardProvider>
               <NewFormWizard />
             </WizardProvider>
           </Route>
 
+          {/* Catch-all 404 */}
           <Route component={NotFound} />
         </Switch>
       </AuthProvider>

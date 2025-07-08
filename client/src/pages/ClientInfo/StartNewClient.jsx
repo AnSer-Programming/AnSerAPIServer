@@ -10,10 +10,6 @@ import {
   Stack,
   Divider
 } from "@mui/material";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import SettingsIcon from "@mui/icons-material/Settings";
 import AnSerLogo from "../../assets/img/ClientInfo/AnSerLogo.png";
 import { useClientInfoTheme } from "./ClientInfoThemeContext";
 import { useAuth } from "./AuthContext";
@@ -91,6 +87,7 @@ const StartNewClient = () => {
                 variant="contained"
                 size="large"
                 color="primary"
+                fullWidth
               >
                 Start New Client Wizard
               </Button>
@@ -102,6 +99,7 @@ const StartNewClient = () => {
                 to="/ClientInfoReact/AccountInformation"
                 variant="contained"
                 color="primary"
+                fullWidth
               >
                 View / Edit Account Info
               </Button>
@@ -113,6 +111,7 @@ const StartNewClient = () => {
                 to="/ClientInfoReact/NewFormWizard/Review"
                 variant="outlined"
                 color="success"
+                fullWidth
               >
                 Review & Submit Changes
               </Button>
@@ -120,84 +119,62 @@ const StartNewClient = () => {
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography
-              variant="subtitle1"
-              fontWeight="bold"
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
-              <InsertDriveFileIcon fontSize="small" /> Account & Documents
+            <Typography variant="subtitle1" fontWeight="bold">
+              Account & Documents
             </Typography>
-            <Button component={Link} to="/ClientInfoReact/Documents/WelcomePacket">
-              Download Welcome Packet
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Documents/Signed">
-              View Signed Documents
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Documents/Upload">
-              Upload Additional Paperwork
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/ServiceChanges">
-              Request Service Changes
-            </Button>
+            {[
+              { label: 'Download Welcome Packet', to: '/ClientInfoReact/Documents/WelcomePacket' },
+              { label: 'View Signed Documents', to: '/ClientInfoReact/Documents/Signed' },
+              { label: 'Upload Additional Paperwork', to: '/ClientInfoReact/Documents/Upload' },
+              { label: 'Request Service Changes', to: '/ClientInfoReact/ServiceChanges' }
+            ].map(({ label, to }) => (
+              <Button key={label} component={Link} to={to} variant="outlined" fullWidth>
+                {label}
+              </Button>
+            ))}
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography
-              variant="subtitle1"
-              fontWeight="bold"
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
-              <BarChartIcon fontSize="small" /> Reports & Stats
+            <Typography variant="subtitle1" fontWeight="bold">
+              Reports & Stats
             </Typography>
-            <Button component={Link} to="/ClientInfoReact/Reports/CallLogs">
-              View Call Logs / Summary
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Reports/Monthly">
-              Monthly Service Usage Report
-            </Button>
+            {[
+              { label: 'View Call Logs / Summary', to: '/ClientInfoReact/Reports/CallLogs' },
+              { label: 'Monthly Service Usage Report', to: '/ClientInfoReact/Reports/Monthly' }
+            ].map(({ label, to }) => (
+              <Button key={label} component={Link} to={to} variant="outlined" fullWidth>
+                {label}
+              </Button>
+            ))}
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography
-              variant="subtitle1"
-              fontWeight="bold"
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
-              <SupportAgentIcon fontSize="small" /> Support
+            <Typography variant="subtitle1" fontWeight="bold">
+              Support
             </Typography>
-            <Button component={Link} to="/ClientInfoReact/Support/Ticket">
-              Open a Support Ticket
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Support/ContactManager">
-              Contact Account Manager
-            </Button>
+            {[
+              { label: 'Open a Support Ticket', to: '/ClientInfoReact/Support/Ticket' },
+              { label: 'Contact Account Manager', to: '/ClientInfoReact/Support/ContactManager' }
+            ].map(({ label, to }) => (
+              <Button key={label} component={Link} to={to} variant="outlined" fullWidth>
+                {label}
+              </Button>
+            ))}
 
             <Divider sx={{ my: 2 }} />
 
-            <Typography
-              variant="subtitle1"
-              fontWeight="bold"
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
-              <SettingsIcon fontSize="small" /> Admin / Settings
+            <Typography variant="subtitle1" fontWeight="bold">
+              Admin / Settings
             </Typography>
-            <Button component={Link} to="/ClientInfoReact/Settings/Password">
-              Change Password
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Settings/Notifications">
-              Notification Settings
-            </Button>
-            <Button component={Link} to="/ClientInfoReact/Settings/Users">
-              Manage Authorized Users
-            </Button>
+            {[
+              { label: 'Change Password', to: '/ClientInfoReact/Settings/Password' },
+              { label: 'Notification Settings', to: '/ClientInfoReact/Settings/Notifications' },
+              { label: 'Manage Authorized Users', to: '/ClientInfoReact/Settings/Users' }
+            ].map(({ label, to }) => (
+              <Button key={label} component={Link} to={to} variant="outlined" fullWidth>
+                {label}
+              </Button>
+            ))}
           </Stack>
         </Paper>
       </Container>
