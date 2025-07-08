@@ -1,4 +1,3 @@
-// src/pages/ClientInfo/ClientInfoNavbar.jsx
 import React, { useState } from "react";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import {
@@ -192,13 +191,18 @@ const ClientInfoNavbar = () => {
             renderLinks()
           )}
 
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography
-              variant="body2"
-              sx={{ display: { xs: "none", sm: "block" }, fontWeight: 500 }}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              color="warning"
+              size="small"
             >
-              user@example.com
-            </Typography>
+              AnSer API
+            </Button>
+
             <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
               <IconButton onClick={toggleDarkMode} color="inherit">
                 {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
