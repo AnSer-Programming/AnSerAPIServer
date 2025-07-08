@@ -109,22 +109,22 @@ async function runGetQuery(holidayType) {
 
 async function getAgents(agentType) {
   let query;
-  if(agentType == "Agent") { 
+  if (agentType == "Agent") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent'
       ORDER BY Agent_name`;
-  } else if(agentType == "Dispatcher") {
+  } else if (agentType == "Dispatcher") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1
       ORDER BY Agent_name`;
-  } else if(agentType == "Supervisor") {
+  } else if (agentType == "Supervisor") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor'
       ORDER BY Agent_name`;
-  } else { 
+  } else {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor')
@@ -166,14 +166,23 @@ async function getShifts(employeeType) {
   }
 }
 
-async function getSignedUp(accountNum, date) {
-  let query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
+async function getSignedUp(holiday) {
+  let query;
+  if (holiday == 'All' || holiday == 'None') {
+    query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
         FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
         LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
-        WHERE [employee_type] = 'Agent'
+        WHERE [holiday] = :holiday
         ORDER BY [holiday_type], [agent_name] ASC`;
+  } else {
+    query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
+        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
+        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
+        ORDER BY [holiday_type], [agent_name] ASC`;
+  }
+  
   try {
-    let result = await config.query(query, { replacements: { accountNum: accountNum, date: date }, type: seq.QueryTypes.SELECT });
+    let result = await config.query(query, { replacements: { holiday: holiday }, type: seq.QueryTypes.SELECT });
     return result;
   } catch (err) {
     // ... error checks
