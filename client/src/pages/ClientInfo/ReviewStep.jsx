@@ -1,11 +1,8 @@
-// src/pages/ClientInfo/ReviewStep.jsx
 import React, { useState } from 'react';
 import { Box, Button, Typography, CircularProgress, Alert } from '@mui/material';
 import { useWizard } from './WizardContext';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { submitClientWizardData } from './ClientWizardAPI';
+import { toCSV, toPDF, toMSWord } from '../../components/Utility/DownloadHelper';
 
 const ReviewStep = () => {
   const { formData } = useWizard();
@@ -24,37 +21,19 @@ const ReviewStep = () => {
     return res;
   };
 
-  const downloadJSON = () => {
-    const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
-    saveAs(blob, 'client-intake.json');
-  };
-
-  const downloadExcel = () => {
+  const downloadCSV = () => {
     const flatData = flattenObject(formData);
-    const ws = XLSX.utils.json_to_sheet([flatData]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'ClientInfo');
-    XLSX.writeFile(wb, 'client-intake.xlsx');
+    const rows = Object.entries(flatData).map(([key, value]) => `${key},${value}`);
+    const csvContent = rows.join('\n\r');
+    toCSV(csvContent, 'client-intake');
   };
 
-  const downloadDocx = async () => {
-    const doc = new Document({
-      sections: [
-        {
-          children: Object.entries(flattenObject(formData)).map(([key, value]) =>
-            new Paragraph({
-              children: [
-                new TextRun({ text: `${key}: `, bold: true }),
-                new TextRun(String(value)),
-              ],
-            })
-          ),
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, 'client-intake.docx');
+  const downloadWord = () => {
+    const flatData = flattenObject(formData);
+    const htmlContent = Object.entries(flatData)
+      .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+      .join('');
+    toMSWord(htmlContent, 'client-intake');
   };
 
   const handleSubmit = async () => {
@@ -101,13 +80,10 @@ const ReviewStep = () => {
       </pre>
 
       <Box className="d-flex flex-wrap gap-2 mt-3 mb-4">
-        <Button variant="outlined" onClick={downloadJSON}>
-          Download JSON
+        <Button variant="outlined" onClick={downloadCSV}>
+          Export to CSV
         </Button>
-        <Button variant="outlined" onClick={downloadExcel}>
-          Export to Excel
-        </Button>
-        <Button variant="outlined" onClick={downloadDocx}>
+        <Button variant="outlined" onClick={downloadWord}>
           Export to Word
         </Button>
       </Box>
