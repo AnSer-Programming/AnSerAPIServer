@@ -52,7 +52,7 @@ const HowTo = () => {
     <>
       <Menu 
         page="How To" />
-      <div style={{height: '90vh', width: '100%', padding: '.5%', overflowY: 'scroll'}}>
+      <div className="mainBody">
         <div style={{width: '50%'}}>
           <Select
             className='text-dark'

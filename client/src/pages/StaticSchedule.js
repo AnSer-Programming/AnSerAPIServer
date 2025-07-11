@@ -63,7 +63,7 @@ const FixedSchedule = () => {
     <>
       <Menu
         page="Static Schedule" />
-      <div className='text-light bg-dark pt-5' style={{ width: '100%', paddingLeft: '5px', paddingRight: '5px' }}>
+      <div className='text-light bg-dark mainBody'>
         <div style={{ width: '50%', marginLeft: '5px' }}>
           <Select
             className='text-dark'

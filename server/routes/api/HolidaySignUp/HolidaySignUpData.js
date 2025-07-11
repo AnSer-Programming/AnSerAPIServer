@@ -112,22 +112,22 @@ async function getAgents(agentType) {
   if (agentType == "Agent") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY Agent_name`;
   } else if (agentType == "Dispatcher") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1 AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY Agent_name`;
   } else if (agentType == "Supervisor") {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY Agent_name`;
   } else {
     query = `SELECT Agent_name, JobTitle, Dispatcher 
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor')
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY JobTitle, Dispatcher, Agent_name`;
   }
 
