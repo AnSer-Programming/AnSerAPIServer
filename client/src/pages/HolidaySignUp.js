@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GetHolidaySignUp from '../components/AgentScheduling/GetHolidaySignUp.tsx';
 import SetHolidaySignUp from '../components/AgentScheduling/SetHolidaySignUp.tsx';
-import OverViewOnly from '../components/AgentScheduling/OverViewOnly.tsx'
-import SelectHoliday from '../components/AgentScheduling/SelectHoliday.tsx';
+import ViewByHoliday from '../components/AgentScheduling/ViewByHoliday.tsx';
 import Menu from '../components/Menu';
 import { getHolidays, getAgents } from '../utils/AgentSuccessAPI.js';
 import { toCSV, toMSWord, toPDF } from '../components/Utility/DownloadHelper';
@@ -146,40 +145,20 @@ const HolidaySignUp = () => {
     }
   }
 
-  const buttonBuilder = () => {
-    let buttons = new Array();
-    for (let i = 0; i < employeeType.length; i++) {
-      buttons.push(<button onClick={() => handlerChangeEmployeeTypeFilter(employeeType[i])}>{employeeType[i]}</button>);
-    }
-
-    return buttons;
-  }
-
   return (
     <>
       <Menu
         page="Holiday Sign Up" />
-      <div style={{ height: '90vh', width: '100%', padding: '5px', overflow: 'auto' }}>
-        <h1>Current Holiday Mode {holidayType}</h1>
-        <h1>Current Holiday Selected {selectedHoliday ? selectedHoliday : "None"}</h1>
-        {!isEdit ?
-          <div>
-            <button onClick={() => holidayTypeHandler("Summer")} id="setToSummer">Summer Holidays</button>
-            <button onClick={() => holidayTypeHandler("Winter")} id="setToWinter">Winter Holidays</button>
-            <div style={{ width: '25%' }}>
-              <SelectHoliday
-                holidays={holiday}
-                selectedHoliday={selectedHoliday}
-                handlerChangeHoliday={(data) => { handlerChangeHoliday(data) }} />
-            </div>
-          </div>
-          :
-          <hr />
-        }
-        <p><a target="_blank" href='/HolidaySchedule'>Click here for Agent View</a></p>
-
-        {selectedHoliday == "None" ? <OverViewOnly holidayType={holidayType} /> : <>{buttonBuilder()} <br /> <br />{editDisplay()}</>}
-      </div>
+      <ViewByHoliday
+        isEdit={isEdit}
+        handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
+        editingHandler={()=>editingHandler()}
+        editDisplay={()=>editDisplay()}
+        holidayTypeHandler={(data)=>holidayTypeHandler(data)}
+        handlerChangeEmployeeTypeFilter={(data)=>handlerChangeEmployeeTypeFilter(data)}
+        holiday={holiday}
+        selectedHoliday={selectedHoliday}
+        employeeType={employeeType} />
     </>
   );
 };

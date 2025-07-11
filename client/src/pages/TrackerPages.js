@@ -8,7 +8,7 @@ const StatTracker = () => {
     <>
       <Menu
         page="Stat Tracker" />
-      <div style={{ padding: "5px" }}>
+      <div className="mainBody">
         <p>Data updates every minute</p>
         <ActiveAgents />
         <CompletedCalls />

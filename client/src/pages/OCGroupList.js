@@ -62,7 +62,7 @@ const OCGroupList = () => {
     <>
       <Menu 
         page="OC Group List" />
-      <div className='text-light bg-dark pt-5' style={{height: '90vh', width: '100%', paddingLeft: '5px', paddingRight: '5px', overflowY: 'scroll'}}>
+      <div className='text-light bg-dark mainBody'>
         <div style={{width: '50%', marginLeft: '5px'}}>
           <Select
             className='text-dark'

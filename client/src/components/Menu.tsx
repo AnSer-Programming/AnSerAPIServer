@@ -30,8 +30,8 @@ export default function MenuAppBar(data: any) {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, zIndex: 2 }}>
-      <AppBar position="static" color="secondary">
+    <Box sx={{ flexGrow: 1, zIndex: 2, height: '7vh' }}>
+      <AppBar position="static" color="secondary" className="menuBar">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {selection}

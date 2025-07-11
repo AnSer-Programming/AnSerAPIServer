@@ -32,3 +32,19 @@ a {
 a:hover {
   color: #FFAC20;
 }
+
+div.mainBody {
+  height: 93vh;
+  overflow: auto;
+  padding: 5px; 
+  padding-top: 15px;
+  padding-bottom: 50px;
+  width: 100%; 
+}
+
+.menuBar {
+  display: flex;
+  justify-content: center;
+  height: 7vh;
+  width: 100%;
+}

@@ -56,11 +56,11 @@ const AppContent = () => {
 
   const style = {
     position: 'absolute',
-    bottom: '25px',
-    right: '5px',
+    bottom: '0px',
+    right: '0px',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    border: '2px solid #000000',
     boxShadow: 24,
     p: 4,
     zIndex: '100',
@@ -69,7 +69,7 @@ const AppContent = () => {
   const isClientInfoReact = location.pathname.startsWith('/ClientInfoReact');
 
   return (
-    <div className="text-light bg-dark" style={{ minHeight: '100vh' }}>
+    <div className="text-light bg-dark" style={{ height: '100vh' }}>
       <Switch>
         <Route exact path="/" component={Index} />
         <Route exact path="/AgentStats" component={signedIn ? AgentStats : loginButton} />
@@ -104,7 +104,7 @@ const AppContent = () => {
         <>
           <Button
             onClick={handleOpen}
-            style={{ position: 'absolute', bottom: '15px', right: '15px', zIndex: '99' }}
+            style={{ position: 'absolute', bottom: '10px', right: '25px', zIndex: '99' }}
             color="secondary"
             variant="contained"
           >

@@ -87,8 +87,8 @@ const Info = () => {
     <>
       <Menu
         page="Info" />
-      <div style={{ height: '90vh', width: '100%', padding: '.5%', overflowY: 'scroll' }}>
-        <div style={{ width: '50%' }}>
+      <div className="mainBody">
+        <div style={{ width: '25%' }}>
           <Select
             className='text-dark'
             name="Account List"
