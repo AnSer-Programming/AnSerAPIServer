@@ -11,13 +11,18 @@ import {
   Radio,
   Paper,
   Container,
-  Divider
+  Divider,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl
 } from '@mui/material';
 import { useClientInfoTheme } from './ClientInfoThemeContext';
 import { useWizard } from './WizardContext';
 import { useHistory } from 'react-router-dom';
 import ClientInfoNavbar from './ClientInfoNavbar';
 import ClientInfoFooter from './ClientInfoFooter';
+
 const AnswerCalls = () => {
   const { darkMode } = useClientInfoTheme();
   const history = useHistory();
@@ -35,6 +40,11 @@ const AnswerCalls = () => {
       callTypes: '',
       handleHangUps: '',
       specialInstructions: '',
+      routineGuidelines: '',
+      urgentGuidelines: '',
+      recapDeliveryTime: '',
+      recapDeliveryMethod: '',
+      includeNoMessageCallsInRecap: false,
     };
     return { ...defaultState, ...(formData.AnswerCalls || {}) };
   });
@@ -52,7 +62,6 @@ const AnswerCalls = () => {
         [name]: type === 'checkbox' ? checked : value,
       };
 
-      // Ensure basic and custom phrases are mutually exclusive
       if (name === 'useBasicPhrase' && checked) {
         newForm.useCustomPhrase = false;
       }
@@ -97,7 +106,7 @@ const AnswerCalls = () => {
             These settings help us handle calls exactly to your preferences.
           </Typography>
 
-          {/* --- Answering Phrase --- */}
+          {/* Answering Phrase */}
           <Typography variant="h6" gutterBottom>Answering Phrase</Typography>
           <Box>
             <FormControlLabel
@@ -124,7 +133,7 @@ const AnswerCalls = () => {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* --- Automated Greetings --- */}
+          {/* Automated Greetings */}
           <Typography variant="h6" gutterBottom>Automated Greetings</Typography>
           <Box>
             <FormControlLabel
@@ -165,17 +174,62 @@ const AnswerCalls = () => {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* --- Call Handling Rules --- */}
-          <Typography variant="h6" gutterBottom>Call Handling Rules</Typography>
+          {/* Routine and Urgent Guidelines */}
+          <Typography variant="h6" gutterBottom>Routine Call Guidelines</Typography>
           <TextField
-            label="List types of calls we will receive and information wanted for each"
-            name="callTypes"
-            value={form.callTypes}
+            label="Describe how to handle routine calls"
+            name="routineGuidelines"
+            value={form.routineGuidelines}
             onChange={handleChange}
             fullWidth
             multiline
             rows={4}
+            sx={{ mb: 2 }}
           />
+
+          <Typography variant="h6" gutterBottom>Urgent Call Guidelines</Typography>
+          <TextField
+            label="Describe how to handle urgent calls"
+            name="urgentGuidelines"
+            value={form.urgentGuidelines}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={4}
+            sx={{ mb: 2 }}
+          />
+
+          <Divider sx={{ my: 4 }} />
+
+          {/* Daily Summary Preferences */}
+          <Typography variant="h6" gutterBottom>Daily Summary Preferences</Typography>
+
+          <TextField
+            label="Preferred Delivery Time"
+            name="recapDeliveryTime"
+            value={form.recapDeliveryTime}
+            onChange={handleChange}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="recapDeliveryMethod-label">Delivery Method</InputLabel>
+            <Select
+              labelId="recapDeliveryMethod-label"
+              name="recapDeliveryMethod"
+              value={form.recapDeliveryMethod}
+              onChange={handleChange}
+            >
+              <MenuItem value=""><em>Select Method</em></MenuItem>
+              <MenuItem value="email">Email</MenuItem>
+              <MenuItem value="fax">Fax</MenuItem>
+              <MenuItem value="both">Both</MenuItem>
+            </Select>
+          </FormControl>
+
+
+
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle1" gutterBottom>Report hang-ups, spam, etc. on your daily summary?</Typography>
             <RadioGroup row name="handleHangUps" value={form.handleHangUps} onChange={handleChange}>
@@ -186,7 +240,6 @@ const AnswerCalls = () => {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* --- Special Instructions --- */}
           <Typography variant="h6" gutterBottom>Special Instructions</Typography>
           <TextField
             label="Special instructions (tone, escalation, legal language, etc.)"
@@ -200,7 +253,7 @@ const AnswerCalls = () => {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* --- Navigation --- */}
+          {/* Navigation */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
             <Button variant="outlined" color="secondary" size="large" onClick={handleBack}>
               Back
