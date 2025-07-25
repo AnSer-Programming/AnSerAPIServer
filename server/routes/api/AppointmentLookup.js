@@ -29,7 +29,7 @@ const allData = async() => {
 }
 
 const getTimesByDate = async(date, patient) => {
-  const query = `SELECT * FROM [Accounts].[dbo].[52073Appointments] WHERE [date] = :date`;
+  const query = `SELECT * FROM [Accounts].[dbo].[52073Appointments] WHERE [date] = :date AND [available] = 1`;
   let queryResults;
   async function runQuery() {
     try {
