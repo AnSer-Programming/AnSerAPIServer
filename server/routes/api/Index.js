@@ -16,6 +16,7 @@ router.use('/ContactDispatch', contactDispatch);
 
 // API Routes
 // Declare variables
+const appointmentLookup = require('./AppointmentLookup');
 const crescentElectricReachRoute = require('./CrescentElectricReachList');
 const disconnectListRoute = require('./DisconnectList');
 const lomaCottagesGuestList = require('./LOMACottagesGuestList');
@@ -27,6 +28,7 @@ const vesselRouteDB = require('./VesselListDB');
 const clientInfoRoute = require('./ClientInfoRouter'); // Import ClientInfoRouter
 
 // Set Routes
+router.use('/AppointmentLookup', appointmentLookup);
 router.use('/CrescentElectricReachList', crescentElectricReachRoute);
 router.use('/DisconnectList', disconnectListRoute);
 router.use('/LOMACottagesGuestList', lomaCottagesGuestList);
