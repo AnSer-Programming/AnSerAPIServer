@@ -201,6 +201,21 @@ async function setShiftData(shiftData) {
   }
 }
 
+async function getAgentsBySenority() {
+  const query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date'
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND [ScheduleGroup] = 'Amtelco Agent'
+      ORDER BY StartStamp, EmployeeID ASC`;
+
+  try {
+    let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
 async function updateShiftData(shiftData) {
   let query = `UPDATE [isapi].[dbo].[holidaySignUpTakenShifts] SET agent_name = :agentName WHERE id=${shiftData.id}`;
   try {
@@ -211,6 +226,11 @@ async function updateShiftData(shiftData) {
     console.log(err);
   }
 }
+
+router.get('/GetAgents/BySenority', async (req, res)=> {
+  results = await getAgentsBySenority();
+  res.json(results);
+});
 
 router.get('/GetAgents/:agentType', async (req, res) => {
   const agentType = req.params.agentType;
