@@ -3,6 +3,7 @@ const config = require('../../../config/connection');
 const configAccounts = require('../../../config/connectionProductionCustom');
 const sql = require('mssql');
 const seq = require('sequelize');
+const { buildSchedule } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftAssigner');
 
 async function getHolidays(holidayType) {
   let results = new Array();
@@ -166,34 +167,11 @@ async function getShifts(employeeType) {
   }
 }
 
-async function getSignedUp(holiday) {
-  let query;
-  if (holiday == 'All' || holiday == 'None') {
-    query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
-        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
-        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
-        WHERE [holiday] = :holiday
-        ORDER BY [holiday_type], [agent_name] ASC`;
-  } else {
-    query = `SELECT takenShifts.id, holiday_id, agent_name, holiday, shift_time, holiday_type
-        FROM [isapi].[dbo].[holidaySignUpTakenShifts] takenShifts
-        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] adminTable ON adminTable.[id] = takenShifts.[holiday_id]
-        ORDER BY [holiday_type], [agent_name] ASC`;
-  }
-  
-  try {
-    let result = await config.query(query, { replacements: { holiday: holiday }, type: seq.QueryTypes.SELECT });
-    return result;
-  } catch (err) {
-    // ... error checks
-    console.log(err);
-  }
-}
-
 async function setShiftData(shiftData) {
-  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES (${shiftData.holidayID}, :agentName);`;
+  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES :params`;
+  //{ replacements: { holidayID: shiftData.holiday_id, agentName: shiftData.agentName }
   try {
-    let result = await config.query(query, { replacements: { agentName: shiftData.agentName }, type: seq.QueryTypes.INSERT });
+    let result = await config.query(query, { replacements: { params: shiftData }, type: seq.QueryTypes.INSERT });
     return result;
   } catch (err) {
     // ... error checks
@@ -227,7 +205,34 @@ async function updateShiftData(shiftData) {
   }
 }
 
-router.get('/GetAgents/BySenority', async (req, res)=> {
+async function getRequestedShifts() {
+  let query = `SELECT * FROM [isapi].[dbo].[holidayShiftPicker]`;
+
+  try {
+    let result = await config.query(query, { type: seq.QueryTypes.SELECT });
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
+router.get('/AssignShifts/:roundNumber', async (req, res) => {
+  let roundNumber = req.params.roundNumber;
+  let agents = await getAgentsBySenority();
+  let takenShifts = await getSignedUp('Summer');
+  let shifts = await getHolidayData('All');
+  let requestedShifts = await getRequestedShifts();
+  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
+
+  console.log(await schedule);
+
+  results = await setShiftData(schedule);
+
+  res.json(results);
+});
+
+router.get('/GetAgents/BySenority', async (req, res) => {
   results = await getAgentsBySenority();
   res.json(results);
 });
@@ -276,7 +281,7 @@ router.get('/:holidayType', async (req, res) => {
 
 router.post('/AssignShift', async (req, res) => {
   const shiftData = req.body;
-  results = await setShiftData(shiftData);
+  results = await setShiftData([shiftData]);
   res.json(results);
 });
 
