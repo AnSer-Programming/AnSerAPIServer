@@ -9,7 +9,7 @@ const SetHolidaySignUp = (data: any) => {
   const [shiftData, setAssignedShiftData] = useState<any>([]);
   const holidayDataLength = Object.keys(holidayData).length;
   const updateDataLength = Object.keys(updateData).length;
-  let newData: any = 0;
+  let newData: any = new Array();
 
   useEffect(() => {
     const getCompleteHolidayData = async () => {
@@ -50,7 +50,7 @@ const SetHolidaySignUp = (data: any) => {
     } else {
       if (shiftID == -1) {
         console.log("New Entry");
-        newData = { agentName: `${newValue.value}`, holidayID: holidayID };
+        newData = [holidayID, `${newValue.value}`];
         const results = await setShiftData(newData);
         setUpdateData(await results.json());
       } else {
