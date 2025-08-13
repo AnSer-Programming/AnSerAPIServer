@@ -149,7 +149,7 @@ router.get('/getMyShiftsDropDown/:employeeID', async(req, res) => {
   console.log(results);
 
   for(let i = 0; i < results.length; i++) {
-    concatOptions[i] = {id: `${results[i].id}`, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: `${results[i].holiday_id}`}
+    concatOptions[i] = {id: results[i].id, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: results[i].holiday_id}
   }
 
   console.log(concatOptions);
