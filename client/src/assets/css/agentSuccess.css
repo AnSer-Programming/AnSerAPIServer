@@ -32,7 +32,25 @@ div.holidaySignUpAgentViewContentHolder {
   width: 100%; 
 }
 
+table.holidaySignUpReview {
+   width: 100%; 
+   border: solid #FFFFFF 2px; 
+   margin-right: '1%'; 
+}
+
 td.holidaySignUpItem {
   border: 1px solid #FFFFFF;
+  text-align: center;
+}
+
+td.holidaySignUpItemAgentReport {
+  border: 1px solid #FFFFFF;
+  height: 30px;
+  text-align: center;
+}
+
+th.holidaySignUpItemAgentReportHeader {
+  border: 1px solid #FFFFFF;
+  height: 35px;
   text-align: center;
 }

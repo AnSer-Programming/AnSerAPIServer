@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import GetHolidaySignUp from '../components/AgentScheduling/GetHolidaySignUp.tsx';
 import SetHolidaySignUp from '../components/AgentScheduling/SetHolidaySignUp.tsx';
 import ViewByHoliday from '../components/AgentScheduling/ViewByHoliday.tsx';
+import ViewByAgent from '../components/AgentScheduling/ViewByAgent.tsx';
 import Menu from '../components/Menu';
 import { getHolidays, getAgents } from '../utils/AgentSuccessAPI.js';
 import { toCSV, toMSWord, toPDF } from '../components/Utility/DownloadHelper';
@@ -14,6 +15,7 @@ const HolidaySignUp = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [holidayType, setHolidayType] = useState("Summer");
   const [agentData, setAgentData] = useState([]);
+  const [viewType, setViewType] = useState("Holiday");
   const editingEnabled = `Exit Editing`;
   const editingDisabled = `Enable Editing`;
 
@@ -79,7 +81,7 @@ const HolidaySignUp = () => {
 
     getHolidayData();
     getAgentData();
-  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday, selectedEmployeeType]);
+  }, [holidayDataLength, agentDataLength, holidayType, selectedHoliday, selectedEmployeeType, viewType]);
 
   const editDisplay = () => {
     return (
@@ -130,6 +132,10 @@ const HolidaySignUp = () => {
     setSelectedEmployeeType(event);
   }
 
+  const handlerChangeViewType = (event) => {
+    setViewType(event);
+  }
+
   const editingHandler = () => {
     if (isEdit) {
       setIsEdit(false);
@@ -149,16 +155,34 @@ const HolidaySignUp = () => {
     <>
       <Menu
         page="Holiday Sign Up" />
-      <ViewByHoliday
-        isEdit={isEdit}
-        handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
-        editingHandler={()=>editingHandler()}
-        editDisplay={()=>editDisplay()}
-        holidayTypeHandler={(data)=>holidayTypeHandler(data)}
-        handlerChangeEmployeeTypeFilter={(data)=>handlerChangeEmployeeTypeFilter(data)}
-        holiday={holiday}
-        selectedHoliday={selectedHoliday}
-        employeeType={employeeType} />
+      {
+        viewType == "Holiday" ?
+          <ViewByHoliday
+            isEdit={isEdit}
+            handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
+            editingHandler={() => editingHandler()}
+            editDisplay={() => editDisplay()}
+            holidayTypeHandler={(data) => holidayTypeHandler(data)}
+            handlerChangeEmployeeTypeFilter={(data) => handlerChangeEmployeeTypeFilter(data)}
+            handlerChangeViewType={(data) => handlerChangeViewType(data)}
+            viewType={viewType}
+            holiday={holiday}
+            selectedHoliday={selectedHoliday}
+            employeeType={employeeType} />
+          :
+          <ViewByAgent 
+            isEdit={isEdit}
+            handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
+            editingHandler={() => editingHandler()}
+            editDisplay={() => editDisplay()}
+            holidayTypeHandler={(data) => holidayTypeHandler(data)}
+            handlerChangeEmployeeTypeFilter={(data) => handlerChangeEmployeeTypeFilter(data)}
+            handlerChangeViewType={(data) => handlerChangeViewType(data)}
+            viewType={viewType}
+            holiday={holiday}
+            selectedHoliday={selectedHoliday}
+            employeeType={employeeType} />
+          }
     </>
   );
 };
