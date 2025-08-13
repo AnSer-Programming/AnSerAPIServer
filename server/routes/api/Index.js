@@ -128,7 +128,9 @@ router.use('/BackUps/ClientSharedFieldsBackUp', clientSharedFieldsBackUp);
 
 //Agent Scheduling
 const holidaySchedule = require('./HolidaySignUp/HolidaySignUpData');
+const holidayScheduleISAPI = require('./HolidaySignUp/HolidaySignUpISAPI');
 
 router.use('/AgentScheduling/HolidaySignUp', holidaySchedule);
+router.use('/AgentScheduling/HolidaySignISAPI', holidayScheduleISAPI);
 
 module.exports = router;

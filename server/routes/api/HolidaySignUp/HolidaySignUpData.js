@@ -153,20 +153,6 @@ async function removeShiftData(id) {
   }
 }
 
-async function getShifts(employeeType) {
-  let query = `SELECT *
-        FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable]
-        WHERE [employee_type] = :employee
-        ORDER BY [holiday] ASC`;
-  try {
-    let result = await config.query(query, { replacements: { employee: employeeType }, type: seq.QueryTypes.SELECT });
-    return result;
-  } catch (err) {
-    // ... error checks
-    console.log(err);
-  }
-}
-
 async function setShiftData(shiftData) {
   let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES :params`;
   //{ replacements: { holidayID: shiftData.holiday_id, agentName: shiftData.agentName }
@@ -217,6 +203,34 @@ async function getRequestedShifts() {
   }
 }
 
+async function getAssignedShifts(agentName) {
+  let query;
+
+  try {
+    let result;
+    if (agentName == 'All') {
+      query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
+        FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+        ORDER BY [holiday_id], [agent_name] ASC`;
+      result = await config.query(query, { type: seq.QueryTypes.SELECT });
+    } else {
+      query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
+        FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
+        LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
+        WHERE [agent_name] = :agentName
+        ORDER BY [holiday_id] ASC`;
+      result = await config.query(query, { replacements: { agentName: agentName }, type: seq.QueryTypes.SELECT });
+    }
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+
+}
+
+//Get
 router.get('/AssignShifts/:roundNumber', async (req, res) => {
   let roundNumber = req.params.roundNumber;
   let agents = await getAgentsBySenority();
@@ -224,8 +238,6 @@ router.get('/AssignShifts/:roundNumber', async (req, res) => {
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
-
-  console.log(await schedule);
 
   results = await setShiftData(schedule);
 
@@ -249,6 +261,12 @@ router.get('/GetAgentViewData/:holidayType/:holiday', async (req, res) => {
   results = await getDataForAgentView(holidayType, holiday);
   res.json(results);
 });
+
+router.get('/AgentSignUpReport/:agentName', async(req, res) => {
+  const agentName = req.params.agentName;
+  results = await getAssignedShifts(agentName);
+  res.json(results);
+})
 
 router.get('/GetHolidayData/:holiday', async (req, res) => {
   const holiday = req.params.holiday;
@@ -279,18 +297,21 @@ router.get('/:holidayType', async (req, res) => {
   res.json(results);
 });
 
+//POST
 router.post('/AssignShift', async (req, res) => {
   const shiftData = req.body;
   results = await setShiftData([shiftData]);
   res.json(results);
 });
 
+//PUT
 router.put('/UpdateShift', async (req, res) => {
   const shiftData = req.body;
   results = await updateShiftData(shiftData);
   res.json(results);
 });
 
+//DELETE
 router.delete('/RemoveShift/:shiftID', async (req, res) => {
   const shiftID = req.params.shiftID;
   results = await removeShiftData(shiftID);

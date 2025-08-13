@@ -8,6 +8,24 @@ export const getAgents = (agentType) => {
   });
 };
 
+export const getAgentReportData = (data) => {
+  return fetch(`/api/AgentScheduling/HolidaySignUp/AgentSignUpReport/${data}`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const getAgentsBySenority = () => {
+  return fetch(`/api/AgentScheduling/HolidaySignUp/GetAgents/BySenority`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
 //Holiday Sign Up
 export const getAgentViewData = (holidayType, holiday) => {
   return fetch(`/api/AgentScheduling/HolidaySignUp/GetAgentViewData/${holidayType}/${holiday}`, {
