@@ -12,7 +12,7 @@ async function findShifts(shifts, savedShifts, primaryShift) {
       }
     }
     overviewData[`${x}`] = await {
-      id: shifts[x].id,
+      id: `${shifts[x].id}`,
       shiftTime: `${shifts[x].shift_time}`,
       shiftDate: `${shifts[x].holiday_date}`,
       shiftHoliday: `${shifts[x].holiday}`,
