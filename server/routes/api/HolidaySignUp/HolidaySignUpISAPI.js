@@ -103,18 +103,18 @@ router.get('/getAvailableHolidays', async(req, res) => {
   res.json(holidaysConcat);
 });
 
-router.get('/getAvailableShifts/:holiday', async(req, res) => {
-  let takenShifts = await getSignedUp(`${req.params.holiday}`);
-  let shifts = await getHolidayData(`${req.params.holiday}`);
-  let schedule = await findShifts(shifts, takenShifts, -1);
-  
-  res.json(schedule);
-});
-
 router.get('/getAvailableShifts/:holiday/:primaryShiftID', async(req, res) => {
   let takenShifts = await getSignedUp(`${req.params.holiday}`);
   let shifts = await getHolidayData(`${req.params.holiday}`);
   let schedule = await findShifts(shifts, takenShifts, `${req.params.primaryShiftID}`);
+  
+  res.json(schedule);
+});
+
+router.get('/getAvailableShifts/:holiday', async(req, res) => {
+  let takenShifts = await getSignedUp(`${req.params.holiday}`);
+  let shifts = await getHolidayData(`${req.params.holiday}`);
+  let schedule = await findShifts(shifts, takenShifts, -1);
   
   res.json(schedule);
 });
