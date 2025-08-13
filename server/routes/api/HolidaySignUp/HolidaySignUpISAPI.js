@@ -119,14 +119,6 @@ router.get('/getAvailableShifts/:holiday/:primaryShiftID', async(req, res) => {
   res.json(schedule);
 });
 
-router.get('/getShifts', async(req, res) => {
-  const data = req.body;
-  let takenShifts = await getSignedUp('Summer');
-  let shifts = await getHolidayData('All');
-  let schedule = await findShifts(shifts, takenShifts);
-  res.json(schedule);
-});
-
 router.get('/getMyShifts/:employeeID', async(req, res) => {
   const employeeID = req.params.employeeID;
   const results = await getAgentShifts(employeeID);
@@ -149,7 +141,7 @@ router.get('/getMyShiftsDropDown/:employeeID', async(req, res) => {
   console.log(results);
 
   for(let i = 0; i < results.length; i++) {
-    concatOptions[i] = {id: results[i].id, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: results[i].holiday_id}
+    concatOptions[i] = {id: `${results[i].id}`, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: `${results[i].holiday_id}`}
   }
 
   console.log(concatOptions);
