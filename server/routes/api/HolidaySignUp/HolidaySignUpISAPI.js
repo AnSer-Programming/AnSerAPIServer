@@ -93,39 +93,54 @@ async function getAgentShifts(employee_id) {
   }
 }
 
-router.get('/getAvailableHolidays', async(req, res) => {
+async function updateShiftData(id, shiftID) {
+  let query = `UPDATE [isapi].[dbo].[holidayShiftPicker] SET holiday_id = :shiftID WHERE id=${id}`;
+  try {
+    let result = await config.query(query, { replacements: { shiftID: shiftID }, type: seq.QueryTypes.UPDATE });
+    return result;
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
+}
+
+router.get('/getAvailableHolidays', async (req, res) => {
   let holidays = await getHolidays();
   let holidaysConcat = new Array();
-  for(let i = 0; i < holidays.length; i++) {
-    holidaysConcat[i] = {holiday: `${holidays[i].holiday} ${holidays[i].holiday_date}`, holidayName: `${holidays[i].holiday}`};
+  for (let i = 0; i < holidays.length; i++) {
+    holidaysConcat[i] = { holiday: `${holidays[i].holiday} ${holidays[i].holiday_date}`, holidayName: `${holidays[i].holiday}` };
   }
 
   res.json(holidaysConcat);
 });
 
-router.get('/getAvailableShifts/:holiday/:primaryShiftID', async(req, res) => {
+router.get('/getAvailableShifts/:holiday/:primaryShiftID', async (req, res) => {
   let takenShifts = await getSignedUp(`${req.params.holiday}`);
   let shifts = await getHolidayData(`${req.params.holiday}`);
   let schedule = await findShifts(shifts, takenShifts, `${req.params.primaryShiftID}`);
-  
+
+  console.log(req.params.primaryShiftID);
+
   res.json(schedule);
 });
 
-router.get('/getAvailableShifts/:holiday', async(req, res) => {
+router.get('/getAvailableShifts/:holiday', async (req, res) => {
   let takenShifts = await getSignedUp(`${req.params.holiday}`);
   let shifts = await getHolidayData(`${req.params.holiday}`);
   let schedule = await findShifts(shifts, takenShifts, -1);
-  
+
   res.json(schedule);
 });
 
-router.get('/getMyShifts/:employeeID', async(req, res) => {
+router.get('/getMyShifts/:employeeID', async (req, res) => {
   const employeeID = req.params.employeeID;
   const results = await getAgentShifts(employeeID);
 
-  if(results[0].pick_number == 2) {
-    results[1] = results[0];
-    results[0] = {id: -1};
+  if (results) { 
+    if (results[0].pick_number == 2) {
+      results[1] = results[0];
+      results[0] = { id: -1 };
+    }
   }
 
   console.log(results);
@@ -133,15 +148,15 @@ router.get('/getMyShifts/:employeeID', async(req, res) => {
   res.json(results);
 });
 
-router.get('/getMyShiftsDropDown/:employeeID', async(req, res) => {
+router.get('/getMyShiftsDropDown/:employeeID', async (req, res) => {
   const employeeID = req.params.employeeID;
   const results = await getAgentShifts(employeeID);
   let concatOptions = new Array();
 
   console.log(results);
 
-  for(let i = 0; i < results.length; i++) {
-    concatOptions[i] = {id: `${results[i].id}`, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: `${results[i].holiday_id}`}
+  for (let i = 0; i < results.length; i++) {
+    concatOptions[i] = { id: `${results[i].id}`, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: `${results[i].holiday_id}` }
   }
 
   console.log(concatOptions);
@@ -149,17 +164,15 @@ router.get('/getMyShiftsDropDown/:employeeID', async(req, res) => {
   res.json(concatOptions);
 });
 
-router.post('/pickShift', async(req, res) => {
-  const data = req.body;
-  res.json({return: "No Shifts To Assign"});
+router.put('/updateShift/:id/:shiftID', async (req, res) => {
+  console.log("Update");
+  const id = req.params.id;
+  const shiftID = req.params.shiftID;
+  const results = updateShiftData(id, shiftID);
+  res.json(results);
 });
 
-router.put('/changeShift', async(req, res) => {
-  const data = req.body;
-  res.json({return: "No Shifts To Change"});
-});
-
-router.delete('/deleteShift/:shiftID', async(req, res) => {
+router.delete('/deleteShift/:shiftID', async (req, res) => {
   const shiftID = req.params.shiftID;
   const results = deleteShift(shiftID);
   res.json(results);
