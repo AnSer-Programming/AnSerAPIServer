@@ -13,7 +13,7 @@ const HolidaySignUp = () => {
   const [employeeType, setEmployeeType] = useState([]);
   const [selectedEmployeeType, setSelectedEmployeeType] = useState("All");
   const [isEdit, setIsEdit] = useState(false);
-  const [holidayType, setHolidayType] = useState("Summer");
+  const [holidayType, setHolidayType] = useState("Winter");
   const [agentData, setAgentData] = useState([]);
   const [viewType, setViewType] = useState("Holiday");
   const editingEnabled = `Exit Editing`;

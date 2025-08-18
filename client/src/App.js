@@ -13,7 +13,7 @@ import BackUps from './pages/BackUps';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
-import HolidaySchedule from './pages/HolidaySignUpAgentPageSummer';
+import HolidaySchedule from './pages/HolidaySignUpAgentPage';
 import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';
