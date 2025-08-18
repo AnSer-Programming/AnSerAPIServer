@@ -35,7 +35,8 @@ div.holidaySignUpAgentViewContentHolder {
 table.holidaySignUpReview {
    width: 100%; 
    border: solid #FFFFFF 2px; 
-   margin-right: '1%'; 
+   margin-right: 1%; 
+   margin-top: 2%;
 }
 
 td.holidaySignUpItem {

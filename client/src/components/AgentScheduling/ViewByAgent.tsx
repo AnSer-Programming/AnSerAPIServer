@@ -8,7 +8,7 @@ const ViewByAgent = (data: any) => {
   const [employeeType, setEmployeeType] = useState([]);
   const [selectedEmployeeType, setSelectedEmployeeType] = useState("All");
   const [isEdit, setIsEdit] = useState(data.isEdit);
-  const [holidayType, setHolidayType] = useState("Summer");
+  const [holidayType, setHolidayType] = useState("Winter");
   const [agentData, setAgentData] = useState([]);
   const [viewType, setViewType] = useState("");
 
@@ -42,7 +42,6 @@ const ViewByAgent = (data: any) => {
         {!isEdit ?
           <div>
             <button onClick={() => data.handlerChangeViewType("Holiday")} id="setToHolidayView">View By Holiday</button>
-            <p>Agent View</p>
             <div style={{ width: '25%' }}>
               <SelectHoliday
                 holidays={holiday}

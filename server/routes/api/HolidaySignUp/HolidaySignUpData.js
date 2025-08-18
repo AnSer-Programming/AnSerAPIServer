@@ -16,7 +16,7 @@ async function getHolidays(holidayType) {
       console.log(err);
     }
   }
-  let query = `SELECT DISTINCT holiday FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable] WHERE [holiday_type] = :holidayType`;
+  let query = `SELECT DISTINCT holiday, holiday_date FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable] WHERE [holiday_type] = :holidayType ORDER BY [holiday_date] ASC`;
 
   results[0] = await runQuery(query);
   query = `SELECT DISTINCT employee_type FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable] WHERE [holiday_type] = :holidayType`;
@@ -234,7 +234,7 @@ async function getAssignedShifts(agentName) {
 router.get('/AssignShifts/:roundNumber', async (req, res) => {
   let roundNumber = req.params.roundNumber;
   let agents = await getAgentsBySenority();
-  let takenShifts = await getSignedUp('Summer');
+  let takenShifts = await getSignedUp('Winter');
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
@@ -262,7 +262,7 @@ router.get('/GetAgentViewData/:holidayType/:holiday', async (req, res) => {
   res.json(results);
 });
 
-router.get('/AgentSignUpReport/:agentName', async(req, res) => {
+router.get('/AgentSignUpReport/:agentName', async (req, res) => {
   const agentName = req.params.agentName;
   results = await getAssignedShifts(agentName);
   res.json(results);
@@ -280,11 +280,6 @@ router.get('/GetSignedUp/:holiday', async (req, res) => {
   res.json(results);
 });
 
-router.get('/Available/:date', async (req, res) => {
-  results = await getHolidays();
-  res.json(results);
-});
-
 router.get('/AgentView/:holidayType', async (req, res) => {
   const holidayType = req.params.holidayType;
   results = await runGetQuery(holidayType);
@@ -293,7 +288,42 @@ router.get('/AgentView/:holidayType', async (req, res) => {
 
 router.get('/:holidayType', async (req, res) => {
   const holidayType = req.params.holidayType;
+  let placeHolder;
+  let sorted = false;
   results = await getHolidays(holidayType);
+
+  while (!sorted) {
+    sorted = true;
+    for (let x = 0; x < results[0].length - 1; x++) {
+      if (results[0][x].holiday_date.split('-')[2] > results[0][x + 1].holiday_date.split('-')[2]) { // year x-1 > year x
+        for (let y = x; y >= 0; y--) {
+          placeHolder = results[0][y];
+          results[0][y] = results[0][y + 1];
+          results[0][y + 1] = placeHolder;
+        }
+            sorted = false;
+      } else if (results[0][x].holiday_date.split('-')[2] == results[0][x + 1].holiday_date.split('-')[2]) { // year x-1 = year x
+        if (results[0][x].holiday_date.split('-')[0] > results[0][x + 1].holiday_date.split('-')[0]) { // month x-1 > month x
+          for (let y = x; y >= 0; y--) {
+            placeHolder = results[0][y];
+            results[0][y] = results[0][y + 1];
+            results[0][y + 1] = placeHolder;
+          }
+            sorted = false;
+        } else if (results[0][x].holiday_date.split('-')[0] == results[0][x + 1].holiday_date.split('-')[0]) { // month x-1 = month x
+          if (results[0][x].holiday_date.split('-')[1] > results[0][x + 1].holiday_date.split('-')[1]) { // day x-1 > day x
+            for (let y = x; y >= 0; y--) {
+              placeHolder = results[0][y];
+              results[0][y] = results[0][y + 1];
+              results[0][y + 1] = placeHolder;
+            }
+            sorted = false;
+          }
+        }
+      }
+    }
+  }
+
   res.json(results);
 });
 

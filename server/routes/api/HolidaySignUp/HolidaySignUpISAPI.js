@@ -107,8 +107,41 @@ async function updateShiftData(id, shiftID) {
 router.get('/getAvailableHolidays', async (req, res) => {
   let holidays = await getHolidays();
   let holidaysConcat = new Array();
+  let sorted = false;
   for (let i = 0; i < holidays.length; i++) {
-    holidaysConcat[i] = { holiday: `${holidays[i].holiday} ${holidays[i].holiday_date}`, holidayName: `${holidays[i].holiday}` };
+    holidaysConcat[i] = { holiday: `${holidays[i].holiday} ${holidays[i].holiday_date}`, holidayName: `${holidays[i].holiday}`, holiday_date: holidays[i].holiday_date };
+  }
+
+  while (!sorted) {
+    sorted = true;
+    for (let x = 0; x < holidaysConcat.length - 1; x++) {
+      if (holidaysConcat[x].holiday_date.split('-')[2] > holidaysConcat[x + 1].holiday_date.split('-')[2]) { // year x-1 > year x
+        for (let y = x; y >= 0; y--) {
+          placeHolder = holidaysConcat[y];
+          holidaysConcat[y] = holidaysConcat[y + 1];
+          holidaysConcat[y + 1] = placeHolder;
+        }
+            sorted = false;
+      } else if (holidaysConcat[x].holiday_date.split('-')[2] == holidaysConcat[x + 1].holiday_date.split('-')[2]) { // year x-1 = year x
+        if (holidaysConcat[x].holiday_date.split('-')[0] > holidaysConcat[x + 1].holiday_date.split('-')[0]) { // month x-1 > month x
+          for (let y = x; y >= 0; y--) {
+            placeHolder = holidaysConcat[y];
+            holidaysConcat[y] = holidaysConcat[y + 1];
+            holidaysConcat[y + 1] = placeHolder;
+          }
+            sorted = false;
+        } else if (holidaysConcat[x].holiday_date.split('-')[0] == holidaysConcat[x + 1].holiday_date.split('-')[0]) { // month x-1 = month x
+          if (holidaysConcat[x].holiday_date.split('-')[1] > holidaysConcat[x + 1].holiday_date.split('-')[1]) { // day x-1 > day x
+            for (let y = x; y >= 0; y--) {
+              placeHolder = holidaysConcat[y];
+              holidaysConcat[y] = holidaysConcat[y + 1];
+              holidaysConcat[y + 1] = placeHolder;
+            }
+            sorted = false;
+          }
+        }
+      }
+    }
   }
 
   res.json(holidaysConcat);
@@ -136,7 +169,7 @@ router.get('/getMyShifts/:employeeID', async (req, res) => {
   const employeeID = req.params.employeeID;
   const results = await getAgentShifts(employeeID);
 
-  if (results) { 
+  if (results[0]) { 
     if (results[0].pick_number == 2) {
       results[1] = results[0];
       results[0] = { id: -1 };
