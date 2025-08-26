@@ -33,4 +33,24 @@ function twelveHourToTwentyFourHour(data) {
   }
 }
 
-module.exports = { twelveHourToTwentyFourHour };
+function shiftTimeTwelveHourToTwentyFourHour(data) {
+  let shiftTimes = new Array();
+  let placeHolder;
+  shiftTimes = data.split('-');
+  for(let i = 0; i < shiftTimes.length; i++) {
+    if(shiftTimes[i].includes("AM")) {
+      shiftTimes[i].slice(-2);
+      shiftTimes[i] = `${shiftTimes[i]}00`;
+    } else {
+      shiftTimes[i].slice(-2);
+      if(shiftTimes[i] == '12') {
+        shiftTimes[i] = `00:00`;
+      } else {
+        placeHolder = parseInt(shiftTimes[i]) + 12;
+        shiftTimes[i] = `${placeHolder}00`
+      }
+    }
+  }
+}
+
+module.exports = { twelveHourToTwentyFourHour, shiftTimeTwelveHourToTwentyFourHour };

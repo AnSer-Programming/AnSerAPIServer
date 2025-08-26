@@ -55,3 +55,7 @@ th.holidaySignUpItemAgentReportHeader {
   height: 35px;
   text-align: center;
 }
+
+td.noAssignedShifts {
+  background-color: #DC3535;
+}

@@ -111,24 +111,24 @@ async function runGetQuery(holidayType) {
 async function getAgents(agentType) {
   let query;
   if (agentType == "Agent") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher 
+    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY Agent_name`;
   } else if (agentType == "Dispatcher") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher 
+    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1 AND [ScheduleGroup] = 'Amtelco Agent'
       ORDER BY Agent_name`;
   } else if (agentType == "Supervisor") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher 
+    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Agent'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Supervisor'
       ORDER BY Agent_name`;
   } else {
-    query = `SELECT Agent_name, JobTitle, Dispatcher 
+    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND [ScheduleGroup] = 'Amtelco Agent'
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')
       ORDER BY JobTitle, Dispatcher, Agent_name`;
   }
 
@@ -154,10 +154,10 @@ async function removeShiftData(id) {
 }
 
 async function setShiftData(shiftData) {
-  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES :params`;
+  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES :shiftData`;
   //{ replacements: { holidayID: shiftData.holiday_id, agentName: shiftData.agentName }
   try {
-    let result = await config.query(query, { replacements: { params: shiftData }, type: seq.QueryTypes.INSERT });
+    let result = await config.query(query, { replacements: { shiftData: shiftData }, type: seq.QueryTypes.INSERT });
     return result;
   } catch (err) {
     // ... error checks
@@ -166,18 +166,32 @@ async function setShiftData(shiftData) {
 }
 
 async function getAgentsBySenority() {
-  const query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date'
+  let results = new Array();
+  async function runQuery() {
+    try {
+      let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+      return result;
+    } catch (err) {
+      // ... error checks
+      console.log(err);
+    }
+  }
+
+  let query;
+
+  query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND [ScheduleGroup] = 'Amtelco Agent'
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')
       ORDER BY StartStamp, EmployeeID ASC`;
 
-  try {
-    let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
-    return result;
-  } catch (err) {
-    // ... error checks
-    console.log(err);
-  }
+  results[0] = await runQuery();
+  query = `SELECT DISTINCT Office 
+      FROM AnSerTimecard.dbo.EmployeeList
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')`;
+
+  results[1] = await runQuery();
+
+  return results;
 }
 
 async function updateShiftData(shiftData) {
@@ -301,7 +315,7 @@ router.get('/:holidayType', async (req, res) => {
           results[0][y] = results[0][y + 1];
           results[0][y + 1] = placeHolder;
         }
-            sorted = false;
+        sorted = false;
       } else if (results[0][x].holiday_date.split('-')[2] == results[0][x + 1].holiday_date.split('-')[2]) { // year x-1 = year x
         if (results[0][x].holiday_date.split('-')[0] > results[0][x + 1].holiday_date.split('-')[0]) { // month x-1 > month x
           for (let y = x; y >= 0; y--) {
@@ -309,7 +323,7 @@ router.get('/:holidayType', async (req, res) => {
             results[0][y] = results[0][y + 1];
             results[0][y + 1] = placeHolder;
           }
-            sorted = false;
+          sorted = false;
         } else if (results[0][x].holiday_date.split('-')[0] == results[0][x + 1].holiday_date.split('-')[0]) { // month x-1 = month x
           if (results[0][x].holiday_date.split('-')[1] > results[0][x + 1].holiday_date.split('-')[1]) { // day x-1 > day x
             for (let y = x; y >= 0; y--) {

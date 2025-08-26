@@ -23,7 +23,7 @@ const AgentOverview = (data: any) => {
       setTakenShiftData(returnData);
 
       returnData = await response[2].json();
-      setAgentsBySenority(returnData);
+      setAgentsBySenority(returnData[0]);
     }
 
     getData();
@@ -81,7 +81,7 @@ const AgentOverview = (data: any) => {
         tableRows.push(
           <tr>
             <td className="holidaySignUpItemAgentReport">{agents[x].agentData.Agent_name}</td>
-            <td className="holidaySignUpItemAgentReport" colSpan={3}>No Assigned Shifts</td>
+            <td className="holidaySignUpItemAgentReport noAssignedShifts" colSpan={3}>No Assigned Shifts</td>
           </tr>
         );
       }
@@ -143,7 +143,7 @@ const AgentOverview = (data: any) => {
         tableRows.push(
           <tr>
             <td className="holidaySignUpItemAgentReport">{dispatchers[x].agentData.Agent_name}</td>
-            <td className="holidaySignUpItemAgentReport" colSpan={3}>No Assigned Shifts</td>
+            <td className="holidaySignUpItemAgentReport noAssignedShifts" colSpan={3}>No Assigned Shifts</td>
           </tr>
         );
       }
