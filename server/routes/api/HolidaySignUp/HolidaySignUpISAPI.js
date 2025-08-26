@@ -121,7 +121,7 @@ router.get('/getAvailableHolidays', async (req, res) => {
           holidaysConcat[y] = holidaysConcat[y + 1];
           holidaysConcat[y + 1] = placeHolder;
         }
-            sorted = false;
+        sorted = false;
       } else if (holidaysConcat[x].holiday_date.split('-')[2] == holidaysConcat[x + 1].holiday_date.split('-')[2]) { // year x-1 = year x
         if (holidaysConcat[x].holiday_date.split('-')[0] > holidaysConcat[x + 1].holiday_date.split('-')[0]) { // month x-1 > month x
           for (let y = x; y >= 0; y--) {
@@ -129,7 +129,7 @@ router.get('/getAvailableHolidays', async (req, res) => {
             holidaysConcat[y] = holidaysConcat[y + 1];
             holidaysConcat[y + 1] = placeHolder;
           }
-            sorted = false;
+          sorted = false;
         } else if (holidaysConcat[x].holiday_date.split('-')[0] == holidaysConcat[x + 1].holiday_date.split('-')[0]) { // month x-1 = month x
           if (holidaysConcat[x].holiday_date.split('-')[1] > holidaysConcat[x + 1].holiday_date.split('-')[1]) { // day x-1 > day x
             for (let y = x; y >= 0; y--) {
@@ -169,7 +169,7 @@ router.get('/getMyShifts/:employeeID', async (req, res) => {
   const employeeID = req.params.employeeID;
   const results = await getAgentShifts(employeeID);
 
-  if (results[0]) { 
+  if (results[0]) {
     if (results[0].pick_number == 2) {
       results[1] = results[0];
       results[0] = { id: -1 };
