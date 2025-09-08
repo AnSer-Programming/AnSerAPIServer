@@ -1,4 +1,5 @@
-async function findShifts(shifts, savedShifts, primaryShift) {
+async function findShifts(shifts, savedShifts, selectedShifts) {
+  let isPicked;
   let takenShifts = savedShifts;
   let takenCounter;
   let overviewData = new Array();
@@ -23,7 +24,13 @@ async function findShifts(shifts, savedShifts, primaryShift) {
   }
 
   for(let x = 0; x < overviewData.length; x++) {
-    if(overviewData[x].availableShifts != 0 && overviewData[x].id != primaryShift) {
+    isPicked = false;
+    for(let y = 0; y < selectedShifts.length; y++) {
+      if(overviewData[x].availableShifts != 0 && overviewData[x].id == selectedShifts[y]) {
+        isPicked = true;
+      }
+    }
+    if(overviewData[x].availableShifts != 0 && !isPicked) {
       setShifts[setShifts.length] = {
         id: overviewData[x].id,
         shiftTime: overviewData[x].shiftTime,

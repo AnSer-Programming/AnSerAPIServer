@@ -46,13 +46,13 @@ async function getHolidayData(holiday) {
 async function getSignedUp(holiday) {
   let query;
   if (holiday == 'Summer' || holiday == 'Winter') {
-    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
+    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts, agent_office 
       FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
       LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
       WHERE [holiday_type] = :holiday
       ORDER BY [holiday_id], [agent_name] ASC`;
   } else {
-    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts 
+    query = `SELECT signedUp.id, holiday_id, agent_name, holiday, holiday_date, employee_type, shift_time, number_of_shifts, agent_office 
       FROM [isapi].[dbo].[holidaySignUpTakenShifts] signedUp
       LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] holidays ON signedUp.[holiday_id] = holidays.[id]
       WHERE [holiday] = :holiday
@@ -113,22 +113,22 @@ async function getAgents(agentType) {
   if (agentType == "Agent") {
     query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight'
       ORDER BY Agent_name`;
   } else if (agentType == "Dispatcher") {
     query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1 AND [ScheduleGroup] = 'Amtelco Agent'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1 AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight'
       ORDER BY Agent_name`;
   } else if (agentType == "Supervisor") {
     query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Supervisor'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Supervisor' AND [Office] != 'Overnight'
       ORDER BY Agent_name`;
   } else {
     query = `SELECT Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'
       ORDER BY JobTitle, Dispatcher, Agent_name`;
   }
 
@@ -154,7 +154,7 @@ async function removeShiftData(id) {
 }
 
 async function setShiftData(shiftData) {
-  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name) VALUES :shiftData`;
+  let query = `INSERT INTO [isapi].[dbo].[holidaySignUpTakenShifts] (holiday_id, agent_name, agent_office) VALUES :shiftData`;
   //{ replacements: { holidayID: shiftData.holiday_id, agentName: shiftData.agentName }
   try {
     let result = await config.query(query, { replacements: { shiftData: shiftData }, type: seq.QueryTypes.INSERT });
@@ -181,13 +181,13 @@ async function getAgentsBySenority() {
 
   query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'
       ORDER BY StartStamp, EmployeeID ASC`;
 
   results[0] = await runQuery();
   query = `SELECT DISTINCT Office 
       FROM AnSerTimecard.dbo.EmployeeList
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor')`;
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'`;
 
   results[1] = await runQuery();
 
@@ -245,6 +245,19 @@ async function getAssignedShifts(agentName) {
 }
 
 //Get
+router.get('/TestAutoAssign', async (req, res) => {
+  let roundNumber = 1;
+  let agents = await getAgentsBySenority();
+  let takenShifts = await getSignedUp('Winter');
+  let shifts = await getHolidayData('All');
+  let requestedShifts = await getRequestedShifts();
+  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
+  
+  // schedule = {data: schedule};
+
+  res.json(schedule.overviewByOffice);
+});
+
 router.get('/AssignShifts/:roundNumber', async (req, res) => {
   let roundNumber = req.params.roundNumber;
   let agents = await getAgentsBySenority();
@@ -253,7 +266,11 @@ router.get('/AssignShifts/:roundNumber', async (req, res) => {
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
 
-  results = await setShiftData(schedule);
+  if(schedule.setShifts.length < 1) {
+    results = {error: "No Available Data, check email for automation error report."}
+  } else {
+    results = await setShiftData(schedule.setShifts);
+  }
 
   res.json(results);
 });
