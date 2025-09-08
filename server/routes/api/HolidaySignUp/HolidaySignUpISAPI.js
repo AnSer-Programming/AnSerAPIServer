@@ -5,18 +5,6 @@ const sql = require('mssql');
 const seq = require('sequelize');
 const { findShifts } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftLogic');
 
-async function deleteShift(id) {
-  let query = `DELETE FROM [isapi].[dbo].[holidayShiftPicker] WHERE id = :shiftID`;
-
-  try {
-    let result = await config.query(query, { replacements: { shiftID: id }, type: seq.QueryTypes.DELETE });
-    return result;
-  } catch (err) {
-    // ... error checks
-    console.log(err);
-  }
-}
-
 async function getHolidays() {
   let results;
   async function runQuery(query) {
@@ -93,11 +81,73 @@ async function getAgentShifts(employee_id) {
   }
 }
 
-async function updateShiftData(id, shiftID) {
-  let query = `UPDATE [isapi].[dbo].[holidayShiftPicker] SET holiday_id = :shiftID WHERE id=${id}`;
+async function getAgentsAlphabeticalOrder() {
+  let results;
+  async function runQuery() {
+    try {
+      let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+      return result;
+    } catch (err) {
+      // ... error checks
+      console.log(err);
+    }
+  }
+
+  let query;
+
+  query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
+      ORDER BY Agent_name`;
+
+  results = await runQuery();
+
+  return results;
+}
+
+async function getAgentsBySenority() {
+  let results;
+  async function runQuery() {
+    try {
+      let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+      return result;
+    } catch (err) {
+      // ... error checks
+      console.log(err);
+    }
+  }
+
+  let query;
+
+  query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
+      FROM AnSerTimecard.dbo.EmployeeList 
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
+      ORDER BY StartStamp, EmployeeID ASC`;
+
+  results = await runQuery();
+
+  return results;
+}
+
+async function postSelectedShifts(data, employeeID) {
+  let query = `INSERT INTO [isapi].[dbo].[holidayShiftPicker] (holiday_id, pick_number, round_number, employee_id) VALUES :shiftData`;
   try {
-    let result = await config.query(query, { replacements: { shiftID: shiftID }, type: seq.QueryTypes.UPDATE });
-    return result;
+    let result = await config.query(query, { replacements: { shiftData: data }, type: seq.QueryTypes.INSERT });
+    query = `SELECT holiday, holiday_date, holiday_type, shift_time 
+        FROM holidayShiftsSignUpAdminTable hssat
+        LEFT JOIN holidayShiftPicker ON hssat.[id] = holiday_id
+        WHERE employee_id = ${employeeID}`;
+
+    if (result) {
+      try {
+        result = await config.query(query, { type: seq.QueryTypes.SELECT });
+      } catch (err) {
+        // ... error checks
+        console.log(err);
+      }
+      return result;
+    }
+    return {data: result, error: "No Return Data"};
   } catch (err) {
     // ... error checks
     console.log(err);
@@ -147,12 +197,15 @@ router.get('/getAvailableHolidays', async (req, res) => {
   res.json(holidaysConcat);
 });
 
-router.get('/getAvailableShifts/:holiday/:primaryShiftID', async (req, res) => {
+router.get('/getAvailableShifts/:holiday/:primaryShiftID/:secondaryShiftID/:tertiaryShiftID/:quaternaryShiftID/:quinaryShiftID', async (req, res) => {
+  const primary = req.params.primaryShiftID;
+  const secondary = req.params.secondaryShiftID;
+  const tertiary = req.params.tertiaryShiftID;
+  const quaternary = req.params.quaternaryShiftID;
+  const quinary = req.params.quinaryShiftID;
   let takenShifts = await getSignedUp(`${req.params.holiday}`);
   let shifts = await getHolidayData(`${req.params.holiday}`);
-  let schedule = await findShifts(shifts, takenShifts, `${req.params.primaryShiftID}`);
-
-  console.log(req.params.primaryShiftID);
+  let schedule = await findShifts(shifts, takenShifts, [primary, secondary, tertiary, quaternary, quinary]);
 
   res.json(schedule);
 });
@@ -160,7 +213,7 @@ router.get('/getAvailableShifts/:holiday/:primaryShiftID', async (req, res) => {
 router.get('/getAvailableShifts/:holiday', async (req, res) => {
   let takenShifts = await getSignedUp(`${req.params.holiday}`);
   let shifts = await getHolidayData(`${req.params.holiday}`);
-  let schedule = await findShifts(shifts, takenShifts, -1);
+  let schedule = await findShifts(shifts, takenShifts, [-1, -1, -1, -1, -1]);
 
   res.json(schedule);
 });
@@ -176,8 +229,6 @@ router.get('/getMyShifts/:employeeID', async (req, res) => {
     }
   }
 
-  console.log(results);
-
   res.json(results);
 });
 
@@ -186,28 +237,36 @@ router.get('/getMyShiftsDropDown/:employeeID', async (req, res) => {
   const results = await getAgentShifts(employeeID);
   let concatOptions = new Array();
 
-  console.log(results);
-
   for (let i = 0; i < results.length; i++) {
     concatOptions[i] = { id: `${results[i].id}`, label: `${results[i].holiday_date} AT ${results[i].shift_time}`, holidayID: `${results[i].holiday_id}` }
   }
 
-  console.log(concatOptions);
-
   res.json(concatOptions);
 });
 
-router.put('/updateShift/:id/:shiftID', async (req, res) => {
-  console.log("Update");
-  const id = req.params.id;
-  const shiftID = req.params.shiftID;
-  const results = updateShiftData(id, shiftID);
+router.get('/GetAgents/BySenority', async (req, res) => {
+  results = await getAgentsBySenority();
   res.json(results);
 });
 
-router.delete('/deleteShift/:shiftID', async (req, res) => {
-  const shiftID = req.params.shiftID;
-  const results = deleteShift(shiftID);
+router.get('/GetAgents/AlphabeticalOrder', async (req, res) => {
+  results = await getAgentsAlphabeticalOrder();
+  res.json(results);
+})
+
+router.post('/postSelectedShifts', async (req, res) => {
+  const data = req.body;
+  let dataArray = new Array();
+  for (let i = 0; i < data.data.length; i++) {
+    dataArray[i] = new Array();
+    let counter = 0;
+    for (let key of Object.keys(data.data[i])) {
+      dataArray[i][counter] = data.data[i][`${key}`];
+      counter++;
+    }
+  }
+  const results = await postSelectedShifts(dataArray, data.data[0].employee_id);
+
   res.json(results);
 });
 
