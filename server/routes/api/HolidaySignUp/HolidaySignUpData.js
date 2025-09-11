@@ -111,22 +111,22 @@ async function runGetQuery(holidayType) {
 async function getAgents(agentType) {
   let query;
   if (agentType == "Agent") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
+    query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
       ORDER BY Agent_name`;
   } else if (agentType == "Dispatcher") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
+    query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [Dispatcher] = 1 AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight'
       ORDER BY Agent_name`;
   } else if (agentType == "Supervisor") {
-    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
+    query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Supervisor' AND [ScheduleGroup] = 'Amtelco Supervisor' AND [Office] != 'Overnight'
       ORDER BY Agent_name`;
   } else {
-    query = `SELECT Agent_name, JobTitle, Dispatcher, Office
+    query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'
       ORDER BY JobTitle, Dispatcher, Agent_name`;
@@ -134,6 +134,7 @@ async function getAgents(agentType) {
 
   try {
     let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+
     return result;
   } catch (err) {
     // ... error checks
@@ -241,30 +242,53 @@ async function getAssignedShifts(agentName) {
     // ... error checks
     console.log(err);
   }
+}
 
+async function getNotYetSignedUp() {
+  let agents = await getAgents("Agent");
+  let pickedShifts = await getRequestedShifts();
+  let notYetSignedUp = new Array();
+  let isFound = false;
+
+  for(let x = 0; x < agents.length; x++) {
+    isFound = false;
+    for(let y = 0; y < pickedShifts.length; y++) {
+      if(agents[x].EmployeeID == pickedShifts[y].employee_id) {
+        isFound = true;
+        break;
+      }
+    }
+    if(!isFound) {
+      notYetSignedUp.push(agents[x]);
+    }
+  }
+
+  return(notYetSignedUp);
 }
 
 //Get
-router.get('/TestAutoAssign', async (req, res) => {
+router.get('/TestAutoAssign/:startPoint', async (req, res) => {
+  let start = req.params.startPoint;
   let roundNumber = 1;
   let agents = await getAgentsBySenority();
   let takenShifts = await getSignedUp('Winter');
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
-  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
+  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber, start);
   
   // schedule = {data: schedule};
 
-  res.json(schedule.overviewByOffice);
+  res.json(schedule.setShifts);
 });
 
-router.get('/AssignShifts/:roundNumber', async (req, res) => {
+router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
+  let start = req.params.startPoint;
   let roundNumber = req.params.roundNumber;
   let agents = await getAgentsBySenority();
   let takenShifts = await getSignedUp('Winter');
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
-  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber);
+  let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber, start);
 
   if(schedule.setShifts.length < 1) {
     results = {error: "No Available Data, check email for automation error report."}
@@ -272,6 +296,11 @@ router.get('/AssignShifts/:roundNumber', async (req, res) => {
     results = await setShiftData(schedule.setShifts);
   }
 
+  res.json(results);
+});
+
+router.get('/GetNotYetSignedUp', async(req, res) => {
+  results = await getNotYetSignedUp();
   res.json(results);
 });
 

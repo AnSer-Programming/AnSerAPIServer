@@ -1,7 +1,8 @@
 const { shiftTimeTwelveHourToTwentyFourHour } = require('../timeHandler');
 const sendBreakReportEmail = require('../../node-mailer/AgentSuccess/automationBreakReport');
 
-async function buildSchedule(agents, requestedShifts, shifts, savedShifts, roundNumber) {
+async function buildSchedule(agents, requestedShifts, shifts, savedShifts, roundNumber, start) {
+  let newStart
   let takenShifts = savedShifts;
   let takenCounter;
   let overviewData = {};
@@ -85,7 +86,8 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
     }
   }
 
-  for (let x = 0; x < agentList.length; x++) {
+  for (let x = start; x < agentList.length; x++) {
+    newStart = parseInt(x)+1;
     let firstPick;
     let secondPick;
     let thirdPick;
@@ -108,7 +110,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
         }
       }
 
-      console.log(`Primary: ${firstPick}\nSecondary: ${secondPick}\nTertiary: ${thirdPick}\nQuarternary: ${fourthPick}\nQuinary: ${fifthPick}`);
+      // console.log(`Primary: ${firstPick}\nSecondary: ${secondPick}\nTertiary: ${thirdPick}\nQuarternary: ${fourthPick}\nQuinary: ${fifthPick}`);
 
       if (firstPick || secondPick || thirdPick || fourthPick || fifthPick) {
         if (firstPick && overviewData[`${firstPick}`].availableShifts > 0) {
@@ -137,12 +139,12 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
           overviewData[fifthPick].availableShifts -= 1;
           setShifts[setShifts.length] = [fifthPick, agentList[x].Agent_name, agentList[x].Office];
         } else {
-          sendBreakReportEmail({reason: `Agent's selected preferred shifts are no longer available.`, error: 'NoAvailability', agent_name: `${agentList[x].Agent_name}`});
+          sendBreakReportEmail({reason: `Agent's selected preferred shifts are no longer available.`, error: 'NoAvailability', agent_name: `${agentList[x].Agent_name}`, start: newStart});
           // build an auto email report with a link for where to restart the automation
           break;
         }
       } else {
-          sendBreakReportEmail({reason: 'Agent did not select any preferred shifts.', error: 'NoSelectedShifts', agent_name: `${agentList[x].Agent_name}`});
+          sendBreakReportEmail({reason: 'Agent did not select any preferred shifts.', error: 'NoSelectedShifts', agent_name: `${agentList[x].Agent_name}`, start: newStart});
           // build an auto email report with a link for where to restart the automation
         break;
       }
