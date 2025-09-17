@@ -5,6 +5,21 @@ dotenv.config();
 
 const sendEmail = (data) => {
   console.log("Sending an email!");
+
+  function buildCSV() {
+    let csvData;
+    csvData = 'holiday_id,agent_name,office_city,office_state,holiday,holiday_date,shift_time\n';
+    for(let x = 0; x < data.length; x++) {
+      for(let y = 0; y< data[x].length;y++) {
+        if(y == data[x].length-1) {
+          csvData += `${data[x][y]}\n`;
+        } else {
+          csvData += `${data[x][y]},`;
+        }
+      }
+    }
+    return csvData;
+  }
   
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_SERVER,
@@ -28,19 +43,19 @@ const sendEmail = (data) => {
       data.fileData = 'missing,data,please,submit,bug,report\r\nthank,you,for,your,patience\r\nSincerely,Stephen,Merki\r\n';
     }
     let attachment = [{
-      filename: `${data.fileName}.csv`,
-      content: `${data.fileData}`
+      filename: `RawSchedule.csv`,
+      content: `${buildCSV()}`
     },{
       filename: 'AnSerLogo.png',
       path: './node-mailer/SignatureImage/AnSerLogo.png',
       cid: 'AnSerLogo'
-    }]
+    }
+  ]
     return attachment;
   }
 
   // async..await is not allowed in global scope, must use a wrapper
-  async function main(data) {
-    // console.log(data.basicReport);
+  async function main() {
     const info = await transporter.sendMail({
       from: `${process.env.EMAIL_USER_API}`, // sender address
       // to: "stephenm@anser.com; custservice@anser.com", // list of receivers
@@ -48,9 +63,9 @@ const sendEmail = (data) => {
       //   'stephenm@anser.com'
       // ],
       to: "stephenm@anser.com",
-      subject: "Holiday Sign Up Automation Error", // Subject line
+      subject: "Holiday Sign Up Automation Success", // Subject line
       text: `Warning, there was an issue with the Holiday Sign Up Automation`, // plain text body
-      html: `${data.errorReport}`, // html body
+      html: `${data}`, // html body
       attachments: attachmentBuilder()
     });
   

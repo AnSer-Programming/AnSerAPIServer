@@ -54,7 +54,7 @@ const ViewByAgent = (data: any) => {
         }
         <p><a target="_blank" href='/HolidaySchedule'>Click here for Agent View</a></p>
 
-        {selectedHoliday == "None" ? <AgentOverview holidayType={holidayType} /> : <>{buttonBuilder()} <br /> <br />{data.editDisplay()}</>}
+        {selectedHoliday == "None" ? <AgentOverview holidayType={holidayType} agentData={data.agentData} /> : <>{buttonBuilder()} <br /> <br />{data.editDisplay()}</>}
       </div>
     </>
   )

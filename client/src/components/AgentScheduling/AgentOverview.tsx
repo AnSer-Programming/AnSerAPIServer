@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getHolidayData, getHolidaySignUp, getAgentsBySenority } from '../../utils/AgentSuccessAPI';
+import { getHolidayData, getHolidaySignUp, getAgentsBySenority, getAgents } from '../../utils/AgentSuccessAPI';
 
 const AgentOverview = (data: any) => {
   const [holidayData, setHolidayData] = useState<any>({});
   const [takenShiftData, setTakenShiftData] = useState<any>({});
   const [agentsBySenority, setAgentsBySenority] = useState<any>([]);
+  const [agentData, setAgents] = useState<any>();
   const takenShiftDataLength = Object.keys(takenShiftData).length;
   const holidayDataLength = Object.keys(holidayData).length;
 
@@ -15,6 +16,7 @@ const AgentOverview = (data: any) => {
       response[0] = await getHolidayData("All");
       response[1] = await getHolidaySignUp(data.holidayType);
       response[2] = await getAgentsBySenority();
+      response[3] = await getAgents("All");
 
       returnData = await response[0].json();
       setHolidayData(returnData);
@@ -24,6 +26,11 @@ const AgentOverview = (data: any) => {
 
       returnData = await response[2].json();
       setAgentsBySenority(returnData[0]);
+
+      returnData = await response[3].json();
+      console.log(returnData);
+      setAgents(returnData);
+      // console.log(data.agentData)
     }
 
     getData();
@@ -36,13 +43,15 @@ const AgentOverview = (data: any) => {
     let dispatchers: any[] = new Array();
     let supervisors: any[] = new Array();
 
-    for (let i = 0; i < agentsBySenority.length; i++) {
-      if (agentsBySenority[i].JobTitle == "Supervisor") {
-        supervisors.push({senorityRank: i, agentData: agentsBySenority[i]});
-      } else if (agentsBySenority[i].JobTitle == "Agent" && agentsBySenority[i].Dispatcher) {
-        dispatchers.push({senorityRank: i, agentData: agentsBySenority[i]});
+    console.log(agentData);
+
+    for (let i = 0; i < agentData.length; i++) {
+      if (agentData[i].JobTitle == "Supervisor") {
+        supervisors.push({senorityRank: i, agentData: agentData[i]});
+      } else if (agentData[i].JobTitle == "Agent" && agentData[i].Dispatcher) {
+        dispatchers.push({senorityRank: i, agentData: agentData[i]});
       } else {
-        agents.push({senorityRank: i, agentData: agentsBySenority[i]});
+        agents.push({senorityRank: i, agentData: agentData[i]});
       }
     }
 

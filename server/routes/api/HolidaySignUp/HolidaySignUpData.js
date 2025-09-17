@@ -4,6 +4,21 @@ const configAccounts = require('../../../config/connectionProductionCustom');
 const sql = require('mssql');
 const seq = require('sequelize');
 const { buildSchedule } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftAssigner');
+const sendBreakReportEmail = require('../../../node-mailer/AgentSuccess/automationBreakReport');
+const sendSuccessReportEmail = require('../../../node-mailer/AgentSuccess/automationSuccessReport');
+
+async function getShiftData(shiftID) {
+  let results;
+  let query = `SELECT holiday, holiday_date, shift_time
+          FROM [isapi].[dbo].[holidayShiftsSignUpAdminTable]
+          WHERE [id] = :shiftID`;
+  try {
+    results = await config.query(query, { replacements: { shiftID: shiftID }, type: seq.QueryTypes.SELECT });
+    return results;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 async function getHolidays(holidayType) {
   let results = new Array();
@@ -168,31 +183,25 @@ async function setShiftData(shiftData) {
 
 async function getAgentsBySenority() {
   let results = new Array();
-  async function runQuery() {
-    try {
-      let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
-      return result;
-    } catch (err) {
-      // ... error checks
-      console.log(err);
-    }
-  }
+  let query = new Array();
 
-  let query;
-
-  query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
+  query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
       ORDER BY StartStamp, EmployeeID ASC`;
 
-  results[0] = await runQuery();
-  query = `SELECT DISTINCT Office 
-      FROM AnSerTimecard.dbo.EmployeeList
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'`;
+  query[1] = `SELECT *
+        FROM [isapi].[dbo].[OfficeInformation]`;
 
-  results[1] = await runQuery();
+  try {
+    results[0] = await configAccounts.query(query[0], { type: seq.QueryTypes.SELECT });
+    results[1] = await config.query(query[1], { type: seq.QueryTypes.SELECT });
+  } catch (err) {
+    // ... error checks
+    console.log(err);
+  }
 
-  return results;
+  return await results;
 }
 
 async function updateShiftData(shiftData) {
@@ -250,20 +259,20 @@ async function getNotYetSignedUp() {
   let notYetSignedUp = new Array();
   let isFound = false;
 
-  for(let x = 0; x < agents.length; x++) {
+  for (let x = 0; x < agents.length; x++) {
     isFound = false;
-    for(let y = 0; y < pickedShifts.length; y++) {
-      if(agents[x].EmployeeID == pickedShifts[y].employee_id) {
+    for (let y = 0; y < pickedShifts.length; y++) {
+      if (agents[x].EmployeeID == pickedShifts[y].employee_id) {
         isFound = true;
         break;
       }
     }
-    if(!isFound) {
+    if (!isFound) {
       notYetSignedUp.push(agents[x]);
     }
   }
 
-  return(notYetSignedUp);
+  return (notYetSignedUp);
 }
 
 //Get
@@ -275,10 +284,32 @@ router.get('/TestAutoAssign/:startPoint', async (req, res) => {
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber, start);
-  
-  // schedule = {data: schedule};
+  let shiftData;
+  let overviewByOfficeForAgents = {};
+  let count = 0;
 
-  res.json(schedule.setShifts);
+  for (let i = 0; i < schedule.setShifts.length; i++) {
+    shiftData = await getShiftData(schedule.setShifts[i][0]);
+    for (let key in shiftData[0]) {
+      schedule.setShifts[i] += `,${shiftData[0][`${key}`]}`;
+    }
+    schedule.setShifts[i] = await schedule.setShifts[i].split(',');
+  }
+
+  sendSuccessReportEmail(schedule.setShifts);
+
+  for(let key in schedule.overviewByOffice) {
+    count = 0;
+    overviewByOfficeForAgents[`${key}`] = new Array();
+    for(let i = 0; i < schedule.overviewByOffice[`${key}`].length; i ++) {
+      if(schedule.overviewByOffice[`${key}`][i].employeeType=="Agent") {
+        overviewByOfficeForAgents[`${key}`][count] = await schedule.overviewByOffice[`${key}`][i];
+        count++;
+      }
+    }
+  }
+
+  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData});
 });
 
 router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
@@ -289,17 +320,28 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber, start);
+  let shiftData;
 
-  if(schedule.setShifts.length < 1) {
-    results = {error: "No Available Data, check email for automation error report."}
+  if (schedule.setShifts.length < 1) {
+    results = { error: "No Available Data, check email for automation error report." }
   } else {
     results = await setShiftData(schedule.setShifts);
   }
 
+  for (let i = 0; i < schedule.setShifts.length; i++) {
+    shiftData = await getShiftData(schedule.setShifts[i][0]);
+    for (let key in shiftData[0]) {
+      schedule.setShifts[i] += `,${shiftData[0][`${key}`]}`;
+    }
+    schedule.setShifts[i] = await schedule.setShifts[i].split(',');
+  }
+
+  sendSuccessReportEmail(schedule.setShifts);
+
   res.json(results);
 });
 
-router.get('/GetNotYetSignedUp', async(req, res) => {
+router.get('/GetNotYetSignedUp', async (req, res) => {
   results = await getNotYetSignedUp();
   res.json(results);
 });
