@@ -39,7 +39,7 @@ const sendEmail = (data) => {
   }
 
   // async..await is not allowed in global scope, must use a wrapper
-  async function main(data) {
+  async function main() {
     // console.log(data.basicReport);
     const info = await transporter.sendMail({
       from: `${process.env.EMAIL_USER_API}`, // sender address
@@ -66,7 +66,7 @@ const sendEmail = (data) => {
       </ol>`}<br />
       Please view CSV document for available shifts.<br /><br />
       When a shift is assigned use this link to continue automation<br /><br />
-      <a href: >Continue Automation</a>
+      <a href='http://localhost/api/AgentScheduling/HolidaySignUp/TestAutoAssign/${data.start}'>Continue Automation</a>
       <p>Thank you,<br />
       AnSer API Server<br />
       <img src='cid:AnSerLogo' width="180"/></p>`, // html body

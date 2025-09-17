@@ -159,6 +159,7 @@ const HolidaySignUp = () => {
         viewType == "Holiday" ?
           <ViewByHoliday
             isEdit={isEdit}
+            agents={agentData}
             handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
             editingHandler={() => editingHandler()}
             editDisplay={() => editDisplay()}
@@ -172,6 +173,7 @@ const HolidaySignUp = () => {
           :
           <ViewByAgent 
             isEdit={isEdit}
+            agents={agentData}
             handlerChangeHoliday={(data) => handlerChangeHoliday(data)}
             editingHandler={() => editingHandler()}
             editDisplay={() => editDisplay()}

@@ -138,7 +138,6 @@ const groupCheck = async (data) => {
   if(returnData[currentDirectory].length < 1) {
     delete returnData[currentDirectory];
   }
-  console.log(returnData);
 
   return await returnData;
 }
