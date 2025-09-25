@@ -7,6 +7,20 @@ const { buildSchedule } = require('../../../utils/holidaySignUpHelper/holidaySig
 const sendBreakReportEmail = require('../../../node-mailer/AgentSuccess/automationBreakReport');
 const sendSuccessReportEmail = require('../../../node-mailer/AgentSuccess/automationSuccessReport');
 
+async function getAgentSignUpReport() {
+  let results;
+  let query = `SELECT [employee_id], [pick_number], [holiday], [holiday_date], [shift_time]
+          FROM [isapi].[dbo].[holidayShiftPicker] hsp
+          LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] hssua ON hsp.[holiday_id] = hssua.[id]
+          ORDER BY hsp.[id], pick_number`;
+  try{
+    results = await config.query(query,{type:seq.QueryTypes.SELECT});
+    return results;
+  } catch(err) {
+    console.log(err);
+  }
+}
+
 async function getShiftData(shiftID) {
   let results;
   let query = `SELECT holiday, holiday_date, shift_time
@@ -296,8 +310,6 @@ router.get('/TestAutoAssign/:startPoint', async (req, res) => {
     schedule.setShifts[i] = await schedule.setShifts[i].split(',');
   }
 
-  sendSuccessReportEmail(schedule.setShifts);
-
   for(let key in schedule.overviewByOffice) {
     count = 0;
     overviewByOfficeForAgents[`${key}`] = new Array();
@@ -309,7 +321,28 @@ router.get('/TestAutoAssign/:startPoint', async (req, res) => {
     }
   }
 
-  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData});
+  let agentSignUpReport = await getAgentSignUpReport();
+
+  for(let x = 0; x < agentSignUpReport.length; x++) {
+    isFound = false;
+    for(let y = 0; y < agents[0].length; y++) {
+      if(agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
+        agentSignUpReport[x]['employee_name'] = await agents[0][y].Agent_name;
+        agentSignUpReport[x]['office_location'] = await agents[0][y].Office;
+        isFound = true;
+      }
+    }
+    if(!isFound) {
+      agentSignUpReport.splice(x, 1);
+      x-=1;
+    }
+  }
+
+  if(schedule.scheduleBuild) {
+    sendSuccessReportEmail({schedule: schedule.setShifts, shiftPicks: agentSignUpReport});
+  }
+
+  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport});
 });
 
 router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {

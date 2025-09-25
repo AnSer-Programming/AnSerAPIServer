@@ -5,9 +5,10 @@ const AgentOverview = (data: any) => {
   const [holidayData, setHolidayData] = useState<any>({});
   const [takenShiftData, setTakenShiftData] = useState<any>({});
   const [agentsBySenority, setAgentsBySenority] = useState<any>([]);
-  const [agentData, setAgents] = useState<any>();
+  const [agentData, setAgents] = useState<any>({});
   const takenShiftDataLength = Object.keys(takenShiftData).length;
   const holidayDataLength = Object.keys(holidayData).length;
+  const agentDataLength = Object.keys(agentData).length;
 
   useEffect(() => {
     const getData = async () => {
@@ -28,13 +29,15 @@ const AgentOverview = (data: any) => {
       setAgentsBySenority(returnData[0]);
 
       returnData = await response[3].json();
-      console.log(returnData);
       setAgents(returnData);
-      // console.log(data.agentData)
     }
 
     getData();
   }, [data.holidayType, takenShiftDataLength, holidayDataLength]);
+
+  if(!agentDataLength) {
+    return <h2>LOADING...</h2>;
+  }
 
   const shiftOverviewBuilder = () => {
     let table: any[] = new Array();
@@ -42,8 +45,6 @@ const AgentOverview = (data: any) => {
     let agents: any[] = new Array();
     let dispatchers: any[] = new Array();
     let supervisors: any[] = new Array();
-
-    console.log(agentData);
 
     for (let i = 0; i < agentData.length; i++) {
       if (agentData[i].JobTitle == "Supervisor") {
@@ -214,7 +215,7 @@ const AgentOverview = (data: any) => {
         tableRows.push(
           <tr>
             <td className="holidaySignUpItemAgentReport">{supervisors[x].agentData.Agent_name}</td>
-            <td className="holidaySignUpItemAgentReport" colSpan={3}>No Assigned Shifts</td>
+            <td className="holidaySignUpItemAgentReport noAssignedShifts" colSpan={3}>No Assigned Shifts</td>
           </tr>
         );
       }

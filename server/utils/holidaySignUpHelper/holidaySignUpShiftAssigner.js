@@ -11,6 +11,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
   let agentList = agents[0];
   let overviewByOffice = {};
   let offices = agents[1];
+  let isBuilt = false;
 
   for (let x = 0; x < offices.length; x++) {
     overviewByOffice[`${offices[x].office_location}`] = new Array();
@@ -160,6 +161,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
       }
 
       if (firstPick || secondPick || thirdPick || fourthPick || fifthPick) {
+        isBuilt = true;
         if (firstPick && overviewData[`${firstPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[firstPick - 1])) {
           await updateOverviewByOffice(agentList[x], await getShiftData(firstPick));
           overviewData[`${firstPick}`].takenShifts += 1;
@@ -186,10 +188,12 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
           overviewData[`${fifthPick}`].availableShifts -= 1;
           setShifts[setShifts.length] = [fifthPick, agentList[x].Agent_name, agentList[x].Office];
         } else {
+          isBuilt = false;
           sendBreakReportEmail({ reason: `Agent's selected preferred shifts are no longer available.`, error: 'NoAvailability', agent_name: `${agentList[x].Agent_name}`, start: newStart });
           break;
         }
       } else {
+        isBuilt = false;
         sendBreakReportEmail({ reason: 'Agent did not select any preferred shifts.', error: 'NoSelectedShifts', agent_name: `${agentList[x].Agent_name}`, start: newStart });
         break;
       }
@@ -198,7 +202,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
 
   // sendSuccessReportEmail(setShifts);
 
-  return { setShifts: setShifts, overviewByOffice: overviewByOffice, overviewData: overviewData };
+  return { scheduleBuild: isBuilt, setShifts: setShifts, overviewByOffice: overviewByOffice, overviewData: overviewData };
 }
 
 module.exports = { buildSchedule };
