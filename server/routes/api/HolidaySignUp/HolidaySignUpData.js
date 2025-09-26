@@ -199,7 +199,7 @@ async function getAgentsBySenority() {
   let results = new Array();
   let query = new Array();
 
-  query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
+  query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, format(StartStamp, 'yyyy-MM-dd') as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
       ORDER BY StartStamp, EmployeeID ASC`;
