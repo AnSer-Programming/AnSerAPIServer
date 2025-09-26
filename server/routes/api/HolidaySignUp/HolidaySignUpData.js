@@ -198,6 +198,7 @@ async function setShiftData(shiftData) {
 async function getAgentsBySenority() {
   let results = new Array();
   let query = new Array();
+  let placeHolder;
 
   query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, format(StartStamp, 'yyyy-MM-dd') as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
@@ -213,6 +214,15 @@ async function getAgentsBySenority() {
   } catch (err) {
     // ... error checks
     console.log(err);
+  }
+
+  for(let i = 0; i < results[0].length; i++) {
+    if(results[0][i].EmployeeID == 119) {
+      placeHolder = results[0][i];
+      results[0][i] = results[0][i+1];
+      results[0][i+1] = placeHolder;
+      break;
+    }
   }
 
   return await results;
