@@ -32,7 +32,7 @@ import ClientInfoReactRoutes from './pages/ClientInfo/ClientInfoReactRoutes';
 
 const AppContent = () => {
   const [open, setOpen] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState(true);
   const location = useLocation();
 
   const handleOpen = () => setOpen(true);
