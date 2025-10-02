@@ -1,7 +1,6 @@
 "use strict";
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
-const date = new Date();
 const days = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 const hours = ["12AM", "1AM", "2AM", "3AM", "4AM", "5AM", "6AM", "7AM", "8AM", "9AM", "10AM", "11AM", 
       "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM", "7PM", "8PM", "9PM", "10PM", "11PM"];
@@ -9,6 +8,7 @@ dotenv.config();
 
 const sendEmail = (data) => {
   console.log("Sending an email!");
+  const date = new Date();
   let formattedDate = `${days[date.getDay()]} ${date.getMonth()+1}-${date.getDate()}-${date.getFullYear()} ${hours[date.getHours()]}`;
   let fileData;
   fileData = `Client Name, Directory Name \n`;
@@ -56,7 +56,11 @@ const sendEmail = (data) => {
       // ],
       subject: "Directories WITHOUT Any Overrides", // Subject line
       text: `Below is a table with Client Names and the Directory Name that belongs to them. These directories do not have any overrides in them and need to have the default overrides put in place.\n\nThere should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket. \n${fileData}`, // plain text body
-      html: `<p>Below is a table with Client Names and the Directory Name that belongs to them. These directories do not have any overrides in them and need to have the default overrides put in place.</p><br /><p>There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket.</p><br /><table>${tableBuilder()}</table>`, // html body
+      html: `<p>Below is a table with Client Names and the Directory Name that belongs to them. These directories do not have any overrides in them and need to have the default overrides put in place.</p>
+        <p>In order to get the default overrides added to the directory go to the Subject section of the directory and select the Overrides tab. Once in the Overrides tab select the copy and choose the deafult template to copy all default overrides into the directory.</p>
+        <br />
+        <p>There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket.</p>
+        <br /><table>${tableBuilder()}</table>`, // html body
       attachments: attachmentBuilder()
     });
   
