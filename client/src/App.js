@@ -28,7 +28,7 @@ import VesselsList from './pages/VesselList';
 import ReportIssue from './pages/ReportIssue';
 import ClientInfo from './pages/ClientInfo'; // Legacy Client Info
 
-import ClientInfoReactRoutes from './pages/ClientInfo/ClientInfoReactRoutes';
+import ClientInfoReactRoutes from './pages/ClientInfo/shared_layout_routing/ClientInfoReactRoutes';
 
 const AppContent = () => {
   const [open, setOpen] = useState(false);
