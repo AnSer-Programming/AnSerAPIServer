@@ -84,21 +84,23 @@ const OverviewOnly = (data: any) => {
           );
           if (y == shiftOverviewData[shiftOverviewKeys[x]].length - 1) {
             shiftList.push(
-              <table style={{ width: '32%', justifyContent: 'space-evenly', borderStyle: 'solid', borderColor: '#FFFFFF', borderWidth: '2px', marginRight: '1%' }}>
-                <thead>
-                  <tr>
-                    <th colSpan={5} style={{ textAlign: 'center' }} className="holidaySignUpItem">{shiftOverviewKeys[x]}</th>
-                  </tr>
-                  <tr style={{ borderBottom: 'solid 1px #FFFFFF' }}>
-                    <td className="holidaySignUpItem">Shift Type</td>
-                    <td className="holidaySignUpItem">Shift Time</td>
-                    <td className="holidaySignUpItem">Available Shifts</td>
-                    <td className="holidaySignUpItem">Taken Shifts</td>
-                    <td className="holidaySignUpItem">Total Shifts</td>
-                  </tr>
-                </thead>
-                <tbody>{tableBody}</tbody>
-              </table>
+              <div style={{ width: '32%' }}>
+                <table className="holidaySignUpReview">
+                  <thead>
+                    <tr>
+                      <th colSpan={5} style={{ textAlign: 'center' }} className="holidaySignUpItem">{shiftOverviewKeys[x]}</th>
+                    </tr>
+                    <tr style={{ borderBottom: 'solid 1px #FFFFFF' }}>
+                      <td className="holidaySignUpItem">Shift Type</td>
+                      <td className="holidaySignUpItem">Shift Time</td>
+                      <td className="holidaySignUpItem">Available Shifts</td>
+                      <td className="holidaySignUpItem">Taken Shifts</td>
+                      <td className="holidaySignUpItem">Total Shifts</td>
+                    </tr>
+                  </thead>
+                  <tbody>{tableBody}</tbody>
+                </table>
+              </div>
             );
             tableBody = new Array();
           }
@@ -111,7 +113,7 @@ const OverviewOnly = (data: any) => {
 
   return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly' }}>
         {holidayData && takenShiftData ? shiftOverviewBuilder() : <br />}
       </div>
     </>

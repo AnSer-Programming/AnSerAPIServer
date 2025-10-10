@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import OverviewOnly from './OverviewOnly'
+import OverviewOnly from './OverviewOnly';
 import SelectHoliday from './SelectHoliday';
 
-const ViewByHoliday = (data:any) => {
+const ViewByHoliday = (data: any) => {
   const [holiday, setHoliday] = useState([]);
   const [selectedHoliday, setSelectedHoliday] = useState("None");
   const [employeeType, setEmployeeType] = useState([]);
   const [selectedEmployeeType, setSelectedEmployeeType] = useState("All");
   const [isEdit, setIsEdit] = useState(data.isEdit);
-  const [holidayType, setHolidayType] = useState("Summer");
+  const [holidayType, setHolidayType] = useState("Winter");
   const [agentData, setAgentData] = useState([]);
+  const [viewType, setViewType] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
+    setViewType(data.viewType);
     setHoliday(data.holiday);
     setIsEdit(data.isEdit);
     setSelectedHoliday(data.selectedHoliday);
     setEmployeeType(data.employeeType);
-  },[data]);
+  }, [data]);
 
-  const handlerChangeHoliday = (value:any) => {
+  const handlerChangeHoliday = (value: any) => {
     data.handlerChangeHoliday(value);
   }
 
@@ -34,17 +36,19 @@ const ViewByHoliday = (data:any) => {
   return (
     <>
       <div className="mainBody">
+        <h1>Current View Mode {viewType}</h1>
         <h1>Current Holiday Mode {holidayType}</h1>
         <h1>Current Holiday Selected {selectedHoliday ? selectedHoliday : "None"}</h1>
         {!isEdit ?
           <div>
-            <button onClick={() => data.holidayTypeHandler("Summer")} id="setToSummer">Summer Holidays</button>
-            <button onClick={() => data.holidayTypeHandler("Winter")} id="setToWinter">Winter Holidays</button>
+            {/* <button onClick={() => data.holidayTypeHandler("Summer")} id="setToSummer">Summer Holidays</button>
+            <button onClick={() => data.holidayTypeHandler("Winter")} id="setToWinter">Winter Holidays</button><br /><br /> */}
+            <button onClick={() => data.handlerChangeViewType("Agent")} id="setToAgentView">View By Agent</button>
             <div style={{ width: '25%' }}>
               <SelectHoliday
                 holidays={holiday}
                 selectedHoliday={selectedHoliday}
-                handlerChangeHoliday={(value:any) => { handlerChangeHoliday(value) }} />
+                handlerChangeHoliday={(value: any) => { handlerChangeHoliday(value) }} />
             </div>
           </div>
           :
