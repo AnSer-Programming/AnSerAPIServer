@@ -56,7 +56,13 @@ const sendEmail = (data) => {
       // ],
       subject: "Directories In The Wrong Status Checkin Mode", // Subject line
       text: `Below is a table with Client Names and the Directory Name that belongs to them. These tables are using the incorrect Status Checkin Mode.\n\nIn order to fix this go to the specified directory. Once in there stay in the Subject tab and look inside the General Settings. Now select the drop down list by the label "Status Checkin Mode:" and then select Override Schedule.\n\nThere should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket. \n${fileData}`, // plain text body
-      html: `<p>Below is a table with Client Names and the Directory Name that belongs to them. These tables are using the incorrect Status Checkin Mode.</p><br /><p>In order to fix this go to the specified directory. Once in there stay in the Subject tab and look inside the General Settings. Now select the drop down list by the label "Status Checkin Mode:" and then select Override Schedule.</p><br /><p>There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket.</p><br /><table>${tableBuilder()}</table>`, // html body
+      html: `<p>Below is a table with Client Names and the Directory Name that belongs to them. These tables are using the incorrect Status Checkin Mode.</p>
+      <br />
+      <p>In order to fix this go to the specified directory. Once in there stay in the Subject tab and look inside the General Settings. Now select the drop down list by the label "Status Checkin Mode:" and then select Override Schedule.</p>
+      <br />
+      <p>There should also be an attached CSV file that you can open with Microsoft Excel. If the file did not come in the email please submit a support ticket.</p>
+      <br />
+      <table>${tableBuilder()}</table>`, // html body
       attachments: attachmentBuilder()
     });
   
