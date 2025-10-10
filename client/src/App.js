@@ -8,12 +8,12 @@ import Button from '@mui/material/Button';
 
 import AgentStats from './pages/AgentStats';
 import BackUps from './pages/BackUps';
-import Calendar from './pages/Calendar';
-import ContactDispatch from './pages/ContactDispatch';
+// import Calendar from './pages/Calendar';
+// import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
-import HolidaySchedule from './pages/HolidaySignUpAgentPageSummer';
+import HolidaySchedule from './pages/HolidaySignUpAgentPage';
 import HolidayScheduleSignUp from './pages/HolidaySignUp';
 import HowTo from './pages/HowTo';
 import OCGroupList from './pages/OCGroupList';
@@ -32,7 +32,7 @@ import ClientInfoReactRoutes from './pages/ClientInfo/ClientInfoReactRoutes';
 
 const AppContent = () => {
   const [open, setOpen] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState(true);
   const location = useLocation();
 
   const handleOpen = () => setOpen(true);
@@ -72,17 +72,17 @@ const AppContent = () => {
     <div className="text-light bg-dark" style={{ height: '100vh' }}>
       <Switch>
         <Route exact path="/" component={Index} />
-        <Route exact path="/AgentStats" component={signedIn ? AgentStats : loginButton} />
+        <Route exact path="/AgentStats" component={AgentStats} />
         <Route exact path="/BackUps" component={signedIn ? BackUps : loginButton} />
-        <Route exact path="/Calendar" component={signedIn ? Calendar : loginButton} />
+        {/* <Route exact path="/Calendar" component={signedIn ? Calendar : loginButton} /> */}
         <Route exact path="/CrescentElectricReachList" component={signedIn ? CrescentElectricReachList : loginButton} />
         <Route exact path="/DisconnectList" component={signedIn ? DisconnectList : loginButton} />
         <Route exact path="/HolidaySchedule" component={HolidaySchedule} />
         <Route exact path="/HolidayScheduleSignUp" component={signedIn ? HolidayScheduleSignUp : loginButton} />
-        <Route exact path="/HowTo" component={signedIn ? HowTo : loginButton} />
-        <Route exact path="/HowTo/*" component={signedIn ? HowTo : loginButton} />
-        <Route exact path="/Info" component={signedIn ? Info : loginButton} />
-        <Route exact path="/Info/*" component={signedIn ? Info : loginButton} />
+        <Route exact path="/HowTo" component={HowTo} />
+        <Route exact path="/HowTo/*" component={HowTo} />
+        <Route exact path="/Info" component={Info} />
+        <Route exact path="/Info/*" component={Info} />
         <Route exact path="/OCGroupList" component={signedIn ? OCGroupList : loginButton} />
         <Route exact path="/ResidentDirectory" component={signedIn ? ResidentDirectory : loginButton} />
         <Route exact path="/Scheduler" component={signedIn ? SchedulerAgent : loginButton} />
