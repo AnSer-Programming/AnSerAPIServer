@@ -202,7 +202,7 @@ async function getAgentsBySenority() {
 
   query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, format(StartStamp, 'yyyy-MM-dd') as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 AND [EmployeeID] != 1740
       ORDER BY StartStamp, EmployeeID ASC`;
 
   query[1] = `SELECT *
@@ -363,6 +363,7 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
   let schedule = await buildSchedule(agents, requestedShifts, shifts, takenShifts, roundNumber, start);
+  let overviewByOfficeForAgents = {};
   let shiftData;
 
   if (schedule.setShifts.length < 1) {
@@ -379,9 +380,36 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
     schedule.setShifts[i] = await schedule.setShifts[i].split(',');
   }
 
-  sendSuccessReportEmail(schedule.setShifts);
+  for(let key in schedule.overviewByOffice) {
+    count = 0;
+    overviewByOfficeForAgents[`${key}`] = new Array();
+    for(let i = 0; i < schedule.overviewByOffice[`${key}`].length; i ++) {
+      if(schedule.overviewByOffice[`${key}`][i].employeeType=="Agent") {
+        overviewByOfficeForAgents[`${key}`][count] = await schedule.overviewByOffice[`${key}`][i];
+        count++;
+      }
+    }
+  }
 
-  res.json(results);
+  let agentSignUpReport = await getAgentSignUpReport();
+
+  for(let x = 0; x < agentSignUpReport.length; x++) {
+    isFound = false;
+    for(let y = 0; y < agents[0].length; y++) {
+      if(agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
+        agentSignUpReport[x]['employee_name'] = await agents[0][y].Agent_name;
+        agentSignUpReport[x]['office_location'] = await agents[0][y].Office;
+        isFound = true;
+      }
+    }
+    if(!isFound) {
+      agentSignUpReport.splice(x, 1);
+      x-=1;
+    }
+  }
+    sendSuccessReportEmail({schedule: schedule.setShifts, shiftPicks: agentSignUpReport});
+
+  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport});
 });
 
 router.get('/GetNotYetSignedUp', async (req, res) => {
