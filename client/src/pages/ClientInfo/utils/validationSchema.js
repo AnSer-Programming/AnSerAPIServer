@@ -406,6 +406,44 @@ export const summaryPreferencesSchema = (data = {}) => {
 };
 
 // ==============================
+//   CALL VOLUME METRICS SCHEMA
+// ==============================
+export const callVolumeSchema = (data = {}) => {
+  if (!data || typeof data !== 'object') {
+    return {
+      avgDaily: 'Share a daily call estimate so we can size staffing.'
+    };
+  }
+
+  const errors = {};
+
+  const avg = typeof data.avgDaily === 'number'
+    ? data.avgDaily.toString()
+    : (data.avgDaily || '').toString().trim();
+  if (!avg) {
+    errors.avgDaily = 'Share a typical daily call total.';
+  } else if (!/^[0-9]+$/.test(avg)) {
+    errors.avgDaily = 'Use digits only for the daily total.';
+  }
+
+  const overnight = (data.overnightPct || '').toString().trim();
+  if (overnight) {
+    const numeric = Number(overnight);
+    if (Number.isNaN(numeric)) {
+      errors.overnightPct = 'Use numbers only for the overnight percentage.';
+    } else if (numeric < 0 || numeric > 100) {
+      errors.overnightPct = 'Share a value between 0 and 100.';
+    }
+  }
+
+  if (typeof data.notes === 'string' && data.notes.length > 1000) {
+    errors.notes = 'Keep notes under 1000 characters.';
+  }
+
+  return Object.keys(errors).length ? errors : null;
+};
+
+// ==============================
 //   WEBSITE ACCESS SCHEMA
 // ==============================
 export const websiteAccessSchema = (data = {}) => {

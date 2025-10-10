@@ -68,6 +68,7 @@ const FastTrack = () => {
   const contacts = Array.isArray(fastTrack.onCallContacts) ? fastTrack.onCallContacts : [];
   const callTypeSlots = Array.isArray(fastTrack.callTypeSlots) ? fastTrack.callTypeSlots : [];
   const meeting = fastTrack.meeting || {};
+  const highCallVolumeExpected = Boolean(fastTrack.highCallVolumeExpected);
 
   const [errors, setErrors] = useState({});
   const [snackState, setSnackState] = useState({ open: false, message: '', severity: 'error' });
@@ -109,6 +110,10 @@ const FastTrack = () => {
   const handleMeetingChange = (field) => (event) => {
     const value = event.target.value;
     setFastTrack({ meeting: { ...meeting, [field]: value } });
+  };
+
+  const handleHighVolumeExpectedChange = (event) => {
+    setFastTrack({ highCallVolumeExpected: event.target.checked });
   };
 
   const toggleFastTrack = (event) => {
@@ -216,6 +221,53 @@ const FastTrack = () => {
             <Alert severity="info" variant="outlined">
               Fast Track is currently disabled. You can continue to the standard onboarding flow or enable Fast Track to provide rapid-launch details.
             </Alert>
+          )}
+
+          {fastTrack.enabled && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
+                bgcolor: darkMode ? alpha(theme.palette.secondary.main, 0.15) : alpha(theme.palette.secondary.main, 0.06),
+              }}
+            >
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.secondary.main, 0.18),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: theme.palette.secondary.main,
+                  }}
+                >
+                  <Notes />
+                </Box>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                    Expecting a surge in calls?
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                    Let our launch team know if you anticipate unusually high call volume so we can stage extra coverage during the fast-track window.
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={highCallVolumeExpected}
+                        onChange={handleHighVolumeExpectedChange}
+                        color="secondary"
+                      />
+                    }
+                    label="Yes, prepare for heavier-than-normal call volume while we ramp up."
+                  />
+                </Box>
+              </Stack>
+            </Paper>
           )}
 
           <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3, border: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>

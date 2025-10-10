@@ -1,0 +1,9 @@
+{
+  "extends": ["react-app", "react-app/jest"],
+  "ignorePatterns": [
+    "src/components/**",
+    "src/pages/**",
+    "!src/pages/ClientInfo/**",
+    "!src/App.js"
+  ]
+}

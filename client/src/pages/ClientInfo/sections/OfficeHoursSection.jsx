@@ -26,7 +26,6 @@ import {
 import { alpha } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
 import HolidayMultiDatePicker from '../components/HolidayMultiDatePicker';
-import CallVolumeSection from '../components/CallVolumeSection';
 
 // Default imports (both of these files export default)
 import SpecialEventsSection from './SpecialEventsSection';
@@ -151,12 +150,6 @@ const OfficeHoursSection = ({
     phone: { enabled: false },
     internet: { enabled: false },
   };
-  const volume = companyInfo.callVolumeExpectations || {
-    weekday: { level: 'low', expected: '', custom: '' },
-    weekend: { level: 'low', expected: '', custom: '' },
-    peakSeasonNotes: '',
-    additionalNotes: '',
-  };
   const observedHolidayErrors = errors?.holidays;
   const observedHolidayMessages = Array.isArray(observedHolidayErrors)
     ? observedHolidayErrors
@@ -275,10 +268,6 @@ const OfficeHoursSection = ({
   const setEmergencies = (patch) => {
     updateSection('companyInfo', { emergencyProtocols: { ...emergencies, ...patch } });
   };
-  const setVolume = (patch) => {
-    updateSection('companyInfo', { callVolumeExpectations: { ...volume, ...patch } });
-  };
-
   return (
     <Box sx={{ mt: 2 }}>
       <Alert severity="info" sx={{ mb: 2 }}>
@@ -721,10 +710,6 @@ const OfficeHoursSection = ({
               </Collapse>
             </Grid>
 
-            {/* Call volume expectations */}
-            <Grid item xs={12}>
-              <CallVolumeSection value={volume} onChange={setVolume} />
-            </Grid>
           </Grid>
         </Paper>
       </Box>

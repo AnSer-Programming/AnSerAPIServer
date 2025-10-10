@@ -82,7 +82,7 @@ const OfficeReach = () => {
     setSaving(false);
     
     // Always proceed to next step
-    history.push('/ClientInfoReact/NewFormWizard/answer-calls');
+  history.push('/ClientInfoReact/NewFormWizard/call-volume');
   };
 
   // Calculate completion percentage

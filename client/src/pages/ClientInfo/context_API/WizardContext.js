@@ -32,12 +32,6 @@ const DEFAULTS = {
       phone: { enabled: false },
       internet: { enabled: false },
     },
-    callVolumeExpectations: {
-      weekday: { level: 'low', expected: '', custom: '' },
-      weekend: { level: 'low', expected: '', custom: '' },
-      peakSeasonNotes: '',
-      additionalNotes: '',
-    },
     holidays: [],
     specialEvents: [],
     websiteAccess: {
@@ -134,8 +128,17 @@ const DEFAULTS = {
       otherText: '',
     },
   },
+  metrics: {
+    callVolume: {
+      avgDaily: '',
+      peakWindow: '',
+      overnightPct: '',
+      notes: '',
+    },
+  },
   fastTrack: {
     enabled: false,
+    highCallVolumeExpected: false,
     payment: {
       cardholderName: '',
       cardBrand: '',
@@ -302,7 +305,7 @@ export const WizardProvider = ({ children }) => {
   
   // Get completion percentage for entire form
   const getOverallProgress = useCallback(() => {
-    const sections = ['companyInfo', 'answerCalls', 'officeReach', 'onCall', 'finalDetails'];
+    const sections = ['companyInfo', 'officeReach', 'metrics', 'answerCalls', 'onCall', 'finalDetails'];
     const completedSections = sections.filter(section => {
       const sectionData = state.formData[section];
       if (!sectionData) return false;
@@ -330,7 +333,7 @@ export const WizardProvider = ({ children }) => {
 
   // Check if a step can be proceeded to (previous steps completed)
   const canProceedToStep = useCallback((targetStep) => {
-    const stepOrder = ['companyInfo', 'answerCalls', 'officeReach', 'onCall', 'finalDetails'];
+    const stepOrder = ['companyInfo', 'officeReach', 'metrics', 'answerCalls', 'onCall', 'finalDetails'];
     const targetIndex = stepOrder.indexOf(targetStep);
     
     if (targetIndex === -1) return true; // Unknown step, allow
@@ -524,6 +527,25 @@ export const WizardProvider = ({ children }) => {
         }
       }
 
+      const metrics = formData.metrics || {};
+      const callVolume = metrics.callVolume || {};
+      const volumeProvided = callVolume.avgDaily || callVolume.peakWindow || callVolume.overnightPct || callVolume.notes;
+      if (volumeProvided) {
+        summary += 'Call Volume Snapshot:\n';
+        if (callVolume.avgDaily) {
+          summary += `  • Average daily calls: ${callVolume.avgDaily}\n`;
+        }
+        if (callVolume.peakWindow) {
+          summary += `  • Peak times: ${callVolume.peakWindow}\n`;
+        }
+        if (callVolume.overnightPct) {
+          summary += `  • Overnight percentage: ${callVolume.overnightPct}\n`;
+        }
+        if (callVolume.notes) {
+          summary += `  • Notes: ${callVolume.notes}\n`;
+        }
+      }
+
       summary += '\n';
     }
 
@@ -586,8 +608,9 @@ export const WizardProvider = ({ children }) => {
       const ft = formData.fastTrack || {};
       const payment = ft.payment || {};
       const contacts = Array.isArray(ft.onCallContacts) ? ft.onCallContacts : [];
-      const slots = Array.isArray(ft.callTypeSlots) ? ft.callTypeSlots : [];
-      const meeting = ft.meeting || {};
+  const slots = Array.isArray(ft.callTypeSlots) ? ft.callTypeSlots : [];
+  const meeting = ft.meeting || {};
+  const highCallVolume = Boolean(ft.highCallVolumeExpected);
 
       const formatMeetingDate = (value) => {
         if (!value) return 'Not provided';
@@ -634,6 +657,8 @@ export const WizardProvider = ({ children }) => {
       if (payment.notes) {
         summary += `Payment notes: ${payment.notes}\n`;
       }
+
+      summary += `High call volume expected: ${highCallVolume ? 'Yes (scale staffing during launch)' : 'No'}\n`;
 
       if (contacts.length) {
         summary += 'Launch contacts:\n';

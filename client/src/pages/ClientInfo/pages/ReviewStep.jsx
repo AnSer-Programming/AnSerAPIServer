@@ -12,6 +12,11 @@ import {
   Alert,
   Chip,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 
@@ -20,6 +25,7 @@ import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
+import { sendSummaryEmail } from '../context_API/ClientWizardAPI';
 
 const Row = ({ label, value }) => (
   <Box sx={{ mb: 1.2 }}>
@@ -236,11 +242,29 @@ const describeSchedule = (schedule = {}) => {
 const ReviewStep = () => {
   const { darkMode } = useClientInfoTheme();
   const history = useHistory();
-  const { formData, validateAll, markStepVisited } = useWizard();
+  const { formData, validateAll, markStepVisited, exportFormData } = useWizard();
 
-  const [snack, setSnack] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [summaryDialog, setSummaryDialog] = useState({ open: false, text: '', accountName: '' });
   const [, setErrors] = useState(null);
   const [mounted, setMounted] = useState(false);
+
+  const showToast = (message, severity = 'info') => {
+    setToast({ open: true, message, severity });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({ ...prev, open: false }));
+  };
+
+  const openSummaryDialog = (text, accountName) => {
+    setSummaryDialog({ open: true, text, accountName });
+  };
+
+  const closeSummaryDialog = () => {
+    setSummaryDialog((prev) => ({ ...prev, open: false }));
+  };
 
   useEffect(() => {
     // Small delay to ensure DOM is ready before animations
@@ -270,6 +294,14 @@ const ReviewStep = () => {
   const fastTrack = formData.fastTrack || {};
   const fastTrackEnabled = fastTrack.enabled === true;
   const fastTrackPayment = fastTrack.payment || {};
+  const metrics = formData.metrics || {};
+  const callVolumeMetrics = metrics.callVolume || {};
+  const hasCallVolumeSnapshot = Boolean(
+    callVolumeMetrics.avgDaily ||
+    callVolumeMetrics.peakWindow ||
+    callVolumeMetrics.overnightPct ||
+    callVolumeMetrics.notes
+  );
   const fastTrackContacts = Array.isArray(fastTrack.onCallContacts)
     ? fastTrack.onCallContacts.filter((contact) => contact && (
         contact.name || contact.phone || contact.email || contact.role || contact.availability
@@ -318,6 +350,7 @@ const ReviewStep = () => {
 
   const eh = ci.officeHours || {};
   const lunch = ci.lunchHours || {};
+  const summaryPreferences = ci.summaryPreferences || {};
   const observedHolidayDates = Array.isArray(ci.holidays) ? ci.holidays : [];
   const formattedObservedHolidays = observedHolidayDates
     .map((date) => {
@@ -369,15 +402,120 @@ const ReviewStep = () => {
     ? websiteAccess.sites.filter((site) => site && site.url)
     : [];
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     markStepVisited('review');
     const errs = validateAll(formData);
     if (errs) {
       setErrors(errs);
-      setSnack(true);
+      showToast('Please fix all required fields before submitting.', 'error');
       return;
     }
-    alert('🎉 Submitted successfully!');
+
+    setIsSubmitting(true);
+
+    const parseDelimitedList = (value) => {
+      if (!value || typeof value !== 'string') return [];
+      return value
+        .split(/[\n,;]+/)
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+    };
+
+    const sanitizeFax = (value) => value.replace(/[^0-9+()\-\s]/g, '');
+
+    const emailRecipients = parseDelimitedList(summaryPreferences.email);
+    const faxRecipients = parseDelimitedList(summaryPreferences.faxNumber).map(sanitizeFax);
+    const summaryText = typeof exportFormData === 'function' ? exportFormData('summary') : '';
+
+    const sendInternallyOnly = emailRecipients.length === 0 && faxRecipients.length === 0;
+
+    const summaryPayload = {
+      accountName:
+        ci.businessName || ci.companyName || ci.company || ci.physicalLocation || 'New AnSer Account',
+      submittedAt: new Date().toISOString(),
+      recipients: {
+        emails: emailRecipients,
+        faxNumbers: faxRecipients,
+        realTimeChannels: Array.isArray(summaryPreferences.realTimeChannels)
+          ? summaryPreferences.realTimeChannels
+          : [],
+      },
+      preferences: {
+        dailyRecapEnabled: summaryPreferences.dailyRecapEnabled,
+        recapSchedule: summaryPreferences.recapSchedule || {},
+        recapDelivery: summaryPreferences.recap?.delivery || {},
+        sendEvenIfQuiet: summaryPreferences.alwaysSendEvenIfNoMessages,
+        reportSpamHangups: summaryPreferences.reportSpamHangups,
+      },
+      fastTrackEnabled,
+      sendInternallyOnly,
+      summaryText,
+      formData,
+    };
+
+    try {
+      const response = await sendSummaryEmail(summaryPayload);
+      if (!response || !response.ok) {
+        throw new Error('Summary API returned an error response.');
+      }
+
+      const successMessage = sendInternallyOnly
+        ? 'Application submitted. No external summary recipients were configured, so an internal copy was sent to the AnSer launch team.'
+        : 'Application submitted and summary email sent!';
+      showToast(successMessage, 'success');
+      if (typeof summaryText === 'string' && summaryText.trim().length) {
+        openSummaryDialog(summaryText, summaryPayload.accountName);
+      }
+    } catch (error) {
+      console.error('Failed to send automated summary email:', error);
+      showToast(
+        'Application saved, but the summary email did not send. Please retry or contact support.',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCopySummary = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(summaryDialog.text || '');
+        showToast('Summary copied to clipboard.', 'success');
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
+    } catch (error) {
+      console.error('Failed to copy summary text:', error);
+      showToast('Unable to copy automatically. Please select the text and copy manually.', 'warning');
+    }
+  };
+
+  const handleDownloadSummary = () => {
+    try {
+      const text = summaryDialog.text || '';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      const safeName = (summaryDialog.accountName || 'anser-summary')
+        .replace(/[^a-z0-9\-]+/gi, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-|-$/g, '')
+        .toLowerCase();
+      link.href = url;
+      link.download = `${safeName || 'anser-summary'}-${dateStamp}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('Summary downloaded.', 'success');
+    } catch (error) {
+      console.error('Failed to download summary text:', error);
+      showToast('Unable to download summary. Please try again.', 'error');
+    }
   };
 
   // derive readable rotation string
@@ -511,6 +649,7 @@ const ReviewStep = () => {
                   <Typography variant="body2">Billing ZIP: {fastTrackPayment.billingZip || '-'}</Typography>
                   <Typography variant="body2">Rush Fee Accepted: {yn(!!fastTrackPayment.rushFeeAccepted)}</Typography>
                   <Typography variant="body2">Authorization: {fastTrackPayment.authorization ? 'Approved' : 'Pending'}</Typography>
+                  <Typography variant="body2">High call volume expected: {fastTrack?.highCallVolumeExpected ? 'Yes — stage extra coverage.' : 'No'}</Typography>
                   {fastTrackPayment.notes && (
                     <Typography variant="body2" color="text.secondary">Notes: {fastTrackPayment.notes}</Typography>
                   )}
@@ -587,6 +726,36 @@ const ReviewStep = () => {
                 <Row label="Address" value={ci.address || ci.physicalAddress} />
                 <Row label="Time Zone" value={ci.timeZone} />
               </Box>
+            </Card>
+          )}
+
+          {mounted && hasCallVolumeSnapshot && (
+            <Card
+              title="Call Volume Snapshot"
+              onEdit={() => history.push(WIZARD_ROUTES.CALL_VOLUME)}
+            >
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <Row
+                  label="Average Daily Calls"
+                  value={callVolumeMetrics.avgDaily ? `${callVolumeMetrics.avgDaily}` : '-'}
+                />
+                <Row
+                  label="Peak Times"
+                  value={callVolumeMetrics.peakWindow || '-'}
+                />
+                <Row
+                  label="Overnight %"
+                  value={callVolumeMetrics.overnightPct ? `${callVolumeMetrics.overnightPct}%` : '-'}
+                />
+              </Box>
+              {callVolumeMetrics.notes && (
+                <>
+                  <Divider sx={{ my: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    {callVolumeMetrics.notes}
+                  </Typography>
+                </>
+              )}
             </Card>
           )}
 
@@ -1014,6 +1183,7 @@ const ReviewStep = () => {
                 variant="contained" 
                 size="large"
                 onClick={handleSubmit}
+                disabled={isSubmitting}
                 sx={{
                   background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
                   borderRadius: 2,
@@ -1025,10 +1195,15 @@ const ReviewStep = () => {
                   '&:hover': {
                     background: 'linear-gradient(135deg, #1b5e20 0%, #388e3c 100%)',
                     boxShadow: '0 6px 16px rgba(76, 175, 80, 0.4)',
+                  },
+                  '&:disabled': {
+                    background: 'linear-gradient(135deg, #a5d6a7 0%, #c8e6c9 100%)',
+                    boxShadow: 'none',
+                    color: 'rgba(255, 255, 255, 0.7)'
                   }
                 }}
               >
-                Submit Application →
+                {isSubmitting ? 'Sending summary…' : 'Submit Application →'}
               </Button>
             </Box>
           )}
@@ -1037,9 +1212,52 @@ const ReviewStep = () => {
 
       <ClientInfoFooter />
 
-      <Snackbar open={snack} autoHideDuration={3000} onClose={() => setSnack(false)}>
-        <Alert severity="error" sx={{ width: '100%' }}>
-          Please fix all required fields before submitting.
+      <Dialog
+        open={summaryDialog.open}
+        onClose={closeSummaryDialog}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>
+          Summary ready{summaryDialog.accountName ? ` — ${summaryDialog.accountName}` : ''}
+        </DialogTitle>
+        <DialogContent dividers>
+          <DialogContentText sx={{ mb: 2 }}>
+            A copy of your onboarding summary was sent automatically. You can download or copy the
+            same content below for your records.
+          </DialogContentText>
+          <Box
+            component="pre"
+            sx={{
+              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : '#f7f9fc',
+              borderRadius: 2,
+              p: 2,
+              maxHeight: 360,
+              overflow: 'auto',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {summaryDialog.text || 'Summary content unavailable.'}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={handleCopySummary} variant="outlined">
+            Copy to Clipboard
+          </Button>
+          <Button onClick={handleDownloadSummary} variant="contained" color="primary">
+            Download .txt
+          </Button>
+          <Button onClick={closeSummaryDialog} color="inherit">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={toast.open} autoHideDuration={4000} onClose={closeToast}>
+        <Alert severity={toast.severity} sx={{ width: '100%' }} onClose={closeToast}>
+          {toast.message || 'Status updated.'}
         </Alert>
       </Snackbar>
     </Box>

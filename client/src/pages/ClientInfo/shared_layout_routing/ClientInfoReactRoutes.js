@@ -10,6 +10,7 @@ import { ClientInfoThemeProvider } from '../context_API/ClientInfoThemeContext';
 const StartNewClient = lazy(() => import('../pages/StartNewClient'));
 const ClientSetUp = lazy(() => import('../pages/ClientSetUp'));
 const OfficeReach = lazy(() => import('../pages/OfficeReach'));
+const CallVolume = lazy(() => import('../pages/CallVolume'));
 const AnswerCalls = lazy(() => import('../pages/AnswerCalls'));
 const FinalDetails = lazy(() => import('../pages/FinalDetails'));
 const ReviewStep = lazy(() => import('../pages/ReviewStep'));
@@ -34,8 +35,9 @@ const ClientInfoReactRoutesInner = () => (
         <Route exact path="/ClientInfoReact" component={StartNewClient} />
         <Route exact path="/ClientInfoReact/NewFormWizard" render={() => <Redirect to="/ClientInfoReact/NewFormWizard/company-info" />} />
         <Route path="/ClientInfoReact/NewFormWizard/company-info" component={ClientSetUp} />
-        <Route path="/ClientInfoReact/NewFormWizard/office-reach" component={OfficeReach} />
-  <Route path="/ClientInfoReact/NewFormWizard/answer-calls" component={AnswerCalls} />
+    <Route path="/ClientInfoReact/NewFormWizard/office-reach" component={OfficeReach} />
+    <Route path="/ClientInfoReact/NewFormWizard/call-volume" component={CallVolume} />
+    <Route path="/ClientInfoReact/NewFormWizard/answer-calls" component={AnswerCalls} />
   <Route path="/ClientInfoReact/admin-invite" component={AdminInvite} />
   <Route path="/ClientInfoReact/invite/:token" component={InviteLinkHandler} />
         <Route path="/ClientInfoReact/NewFormWizard/final-details" component={FinalDetails} />

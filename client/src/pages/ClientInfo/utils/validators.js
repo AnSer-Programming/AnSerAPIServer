@@ -7,6 +7,7 @@ import {
   attachmentsSchema,
   personnelSchema,
   summaryPreferencesSchema,
+  callVolumeSchema,
   websiteAccessSchema,
   callTypesSchema,
   fastTrackSchema,
@@ -68,6 +69,7 @@ export const validators = {
   accountPreferences: accountPreferencesSchema,
   'companyInfo.consultationMeeting': consultationMeetingSchema,
   attachments: attachmentsSchema,
+  'metrics.callVolume': callVolumeSchema,
   fastTrack: fastTrackSchema,
 
   // --- NEW: On Call (aggregate + sub-keys) ---
