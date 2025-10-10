@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { useHistory } from 'react-router-dom';
-import { useClientInfoTheme } from './ClientInfoThemeContext';
+import { useClientInfoTheme } from './context_API/ClientInfoThemeContext';
 
 const NotFound = () => {
   const history = useHistory();
