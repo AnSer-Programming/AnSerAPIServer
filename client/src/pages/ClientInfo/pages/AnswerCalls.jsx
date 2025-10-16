@@ -13,6 +13,9 @@ import {
   Radio,
   FormControlLabel,
   FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
   Chip,
   FormHelperText,
   Grid,
@@ -49,6 +52,17 @@ const STANDARD_ROUTINE =
 const STANDARD_URGENT =
   'Thank you for calling [Business Name]. Please hold, and I will transfer you to our on-call staff right away.';
 
+const BUSINESS_TYPE_OPTIONS = [
+  { value: 'healthcare', label: 'Healthcare / Medical' },
+  { value: 'legal', label: 'Legal Services' },
+  { value: 'home-services', label: 'Home Services / Trades' },
+  { value: 'property-management', label: 'Property Management / Real Estate' },
+  { value: 'professional-services', label: 'Professional Services' },
+  { value: 'retail-ecommerce', label: 'Retail / eCommerce' },
+  { value: 'nonprofit', label: 'Nonprofit / Community' },
+  { value: 'other', label: 'Other' },
+];
+
 const AnswerCalls = () => {
   const theme = useTheme();
   const { darkMode } = useClientInfoTheme();
@@ -61,6 +75,7 @@ const AnswerCalls = () => {
   const [errors, setErrors] = React.useState({});
 
   const ac = getSection('answerCalls') || {};
+  const businessTypeError = errors.businessType;
 
   const setAC = (patch) => updateSection('answerCalls', { ...ac, ...patch });
   const handleRoutineChange = (patch) => setAC({ routine: { ...(ac.routine || {}), ...patch } });
@@ -100,6 +115,7 @@ const AnswerCalls = () => {
     })();
 
     const fields = [
+      Boolean(ac.businessType && ac.businessType.trim()),
       ac.routine?.useStandard !== undefined || ac.routine?.custom,
       ac.urgent?.useStandard !== undefined || ac.urgent?.custom,
       hasConfiguredCallType,
@@ -109,7 +125,7 @@ const AnswerCalls = () => {
   };
 
   const progress = getCompletionPercentage();
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'Review'];
+  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'Review'];
 
   const softBg = (c) =>
     darkMode ? alpha(theme.palette[c].main, 0.12) : alpha(theme.palette[c].main, 0.06);
@@ -580,6 +596,33 @@ const AnswerCalls = () => {
         <Fade in timeout={800}>
           <Paper variant="outlined" sx={sharedStyles.layout.wizardCard}>
 
+            <Box sx={{ mb: 3, display: 'grid', gap: 1.5 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                Business Type
+              </Typography>
+              <FormControl fullWidth error={Boolean(businessTypeError)}>
+                <InputLabel id="business-type-label">Select business type</InputLabel>
+                <Select
+                  labelId="business-type-label"
+                  label="Select business type"
+                  value={ac.businessType || ''}
+                  onChange={(e) => setAC({ businessType: e.target.value })}
+                >
+                  <MenuItem value="">
+                    <em>Choose the closest match</em>
+                  </MenuItem>
+                  {BUSINESS_TYPE_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>
+                  {businessTypeError || 'This helps us tailor caller scripting and escalation examples.'}
+                </FormHelperText>
+              </FormControl>
+            </Box>
+
           {/* CALL CLASSIFICATION */}
           <CallClassificationSection />
 
@@ -749,7 +792,7 @@ const AnswerCalls = () => {
             <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push(WIZARD_ROUTES.CALL_VOLUME)}
+              onClick={() => history.push(WIZARD_ROUTES.OFFICE_REACH)}
               sx={{ minWidth: 120 }}
             >
               Back

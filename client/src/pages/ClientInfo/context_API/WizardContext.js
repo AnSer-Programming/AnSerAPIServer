@@ -11,6 +11,44 @@ const WizardContext = createContext(null);
 // Default shapes for sections we want to safely read before the user types anything.
 const DEFAULTS = {
   companyInfo: {
+    businessName: '',
+    company: '',
+    physicalLocation: '',
+    suiteOrUnit: '',
+    physicalCity: '',
+    physicalState: '',
+    physicalPostalCode: '',
+    mailingAddress: '',
+    mailingSuite: '',
+    mailingCity: '',
+    mailingState: '',
+    mailingPostalCode: '',
+    mailingSameAsPhysical: false,
+    additionalLocations: [],
+    contactNumbers: {
+      primaryOfficeLine: '',
+      tollFree: '',
+      secondaryLine: '',
+      fax: '',
+      officeEmail: '',
+      website: '',
+    },
+    contactChannels: [],
+    primaryContact: {
+      name: '',
+      title: '',
+      phone: '',
+      email: '',
+    },
+    billingContact: {
+      name: '',
+      title: '',
+      phone: '',
+      email: '',
+      purchaseOrder: '',
+      notes: '',
+    },
+    billingSameAsPrimary: false,
     timeZone: '',
     officeHours: {},
     lunchHours: { enabled: false, open: '12:00', close: '13:00' },
@@ -117,14 +155,15 @@ const DEFAULTS = {
   },
   escalationMatrix: [],
   answerCalls: {
+    businessType: '',
     routine: { useStandard: true, custom: '', guidelines: '' },
     urgent: { useStandard: true, custom: '', guidelines: '' },
     callTypes: {
-      newLead: { enabled: false, instructions: '', differsAfterHours: null, afterHoursInstructions: '' },
-      existingClient: { enabled: false, instructions: '', differsAfterHours: null, afterHoursInstructions: '' },
-      urgentIssue: { enabled: false, instructions: '', differsAfterHours: null, afterHoursInstructions: '' },
-      serviceRequest: { enabled: false, instructions: '', differsAfterHours: null, afterHoursInstructions: '' },
-      billingQuestion: { enabled: false, instructions: '', differsAfterHours: null, afterHoursInstructions: '' },
+      newLead: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
+      existingClient: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
+      urgentIssue: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
+      serviceRequest: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
+      billingQuestion: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
       otherText: '',
     },
   },
@@ -360,20 +399,45 @@ export const WizardProvider = ({ children }) => {
     if (formData.companyInfo) {
       summary += 'COMPANY INFORMATION:\n';
       const info = formData.companyInfo;
+      const formatAddress = (street, suite, city, state, postal) => {
+        const parts = [street, suite, city, state, postal].map((part) => part && part.trim()).filter(Boolean);
+        return parts.length ? parts.join(', ') : 'Not provided';
+      };
+
       summary += `Business Name: ${info.businessName || info.company || 'Not provided'}\n`;
-      summary += `Physical Location: ${info.physicalLocation || 'Not provided'}\n`;
-      summary += `Mailing Address: ${info.mailingSameAsPhysical ? info.physicalLocation || 'Not provided' : info.mailingAddress || 'Not provided'}\n`;
-      summary += `Primary Phone: ${info.contactNumbers?.primaryOfficeLine || info.phone || 'Not provided'}\n`;
-      summary += `Office Email: ${info.contactNumbers?.officeEmail || info.email || 'Not provided'}\n`;
+      summary += `Physical Address: ${formatAddress(info.physicalLocation, info.suiteOrUnit, info.physicalCity, info.physicalState, info.physicalPostalCode)}\n`;
+      summary += `Mailing Address: ${info.mailingSameAsPhysical ? 'Same as physical' : formatAddress(info.mailingAddress, info.mailingSuite, info.mailingCity, info.mailingState, info.mailingPostalCode)}\n`;
+
+      const primaryContact = info.primaryContact || {};
+      const primaryLine = [primaryContact.name, primaryContact.phone, primaryContact.email].filter((value) => value && value.trim()).join(' | ');
+      summary += `Primary Contact: ${primaryLine || 'Not provided'}\n`;
+
+      if (info.billingSameAsPrimary) {
+        summary += 'Billing Contact: Same as primary\n';
+      } else {
+        const billingContact = info.billingContact || {};
+        const billingLine = [billingContact.name, billingContact.phone, billingContact.email].filter((value) => value && value.trim()).join(' | ');
+        summary += `Billing Contact: ${billingLine || 'Not provided'}\n`;
+      }
+
+      if (Array.isArray(info.contactChannels) && info.contactChannels.length) {
+        summary += 'Contact Channels:\n';
+        info.contactChannels.forEach((channel, index) => {
+          if (!channel) return;
+          const label = channel.type ? channel.type.replace(/-/g, ' ') : `Channel ${index + 1}`;
+          summary += `  • ${label}: ${channel.value || 'Not provided'}\n`;
+        });
+      } else if (info.contactNumbers?.primaryOfficeLine) {
+        summary += `Primary Phone: ${info.contactNumbers.primaryOfficeLine}\n`;
+      }
 
       if (Array.isArray(info.additionalLocations) && info.additionalLocations.length) {
         summary += 'Additional Locations:\n';
         info.additionalLocations.forEach((location, index) => {
           if (!location) return;
           const label = location.label || `Location ${index + 1}`;
-          const address = location.address || 'Address not provided';
-          const suite = location.suite ? `, ${location.suite}` : '';
-          summary += `  • ${label}: ${address}${suite}\n`;
+          const address = formatAddress(location.address, location.suite, location.city, location.state, location.postalCode);
+          summary += `  • ${label}: ${address}\n`;
         });
       }
 
@@ -550,7 +614,19 @@ export const WizardProvider = ({ children }) => {
     }
 
     if (formData.answerCalls) {
-      summary += 'CALL HANDLING:\n';
+  summary += 'CALL HANDLING:\n';
+      const BUSINESS_TYPE_LABELS = {
+        healthcare: 'Healthcare / Medical',
+        legal: 'Legal Services',
+        'home-services': 'Home Services / Trades',
+        'property-management': 'Property Management / Real Estate',
+        'professional-services': 'Professional Services',
+        'retail-ecommerce': 'Retail / eCommerce',
+        nonprofit: 'Nonprofit / Community',
+        other: 'Other',
+      };
+      const businessTypeValue = formData.answerCalls.businessType;
+      summary += `Business Type: ${BUSINESS_TYPE_LABELS[businessTypeValue] || businessTypeValue || 'Not provided'}\n`;
       summary += `Routine: ${formData.answerCalls.routine?.useStandard ? 'Standard' : 'Custom'}\n`;
       summary += `Urgent: ${formData.answerCalls.urgent?.useStandard ? 'Standard' : 'Custom'}\n`;
 
@@ -568,6 +644,13 @@ export const WizardProvider = ({ children }) => {
         const details = [];
         if (value?.instructions) {
           details.push(value.instructions);
+        }
+        if (value?.urgency) {
+          const urgencyLabel = value.urgency === 'urgent' ? 'Urgent' : 'Non-urgent';
+          details.push(`Urgency: ${urgencyLabel}`);
+        }
+        if (value?.whoToReach) {
+          details.push(`Reach: ${value.whoToReach}`);
         }
         if (value?.differsAfterHours === true && value?.afterHoursInstructions) {
           details.push(`After-hours: ${value.afterHoursInstructions}`);

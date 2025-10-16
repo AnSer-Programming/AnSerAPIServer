@@ -53,10 +53,11 @@ const OfficePersonnelSection = ({ errors = {} }) => {
 
   return (
     <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ color: '#b00', fontWeight: 700, mb: 1 }}>
-        Primary Office Personnel <Typography component="span" variant="body2" color="text.secondary">
-          &nbsp;(This is not people on call)
-        </Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        Additional Contacts
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Include any other team members we may reference or loop in when callers need help.
       </Typography>
 
       {personnel.map((p, idx) => {
@@ -157,7 +158,7 @@ const OfficePersonnelSection = ({ errors = {} }) => {
         );
       })}
 
-      <Button variant="outlined" onClick={addPerson}>Add Person</Button>
+      <Button variant="outlined" onClick={addPerson}>Add Contact</Button>
     </Box>
   );
 };

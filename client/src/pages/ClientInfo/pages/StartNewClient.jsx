@@ -26,7 +26,6 @@ import {
   CheckCircleOutlined,
   TimerOutlined,
   PlayArrowRounded,
-  BoltOutlined,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
@@ -34,7 +33,6 @@ import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
 import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
 import { createSharedStyles } from '../utils/sharedStyles';
 import { WIZARD_ROUTES } from '../constants/routes';
-import { useWizard } from '../context_API/WizardContext';
 
 // Import AnSer logo
 import AnSerLogoStar from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
@@ -47,8 +45,6 @@ const StartNewClient = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loadingMode, setLoadingMode] = useState(null);
   const isLoading = Boolean(loadingMode);
-  const { getSection, updateSection } = useWizard();
-  const fastTrack = getSection('fastTrack');
 
   const handleStart = async () => {
     setLoadingMode('standard');
@@ -57,20 +53,11 @@ const StartNewClient = () => {
     history.push(WIZARD_ROUTES.COMPANY_INFO);
   };
 
-  const handleFastTrack = async () => {
-    setLoadingMode('fast-track');
-    await new Promise(resolve => setTimeout(resolve, 300));
-    if (!fastTrack?.enabled) {
-      updateSection('fastTrack', { ...fastTrack, enabled: true });
-    }
-    history.push(WIZARD_ROUTES.FAST_TRACK);
-  };
-
   const setupSteps = [
-    { icon: <BusinessOutlined />, title: 'Company Information', desc: 'Basic details and contact info' },
-    { icon: <ScheduleOutlined />, title: 'Office Hours', desc: 'When you\'re open and available' },
-    { icon: <PhoneOutlined />, title: 'Call Handling', desc: 'How we should answer your calls' },
-    { icon: <ReviewsOutlined />, title: 'Review & Submit', desc: 'Confirm everything looks perfect' },
+    { icon: <BusinessOutlined />, title: 'Basic Info', desc: 'Essential contacts and addresses' },
+    { icon: <ScheduleOutlined />, title: 'What You Need From Us', desc: 'Availability, hours, and expectations' },
+    { icon: <PhoneOutlined />, title: 'Call Handling', desc: 'How we should answer and route callers' },
+    { icon: <ReviewsOutlined />, title: 'Review & Submit', desc: 'Double-check the details before launch' },
   ];
 
   const benefits = [
@@ -184,36 +171,8 @@ const StartNewClient = () => {
                 {loadingMode === 'standard' ? 'Starting Your Setup…' : 'START CLIENT SETUP'}
               </Button>
 
-              <Button
-                variant="outlined"
-                size="large"
-                color="secondary"
-                onClick={handleFastTrack}
-                disabled={isLoading}
-                startIcon={loadingMode === 'fast-track' ? <CircularProgress size={20} /> : <BoltOutlined />}
-                sx={{
-                  minWidth: isMobile ? 240 : 260,
-                  py: isMobile ? 1.5 : 2,
-                  fontSize: isMobile ? '1rem' : '1.05rem',
-                  fontWeight: 700,
-                  borderRadius: 3,
-                  borderWidth: 2,
-                  '&:hover': {
-                    borderWidth: 2,
-                    boxShadow: theme.shadows[4],
-                    transform: 'translateY(-2px)',
-                  }
-                }}
-              >
-                {loadingMode === 'fast-track' ? 'Preparing Fast Track…' : 'FAST TRACK (3-DAY LAUNCH)'}
-              </Button>
             </Box>
 
-            <Box sx={{ mt: 2, maxWidth: 560, mx: 'auto' }}>
-              <Typography variant="body2" color="text.secondary">
-                Need live coverage within 72 hours? Choose Fast Track to share payment authorization, first-week contacts, and launch call types in one quick checklist. A $100 rush fee applies and will be confirmed before activation.
-              </Typography>
-            </Box>
           </Paper>
         </Fade>
 

@@ -19,20 +19,18 @@ import AnSerLogo from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
 
 // Wizard config
 const WIZARD_BASE = '/ClientInfoReact/NewFormWizard';
-const WIZARD_STEPS = ['company-info', 'office-reach', 'call-volume', 'answer-calls', 'on-call', 'final-details', 'review'];
+const WIZARD_STEPS = ['company-info', 'office-reach', 'answer-calls', 'on-call', 'final-details', 'review'];
 
 const NAV_ITEMS = [
   { label: 'HOME', to: '/ClientInfoReact' },
   { label: 'COMPANY INFORMATION', to: `${WIZARD_BASE}/company-info` },
   { label: 'OFFICE REACH INFORMATION', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'CALL VOLUME SNAPSHOT', to: `${WIZARD_BASE}/call-volume` },
   { label: 'HOW TO ANSWER YOUR CALLS', to: `${WIZARD_BASE}/answer-calls` },
 ];
 
 const WIZARD_LINKS = [
   { label: 'Company Information', to: `${WIZARD_BASE}/company-info` },
   { label: 'Office Reach', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'Call Volume', to: `${WIZARD_BASE}/call-volume` },
   { label: 'Answer Calls', to: `${WIZARD_BASE}/answer-calls` },
   { label: 'On Call', to: `${WIZARD_BASE}/on-call` },
   { label: 'Final Details', to: `${WIZARD_BASE}/final-details` },

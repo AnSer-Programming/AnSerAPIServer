@@ -294,14 +294,6 @@ const ReviewStep = () => {
   const fastTrack = formData.fastTrack || {};
   const fastTrackEnabled = fastTrack.enabled === true;
   const fastTrackPayment = fastTrack.payment || {};
-  const metrics = formData.metrics || {};
-  const callVolumeMetrics = metrics.callVolume || {};
-  const hasCallVolumeSnapshot = Boolean(
-    callVolumeMetrics.avgDaily ||
-    callVolumeMetrics.peakWindow ||
-    callVolumeMetrics.overnightPct ||
-    callVolumeMetrics.notes
-  );
   const fastTrackContacts = Array.isArray(fastTrack.onCallContacts)
     ? fastTrack.onCallContacts.filter((contact) => contact && (
         contact.name || contact.phone || contact.email || contact.role || contact.availability
@@ -726,36 +718,6 @@ const ReviewStep = () => {
                 <Row label="Address" value={ci.address || ci.physicalAddress} />
                 <Row label="Time Zone" value={ci.timeZone} />
               </Box>
-            </Card>
-          )}
-
-          {mounted && hasCallVolumeSnapshot && (
-            <Card
-              title="Call Volume Snapshot"
-              onEdit={() => history.push(WIZARD_ROUTES.CALL_VOLUME)}
-            >
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Row
-                  label="Average Daily Calls"
-                  value={callVolumeMetrics.avgDaily ? `${callVolumeMetrics.avgDaily}` : '-'}
-                />
-                <Row
-                  label="Peak Times"
-                  value={callVolumeMetrics.peakWindow || '-'}
-                />
-                <Row
-                  label="Overnight %"
-                  value={callVolumeMetrics.overnightPct ? `${callVolumeMetrics.overnightPct}%` : '-'}
-                />
-              </Box>
-              {callVolumeMetrics.notes && (
-                <>
-                  <Divider sx={{ my: 1.5 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    {callVolumeMetrics.notes}
-                  </Typography>
-                </>
-              )}
             </Card>
           )}
 

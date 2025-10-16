@@ -237,7 +237,7 @@ const OnCall = () => {
   };
 
   const progress = getCompletionPercentage();
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'On-Call Setup', 'Review'];
+  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'On-Call Setup', 'Review'];
 
   const softBg = (c) =>
     darkMode ? alpha(theme.palette[c].main, 0.12) : alpha(theme.palette[c].main, 0.06);

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import {
-  Box, 
-  Paper, 
-  Container, 
-  Snackbar, 
-  Alert, 
+  Box,
+  Paper,
+  Container,
+  Snackbar,
+  Alert,
   Button,
   Typography,
   Stepper,
@@ -24,7 +24,7 @@ import {
 import {
   BusinessOutlined,
   PeopleOutlined,
-  PaymentOutlined,
+  ContactPhoneOutlined,
   CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
@@ -37,8 +37,8 @@ import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
 
+import PrimaryContactsSection from '../sections/PrimaryContactsSection';
 import CompanyBasicsSection from '../sections/CompanyBasicsSection';
-import BillingContactSection from '../sections/BillingContactSection';
 import OfficePersonnelSection from '../sections/OfficePersonnelSection';
 
 const ClientSetUp = () => {
@@ -50,15 +50,27 @@ const ClientSetUp = () => {
 
   const ci = formData.companyInfo || {};
 
-  // Shape the section data with safe fallbacks (including new contactNumbers)
+  const mirrorFields = {
+    physicalLocation: 'mailingAddress',
+    physicalCity: 'mailingCity',
+    physicalState: 'mailingState',
+    physicalPostalCode: 'mailingPostalCode',
+    suiteOrUnit: 'mailingSuite',
+  };
+
   const data = {
     businessName: ci.businessName ?? ci.company ?? '',
     company: ci.company ?? ci.businessName ?? '',
-    complexName: ci.complexName ?? '',
     physicalLocation: ci.physicalLocation ?? '',
     suiteOrUnit: ci.suiteOrUnit ?? '',
+    physicalCity: ci.physicalCity ?? '',
+    physicalState: ci.physicalState ?? '',
+    physicalPostalCode: ci.physicalPostalCode ?? '',
     mailingAddress: ci.mailingAddress ?? '',
-    timeZone: ci.timeZone ?? '',
+    mailingSuite: ci.mailingSuite ?? '',
+    mailingCity: ci.mailingCity ?? '',
+    mailingState: ci.mailingState ?? '',
+    mailingPostalCode: ci.mailingPostalCode ?? '',
     mailingSameAsPhysical: ci.mailingSameAsPhysical ?? false,
     additionalLocations: Array.isArray(ci.additionalLocations) ? ci.additionalLocations : [],
     contactNumbers: {
@@ -69,14 +81,23 @@ const ClientSetUp = () => {
       officeEmail: ci.contactNumbers?.officeEmail ?? '',
       website: ci.contactNumbers?.website ?? '',
     },
+    contactChannels: Array.isArray(ci.contactChannels) ? ci.contactChannels : [],
+    primaryContact: {
+      name: ci.primaryContact?.name ?? '',
+      title: ci.primaryContact?.title ?? '',
+      phone: ci.primaryContact?.phone ?? '',
+      email: ci.primaryContact?.email ?? '',
+    },
     billingContact: {
       name: ci.billingContact?.name ?? '',
       email: ci.billingContact?.email ?? '',
       phone: ci.billingContact?.phone ?? '',
+      title: ci.billingContact?.title ?? '',
       purchaseOrder: ci.billingContact?.purchaseOrder ?? '',
       notes: ci.billingContact?.notes ?? '',
-      title: ci.billingContact?.title ?? '',
     },
+    billingSameAsPrimary: ci.billingSameAsPrimary ?? false,
+    timeZone: ci.timeZone ?? '',
   };
 
   const [errors, setErrors] = React.useState({});
@@ -85,23 +106,35 @@ const ClientSetUp = () => {
 
   const merge = (patch) => updateSection('companyInfo', patch);
 
-  // Keep Mailing synced if the toggle is on when Physical changes.
   const setBasics = (patch) => {
-    const willSync =
-      (ci.mailingSameAsPhysical ?? data.mailingSameAsPhysical) &&
-      Object.prototype.hasOwnProperty.call(patch, 'physicalLocation');
+    const shouldMirror = ci.mailingSameAsPhysical ?? data.mailingSameAsPhysical;
+    const nextPatch = { ...patch };
 
-    merge({
-      ...patch,
-      ...(willSync ? { mailingAddress: patch.physicalLocation } : {}),
-    });
+    if (shouldMirror) {
+      Object.entries(mirrorFields).forEach(([source, target]) => {
+        if (Object.prototype.hasOwnProperty.call(patch, source)) {
+          nextPatch[target] = patch[source];
+        }
+      });
+    }
+
+    merge(nextPatch);
   };
 
   const handleMailingSameAsPhysicalChange = (checked) => {
-    merge({
-      mailingSameAsPhysical: checked,
-      ...(checked ? { mailingAddress: formData.companyInfo?.physicalLocation || '' } : {}),
-    });
+    if (checked) {
+      merge({
+        mailingSameAsPhysical: true,
+        mailingAddress: data.physicalLocation || '',
+        mailingSuite: data.suiteOrUnit || '',
+        mailingCity: data.physicalCity || '',
+        mailingState: data.physicalState || '',
+        mailingPostalCode: data.physicalPostalCode || '',
+      });
+      return;
+    }
+
+    merge({ mailingSameAsPhysical: false });
   };
 
   const handleAdditionalLocationsChange = (list) => {
@@ -134,29 +167,56 @@ const ClientSetUp = () => {
 
   // Calculate completion percentage
   const getCompletionPercentage = () => {
-    const fields = [
-      data.businessName,
-      data.physicalLocation,
-      data.timeZone,
-      data.contactNumbers.primaryOfficeLine,
-      data.contactNumbers.officeEmail,
-      data.billingContact.name,
-      data.billingContact.email,
+    const checks = [
+      Boolean(data.businessName && data.businessName.trim()),
+      Boolean(data.physicalLocation && data.physicalLocation.trim()),
+      Boolean(data.physicalCity && data.physicalCity.trim()),
+      Boolean(data.primaryContact.name && data.primaryContact.name.trim()),
+      Boolean(data.primaryContact.phone && data.primaryContact.phone.trim()),
+      data.billingSameAsPrimary
+        ? true
+        : Boolean(data.billingContact.email && data.billingContact.email.trim()),
+      Array.isArray(data.contactChannels)
+        ? data.contactChannels.some((channel) => channel && channel.value && channel.value.trim())
+        : false,
     ];
-    const completed = fields.filter(field => field && field.trim()).length;
-    return Math.round((completed / fields.length) * 100);
+
+    const completed = checks.filter(Boolean).length;
+    return Math.round((completed / checks.length) * 100);
   };
 
   const progress = getCompletionPercentage();
 
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'Review'];
+  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'Review'];
 
   const sectionCards = [
     {
+      id: 'contacts',
+      title: 'Primary & Billing Contacts',
+      icon: <ContactPhoneOutlined />,
+      description: 'Who we reach for day-to-day decisions and invoices',
+      component: (
+        <PrimaryContactsSection
+          primary={data.primaryContact}
+          billing={data.billingContact}
+          sameAs={data.billingSameAsPrimary}
+          onChange={merge}
+          errors={errors}
+        />
+      ),
+    },
+    {
+      id: 'personnel',
+      title: 'Additional Contacts',
+      icon: <PeopleOutlined />,
+      description: 'Add teammates we might need to loop in',
+      component: <OfficePersonnelSection errors={errors} />,
+    },
+    {
       id: 'basics',
-      title: 'Company Basics',
+      title: 'Company Details',
       icon: <BusinessOutlined />,
-      description: 'Essential company information and addresses',
+      description: 'Business information and addresses callers reference',
       component: (
         <CompanyBasicsSection
           data={data}
@@ -167,20 +227,6 @@ const ClientSetUp = () => {
           onAdditionalLocationsChange={handleAdditionalLocationsChange}
         />
       ),
-    },
-    {
-      id: 'personnel',
-      title: 'Office Personnel',
-      icon: <PeopleOutlined />,
-      description: 'Key contacts and staff information',
-      component: <OfficePersonnelSection errors={errors} />,
-    },
-    {
-      id: 'billing',
-      title: 'Billing Contact',
-      icon: <PaymentOutlined />,
-      description: 'Billing and payment contact details',
-      component: <BillingContactSection errors={errors.billingContact || {}} />,
     },
   ];
 
@@ -209,21 +255,14 @@ const ClientSetUp = () => {
                   mb: 1,
                 }}
               >
-                Company Information
+                Basic Info
               </Typography>
               <Typography
                 variant="body1"
                 color="text.secondary"
                 sx={{ mb: 3 }}
               >
-                Help us get to know your business so we can provide the best service
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 3 }}
-              >
-                The details you share here appear in your caller greetings and on AnSer invoices, so we'll make sure everything looks professional.
+                Let’s start with the basics we need.
               </Typography>
 
               {/* Progress Stepper */}

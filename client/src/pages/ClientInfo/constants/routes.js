@@ -11,7 +11,6 @@ export const WIZARD_ROUTES = {
   // Wizard steps
   COMPANY_INFO: `${WIZARD_BASE}/company-info`,
   OFFICE_REACH: `${WIZARD_BASE}/office-reach`, 
-  CALL_VOLUME: `${WIZARD_BASE}/call-volume`,
   ANSWER_CALLS: `${WIZARD_BASE}/answer-calls`,
   ON_CALL: `${WIZARD_BASE}/on-call`,
   FINAL_DETAILS: `${WIZARD_BASE}/final-details`,
@@ -22,7 +21,6 @@ export const WIZARD_ROUTES = {
 export const WIZARD_STEPS = [
   'company-info',
   'office-reach', 
-  'call-volume',
   'answer-calls',
   'on-call',
   'final-details',
@@ -32,7 +30,6 @@ export const WIZARD_STEPS = [
 export const STEP_LABELS = {
   'company-info': 'Company Information',
   'office-reach': 'Office Reach',
-  'call-volume': 'Call Volume',
   'answer-calls': 'Answer Calls',
   'on-call': 'On Call',
   'final-details': 'Final Details',

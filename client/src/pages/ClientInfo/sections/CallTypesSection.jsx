@@ -1,56 +1,37 @@
-// src/pages/ClientInfo/sections/CallTypesSection.jsx
+﻿// src/pages/ClientInfo/sections/CallTypesSection.jsx
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
-  Grid,
+  Chip,
   TextField,
   Typography,
-  Checkbox,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
-  FormControl,
-  FormLabel,
-  FormHelperText,
+  Switch,
+  Button,
+  Stack,
   Divider,
   Paper,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import { useWizard } from '../context_API/WizardContext';
 
 const CALL_TYPE_OPTIONS = [
-  {
-    key: 'newLead',
-    label: 'New customer or sales inquiry',
-    helper: 'Gather caller details and note ideal follow-up path so we can qualify the lead.',
-  },
-  {
-    key: 'existingClient',
-    label: 'Existing client needs assistance',
-    helper: 'Outline who should be notified and what information we must collect.',
-  },
-  {
-    key: 'urgentIssue',
-    label: 'Urgent or emergency issue',
-    helper: 'Define the escalation steps so we can reach your team immediately.',
-  },
-  {
-    key: 'serviceRequest',
-    label: 'Service or maintenance request',
-    helper: 'Let us know the workflow for routine requests and updates.',
-  },
-  {
-    key: 'billingQuestion',
-    label: 'Billing or account question',
-    helper: 'Share how to handle payment questions or balance disputes.',
-  },
+  { key: 'newLead', label: 'New customer or sales inquiry' },
+  { key: 'existingClient', label: 'Existing client needs assistance' },
+  { key: 'urgentIssue', label: 'Urgent or emergency issue' },
+  { key: 'serviceRequest', label: 'Service or maintenance request' },
+  { key: 'billingQuestion', label: 'Billing or account question' },
 ];
 
 const DEFAULT_CALL_TYPE_STATE = {
   enabled: false,
+  customLabel: '',
   instructions: '',
-  differsAfterHours: null,
-  afterHoursInstructions: '',
+  reachPrimary: '',
+  reachSecondary: '',
+  notes: '',
+  autoEmailOffice: false,
 };
 
 const normalizeCallTypes = (value) => {
@@ -67,14 +48,12 @@ const normalizeCallTypes = (value) => {
       if (current && typeof current === 'object') {
         normalized[key] = {
           enabled: Boolean(current.enabled),
+          customLabel: current.customLabel ?? '',
           instructions: current.instructions ?? '',
-          differsAfterHours:
-            current.differsAfterHours === true
-              ? true
-              : current.differsAfterHours === false
-                ? false
-                : null,
-          afterHoursInstructions: current.afterHoursInstructions ?? '',
+          reachPrimary: current.reachPrimary ?? '',
+          reachSecondary: current.reachSecondary ?? '',
+          notes: current.notes ?? '',
+          autoEmailOffice: Boolean(current.autoEmailOffice),
         };
       }
     });
@@ -87,7 +66,7 @@ const normalizeCallTypes = (value) => {
     const legacyLines = value
       .map((item) => [item?.name, item?.instructions]
         .filter(Boolean)
-        .join(' — '))
+        .join('  '))
       .filter(Boolean);
     if (!otherText && legacyLines.length) {
       otherText = legacyLines.join('\n');
@@ -105,9 +84,19 @@ const deepEqual = (a, b) => {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 };
 
+const getDisplayLabel = (key, callTypes) => {
+  const callType = callTypes[key];
+  if (callType?.customLabel) {
+    return callType.customLabel;
+  }
+  return CALL_TYPE_OPTIONS.find(o => o.key === key)?.label || key;
+};
+
 const CallTypesSection = ({ errors = {} }) => {
   const { formData, updateSection } = useWizard();
+  const theme = useTheme();
   const rawCallTypes = formData.answerCalls?.callTypes;
+  const [activeKey, setActiveKey] = useState(null);
 
   const callTypes = useMemo(() => normalizeCallTypes(rawCallTypes), [rawCallTypes]);
 
@@ -132,125 +121,167 @@ const CallTypesSection = ({ errors = {} }) => {
     setCallTypes(next);
   };
 
-  const handleToggle = (key) => (event) => {
-    const enabled = event.target.checked;
-    updateType(key, enabled ? { enabled } : { ...DEFAULT_CALL_TYPE_STATE });
-  };
-
-  const handleDiffersChange = (key) => (event) => {
-    const value = event.target.value;
-    if (value === 'yes') {
-      updateType(key, { differsAfterHours: true });
-    } else if (value === 'no') {
-      updateType(key, { differsAfterHours: false, afterHoursInstructions: '' });
-    } else {
-      updateType(key, { differsAfterHours: null, afterHoursInstructions: '' });
-    }
-  };
-
-  const handleOtherChange = (event) => {
-    setCallTypes({
-      ...callTypes,
-      otherText: event.target.value,
-    });
-  };
+  const chipStyles = (selected, enabled) => ({
+    bgcolor: selected
+      ? theme.palette.primary.main
+      : enabled
+      ? alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)
+      : 'transparent',
+    color: selected
+      ? theme.palette.primary.main
+      : enabled
+      ? theme.palette.text.primary
+      : theme.palette.text.disabled,
+    fontWeight: selected ? 600 : 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.35 : 0.16),
+    },
+  });
 
   return (
-    <Box sx={{ display: 'grid', gap: 3 }}>
-      <Typography variant="body2" color="text.secondary">
-        Pick the call types your team wants us to recognize. Enable each scenario, tell us what to do, and let us know if the process changes after hours. Use “Other call types” for anything unique.
-      </Typography>
+    <Paper variant="outlined" sx={{ p: 3 }}>
+      <Stack spacing={3}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+            Call Types
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Select the call types your team recognizes and describe how to handle each one.
+          </Typography>
+        </Box>
 
-      <Box sx={{ display: 'grid', gap: 2 }}>
-        {CALL_TYPE_OPTIONS.map(({ key, label, helper }) => {
-          const state = callTypes[key];
-          const fieldErrors = errors[key] || {};
-          return (
-            <Paper
+        {/* Call Type Selection Chips */}
+        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+          {CALL_TYPE_OPTIONS.map(({ key, label }) => (
+            <Chip
               key={key}
-              variant="outlined"
-              sx={{ p: 2.5, borderRadius: 2, borderColor: state.enabled ? 'primary.main' : 'divider' }}
-            >
-              <FormControlLabel
-                control={<Checkbox checked={!!state.enabled} onChange={handleToggle(key)} />}
-                label={
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {label}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {helper}
-                    </Typography>
-                  </Box>
-                }
-                sx={{ alignItems: 'flex-start', mb: state.enabled ? 2 : 0 }}
-              />
+              label={label}
+              onClick={() => setActiveKey(activeKey === key ? null : key)}
+              sx={chipStyles(activeKey === key, callTypes[key]?.enabled)}
+            />
+          ))}
+        </Stack>
 
-              {state.enabled && (
-                <Box sx={{ display: 'grid', gap: 2 }}>
+        {/* Detailed Form for Selected Call Type */}
+        {activeKey && (
+          <Box>
+            <Divider sx={{ my: 2 }} />
+            <Stack spacing={2.5}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {getDisplayLabel(activeKey, callTypes)}
+                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="body2" color="text.secondary">
+                    Enable
+                  </Typography>
+                  <Switch
+                    checked={!!callTypes[activeKey]?.enabled}
+                    onChange={(e) => updateType(activeKey, { enabled: e.target.checked })}
+                    size="small"
+                  />
+                </Stack>
+              </Box>
+
+              {callTypes[activeKey]?.enabled && (
+                <Stack spacing={2}>
                   <TextField
-                    label="What should we do?"
-                    value={state.instructions}
-                    onChange={(e) => updateType(key, { instructions: e.target.value })}
-                    error={Boolean(fieldErrors.instructions)}
-                    helperText={fieldErrors.instructions || 'Include callers to notify, forms to capture, or systems to update.'}
-                    multiline
-                    minRows={2}
+                    label="Call type label"
+                    placeholder={CALL_TYPE_OPTIONS.find(o => o.key === activeKey)?.label}
+                    value={callTypes[activeKey]?.customLabel || ''}
+                    onChange={(e) => updateType(activeKey, { customLabel: e.target.value })}
+                    error={Boolean(errors[activeKey]?.customLabel)}
+                    helperText={errors[activeKey]?.customLabel || 'Optional custom name for this call type.'}
                     fullWidth
+                    size="small"
                   />
 
-                  <FormControl component="fieldset" error={Boolean(fieldErrors.differsAfterHours)}>
-                    <FormLabel component="legend">Does this differ during office hours?</FormLabel>
-                    <RadioGroup
-                      row
-                      value={state.differsAfterHours === true ? 'yes' : state.differsAfterHours === false ? 'no' : ''}
-                      onChange={handleDiffersChange(key)}
-                    >
-                      <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                      <FormControlLabel value="no" control={<Radio />} label="No" />
-                    </RadioGroup>
-                    {fieldErrors.differsAfterHours && (
-                      <FormHelperText>{fieldErrors.differsAfterHours}</FormHelperText>
-                    )}
-                  </FormControl>
+                  <TextField
+                    label="Quick instruction"
+                    placeholder="e.g., 'Transfer to extension 5 or take message'"
+                    value={callTypes[activeKey]?.instructions || ''}
+                    onChange={(e) => updateType(activeKey, { instructions: e.target.value })}
+                    error={Boolean(errors[activeKey]?.instructions)}
+                    helperText={errors[activeKey]?.instructions}
+                    fullWidth
+                    size="small"
+                    multiline
+                    minRows={2}
+                  />
 
-                  {state.differsAfterHours === true && (
+                  <Stack direction="row" spacing={2}>
                     <TextField
-                      label="After-hours instructions"
-                      value={state.afterHoursInstructions}
-                      onChange={(e) => updateType(key, { afterHoursInstructions: e.target.value })}
-                      error={Boolean(fieldErrors.afterHoursInstructions)}
-                      helperText={fieldErrors.afterHoursInstructions || 'Tell us exactly what changes when the office is closed.'}
-                      multiline
-                      minRows={2}
+                      label="Primary contact"
+                      placeholder="Name or department"
+                      value={callTypes[activeKey]?.reachPrimary || ''}
+                      onChange={(e) => updateType(activeKey, { reachPrimary: e.target.value })}
+                      error={Boolean(errors[activeKey]?.reachPrimary)}
+                      helperText={errors[activeKey]?.reachPrimary}
                       fullWidth
+                      size="small"
                     />
-                  )}
-                </Box>
+                    <TextField
+                      label="Secondary contact"
+                      placeholder="Backup contact"
+                      value={callTypes[activeKey]?.reachSecondary || ''}
+                      onChange={(e) => updateType(activeKey, { reachSecondary: e.target.value })}
+                      fullWidth
+                      size="small"
+                    />
+                  </Stack>
+
+                  <TextField
+                    label="Detailed script/notes"
+                    placeholder="Exact words to say or detailed handling instructions..."
+                    value={callTypes[activeKey]?.notes || ''}
+                    onChange={(e) => updateType(activeKey, { notes: e.target.value })}
+                    error={Boolean(errors[activeKey]?.notes)}
+                    helperText={errors[activeKey]?.notes || 'We will use these instructions when this call type arrives.'}
+                    fullWidth
+                    size="small"
+                    multiline
+                    minRows={3}
+                  />
+
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant={callTypes[activeKey]?.autoEmailOffice ? 'contained' : 'outlined'}
+                      onClick={() => updateType(activeKey, { autoEmailOffice: !callTypes[activeKey]?.autoEmailOffice })}
+                      size="small"
+                      startIcon={callTypes[activeKey]?.autoEmailOffice ? '' : undefined}
+                    >
+                      Auto-email office when received
+                    </Button>
+                  </Stack>
+                </Stack>
               )}
-            </Paper>
-          );
-        })}
-      </Box>
+            </Stack>
+          </Box>
+        )}
 
-      <Divider />
+        <Divider />
 
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-          Other call types or special instructions
-        </Typography>
-        <TextField
-          placeholder="List additional scenarios, seasonal changes, or anything else we should be ready for."
-          value={callTypes.otherText}
-          onChange={handleOtherChange}
-          error={Boolean(errors.otherText)}
-          helperText={errors.otherText || 'We’ll review these notes with you to make sure nothing is missed.'}
-          multiline
-          minRows={3}
-          fullWidth
-        />
-      </Box>
-    </Box>
+        {/* Everything Else */}
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Everything Else
+          </Typography>
+          <TextField
+            placeholder="List other call types, special routing instructions, seasonal changes, or anything else we should know..."
+            value={callTypes.otherText || ''}
+            onChange={(e) => setCallTypes({ ...callTypes, otherText: e.target.value })}
+            error={Boolean(errors.otherText)}
+            helperText={errors.otherText || 'We will review these notes to ensure nothing is missed.'}
+            fullWidth
+            size="small"
+            multiline
+            minRows={3}
+          />
+        </Box>
+      </Stack>
+    </Paper>
   );
 };
 

@@ -82,7 +82,7 @@ const OfficeReach = () => {
     setSaving(false);
     
     // Always proceed to next step
-  history.push('/ClientInfoReact/NewFormWizard/call-volume');
+  history.push('/ClientInfoReact/NewFormWizard/answer-calls');
   };
 
   // Calculate completion percentage
@@ -105,7 +105,7 @@ const OfficeReach = () => {
   };
 
   const progress = getCompletionPercentage();
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'Review'];
+  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'Review'];
 
   const sectionCards = [
     {
@@ -168,14 +168,14 @@ const OfficeReach = () => {
                   mb: 1,
                 }}
               >
-                Office Hours & Availability
+                What is it that you want from us?
               </Typography>
               <Typography
                 variant="body1"
                 color="text.secondary"
                 sx={{ mb: 3 }}
               >
-                Help us understand when your business is open and how customers can reach you
+                Outline when you need us available and where expectations change throughout the day.
               </Typography>
 
               {/* Progress Stepper */}
