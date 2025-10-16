@@ -32,8 +32,8 @@ app.get('*', (req, res) => {
 // HTTPS configuration and server start for production
 if (PORT == 443) {
   const httpsOptions = {
-    cert: fs.readFileSync(path.join(__dirname, '../anser-2025.crt')),
-    key: fs.readFileSync(path.join(__dirname, '../anser-decrypted-2025.key')),
+    cert: fs.readFileSync(path.join(__dirname, '../anser-2026.crt')),
+    key: fs.readFileSync(path.join(__dirname, '../anser-decrypted-2026.key')),
   };
 
   https.createServer(httpsOptions, app).listen(PORT, function () {
