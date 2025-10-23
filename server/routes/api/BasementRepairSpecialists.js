@@ -253,22 +253,24 @@ router.post('/SendLeadData', async (req, res) => {
     }
   }
 
-  // try {
-  //   returnData = await fetch(`https://haaws.marketsharpm.com/LeadCapture/MarketSharp/LeadCapture.ashx?callback=?`, {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       "info": sendData,
-  //       "version": 2
-  //     })
-  //   });
-  // } catch (err) {
-  //   res.send(`Errors: ${err}`);
-  // }
+  try {
+    returnData = await fetch(`https://haaws.marketsharpm.com/LeadCapture/MarketSharp/LeadCapture.ashx`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        "info": sendData,
+        "version": 2
+      }
+    });
+  } catch (err) {
+    res.send(`Errors: ${err}`);
+  }
 
-  res.send(sendData);
+  console.log(returnData);
+
+  res.send(returnData);
 })
 
 router.post('/', async (req, res) => {
