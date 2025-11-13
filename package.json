@@ -15,7 +15,6 @@
   "license": "ISC",
   "dependencies": {
     "@googleapis/docs": "^3.3.0",
-    "anser-api-server": "file:",
     "chartjs-to-image": "^1.2.2",
     "dayjs": "^1.11.8",
     "docx": "^9.5.1",
