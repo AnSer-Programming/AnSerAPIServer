@@ -14,12 +14,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@googleapis/docs": "^3.3.0",
     "chartjs-to-image": "^1.2.2",
-    "dayjs": "^1.11.8",
     "docx": "^9.5.1",
     "dotenv": "^16.1.4",
-    "googleapis": "^144.0.0",
     "js-sha256": "^0.11.0",
     "mailgun.js": "^10.2.3",
     "node-schedule": "^2.1.1"
