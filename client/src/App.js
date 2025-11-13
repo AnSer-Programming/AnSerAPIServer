@@ -11,6 +11,7 @@ import BackUps from './pages/BackUps';
 // import Calendar from './pages/Calendar';
 // import ContactDispatch from './pages/ContactDispatch';
 import CrescentElectricReachList from './pages/CrescentElectricReachList';
+import DirectoryChecker from './pages/DirectoryChecker';
 import DisconnectList from './pages/DisconnectList';
 import FixedScheduler from './pages/StaticSchedule';
 import HolidaySchedule from './pages/HolidaySignUpAgentPage';
@@ -76,6 +77,7 @@ const AppContent = () => {
         <Route exact path="/BackUps" component={signedIn ? BackUps : loginButton} />
         {/* <Route exact path="/Calendar" component={signedIn ? Calendar : loginButton} /> */}
         <Route exact path="/CrescentElectricReachList" component={signedIn ? CrescentElectricReachList : loginButton} />
+        <Route exact path="/DirectoryChecker" component={signedIn ? DirectoryChecker : loginButton} />
         <Route exact path="/DisconnectList" component={signedIn ? DisconnectList : loginButton} />
         <Route exact path="/HolidaySchedule" component={HolidaySchedule} />
         <Route exact path="/HolidayScheduleSignUp" component={signedIn ? HolidayScheduleSignUp : loginButton} />

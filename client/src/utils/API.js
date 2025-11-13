@@ -224,3 +224,13 @@ export const updateOCGroupAPI = (id, data) => {
     body: JSON.stringify(data),
   });
 };
+
+export const uploadedFileData = (data) => {
+  return fetch(`/api/uploadData`, {
+    headers: {
+      method: 'GET',
+      'Content-Type': 'application/json'
+    },
+    body: data,
+  })
+}

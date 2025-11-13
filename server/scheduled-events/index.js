@@ -27,13 +27,13 @@ const clientSharedFields = require('./BackUps/clientSharedFieldsBackup');
 
 // Automated Reports
 schedule.scheduleJob('00 07 01 * *', async function () {
-  if(process.env.SERVER_TYPE == "production") {
+  if(process.env.SERVER_TYPE == "development") {
     SendDirectoriesWithoutOverrides(await directoriesMissingOverrides());
   }
 });
 
 schedule.scheduleJob('00 07 01 * *', async function () {
-  if(process.env.SERVER_TYPE == "production") {
+  if(process.env.SERVER_TYPE == "development") {
     SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
   }
 });
@@ -53,7 +53,7 @@ schedule.scheduleJob('00 02 15 * *', async function () { // run at 2AM on the fi
 });
 
 schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every day
-  if(process.env.SERVER_TYPE == "production") {
+  if(process.env.SERVER_TYPE == "development") {
     SendCSVToDavisAndCrumpEmail(await davisAndCrump());
   }
 });

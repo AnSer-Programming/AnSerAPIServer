@@ -254,19 +254,20 @@ router.post('/SendLeadData', async (req, res) => {
   }
 
   try {
-    returnData = await fetch(`https://haaws.marketsharpm.com/LeadCapture/MarketSharp/LeadCapture.ashx?callback=?`, {
+    returnData = await fetch(`https://haaws.marketsharpm.com/LeadCapture/MarketSharp/LeadCapture.ashx?${sendData}`,
+      {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      body: {
-        "info": sendData,
+        'Content-Type': 'text/html',
+        "info": `${sendData}`,
         "version": 2
-      }
+      },
     });
   } catch (err) {
     res.send(`Errors: ${err}`);
   }
+
+  console.log(sendData);
 
   console.log(returnData);
 
