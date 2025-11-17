@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DropzoneArea } from 'material-ui-dropzone';
+// import { DropzoneArea } from 'material-ui-dropzone';
 // const fsp = require('fs').promises; //this file system call allows for async and await
 
 const FileUpload = () => {
@@ -14,8 +14,9 @@ const FileUpload = () => {
   }
   return (
     <>
-      <DropzoneArea
-        onChange={(files) => uploadHandler(files)} />
+      {/* <DropzoneArea
+        onChange={(files) => uploadHandler(files)} /> */}
+        <p>!!WORK IN PROGRESS!!</p>
     </>
   )
 }
