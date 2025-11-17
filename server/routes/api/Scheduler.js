@@ -3,7 +3,7 @@ const path = require('path'); //allows for combining relative file path with a s
 const fsp = require('fs').promises; //this file system call allows for async and await
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
 // const dayjs = require('dayjs'); //allows for easy date manipulation and date math
-const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows for time manipulation
+// const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows for time manipulation
 // dayjs.extend(customParseFormat); //brings in the time manipulation extension into the main dayjs function call
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
