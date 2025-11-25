@@ -12,8 +12,8 @@ const SendDirectoriesInWrongStatusCheckinMode = require('../node-mailer/SendDire
 const directoriesWrongStatusCheckinMode = require('./directoriesWrongStatusCheckinMode');
 const SendCSVToDavisAndCrumpEmail = require('../node-mailer/emailToClient/SendCSVToDavisAndCrump');
 const davisAndCrump = require('./automatedReportsToClient/davisAndCrump');
-const contactDispatchEmail = require('../node-mailer/ContactDispatchEmail/SendContactDispatchReport');
-const contactDispatchReport = require('./ContactDispatchReports/contactDispatchReport');
+// const contactDispatchEmail = require('../node-mailer/ContactDispatchEmail/SendContactDispatchReport');
+// const contactDispatchReport = require('./ContactDispatchReports/contactDispatchReport');
 const infoPages = require('./BackUps/infoPagesBackup');
 const clientSharedFields = require('./BackUps/clientSharedFieldsBackup');
 
@@ -27,26 +27,26 @@ const clientSharedFields = require('./BackUps/clientSharedFieldsBackup');
 
 // Automated Reports
 schedule.scheduleJob('00 07 01 * *', async function () {
-  if(process.env.SERVER_TYPE == "development") {
+  if(process.env.SERVER_TYPE == "production") {
     SendDirectoriesWithoutOverrides(await directoriesMissingOverrides());
   }
 });
 
 schedule.scheduleJob('00 07 01 * *', async function () {
-  if(process.env.SERVER_TYPE == "development") {
+  if(process.env.SERVER_TYPE == "production") {
     SendDirectoriesInWrongStatusCheckinMode(await directoriesWrongStatusCheckinMode());
   }
 });
 
 schedule.scheduleJob('00 02 01 * *', async function () { // run at 2AM on the first of every month
-  if(process.env.SERVER_TYPE == "development") {
+  if(process.env.SERVER_TYPE == "production") {
     infoPages();
     clientSharedFields();
   }
 });
 
 schedule.scheduleJob('00 02 15 * *', async function () { // run at 2AM on the fifteenth of every month
-  if(process.env.SERVER_TYPE == "development") {
+  if(process.env.SERVER_TYPE == "production") {
     infoPages();
     clientSharedFields();
   }
@@ -58,13 +58,13 @@ schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every d
   }
 });
 
-schedule.scheduleJob('*/5 * * * * *', async function () { // test email
-  // console.log("Test");
-  // contactDispatchEmail(await contactDispatchReport());
-  // if(process.env.SERVER_TYPE == "production") {
-  // contactDispatchEmail(await contactDispatchReport());
-  // }
-});
+// schedule.scheduleJob('*/5 * * * * *', async function () { // test email
+//   console.log("Test");
+//   contactDispatchEmail(await contactDispatchReport());
+//   if(process.env.SERVER_TYPE == "production") {
+//   contactDispatchEmail(await contactDispatchReport());
+//   }
+// });
 
 
 //Test
