@@ -71,8 +71,8 @@ const InfoPageSearch = (data: any) => {
     let years = new Array();
     let months = new Array();
     let days = new Array();
-    console.log(searchCriteria);
     for (let i = 0; i < searchCriteria[accountNumber].length; i++) {
+      yearExists = false;
       if (years.length == 0) {
         years.push(searchCriteria[accountNumber][i].year);
       } else {
@@ -82,7 +82,7 @@ const InfoPageSearch = (data: any) => {
           }
           if (yearExists) {
             break;
-          } else if (x == years.length) {
+          } else if (x == years.length-1) {
             years.push(searchCriteria[accountNumber][i].year);
           }
         }
