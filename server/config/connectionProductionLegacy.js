@@ -10,7 +10,7 @@ try {
     // config = new Sequelize(
     //     `${ process.env.DB_NAME_PRODUCTION_LEGACY }`,`${ process.env.DB_USER }`,`${ process.env.DB_PWD }`,
     //     {
-    //         "host": `${ process.env.DB_SERVER_PRODUCTION }`,
+    //         "host": `${ process.env.DB_SERVER }`,
     //         "dialect": 'mssql',
     //         "port": 1433,
     //         "encrypt": false,

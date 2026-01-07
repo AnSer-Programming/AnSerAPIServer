@@ -142,7 +142,7 @@ async function checkAvailability(appointmentData, today) {
                   for (let z = 0; z < dayObj.length; z++) { //Begin loop for the dayObj data
                     if (timeBlocks[y].slot === dayObj[z].time) { //Check if the taken time block matches the row in the dayObj
                       if (dayObj[z].salesPerson === scheduledAppointments[x].Salesperson) { //Check if the assigned salesPerson matches the salesPerson in the dayObj
-                        if(scheduledAppointments[x].Cancelled) {
+                        if (scheduledAppointments[x].Cancelled) {
                           dayObj[z].available = 'TRUE'; //Set available to true | The appointment was cancelled on our end
                         } else {
                           dayObj[z].available = 'FALSE'; //Set available to false | Unavailable
@@ -171,21 +171,21 @@ async function checkAvailability(appointmentData, today) {
         }
 
         formattedDay = parseInt(dayObj[i].date.split('-')[2]);
-        if(formattedDay%10 === 1) {
+        if (formattedDay % 10 === 1) {
           formattedDay = `${formattedDay}th`;
         } else {
-          if(dayObj[i].date.split('-')[2] % 10 === 1) {
+          if (dayObj[i].date.split('-')[2] % 10 === 1) {
             formattedDay = `${formattedDay}st`;
-          } else if(dayObj[i].date.split('-')[2] % 10 === 2) {
+          } else if (dayObj[i].date.split('-')[2] % 10 === 2) {
             formattedDay = `${formattedDay}nd`;
-          } else if(dayObj[i].date.split('-')[2] % 10 === 3) {
+          } else if (dayObj[i].date.split('-')[2] % 10 === 3) {
             formattedDay = `${formattedDay}rd`;
           } else {
             formattedDay = `${formattedDay}th`;
           }
         }
 
-        formattedDate = `${days[new Date(dayObj[i].date).getDay()+1]} ${months[parseInt(dayObj[i].date.split('-')[1])-1]} ${formattedDay}`;
+        formattedDate = `${days[new Date(dayObj[i].date).getDay() + 1]} ${months[parseInt(dayObj[i].date.split('-')[1]) - 1]} ${formattedDay}`;
 
         appointments.available[count].formattedTime = time;
         appointments.available[count].value = `${formattedDate} at ${time} with ${appointments.available[count].salesPerson}`;
@@ -238,7 +238,43 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async(req, res) => {
+router.post('/SendLeadData', async (req, res) => {
+  let values = req.body;
+  let sendData;
+
+  for (key in values) {
+    if (sendData) {
+      sendData += '&|&';
+    }
+    if (!sendData) {
+      sendData = `${key}=${encodeURIComponent(values[key])}`;
+    } else {
+      sendData += `${key}=${encodeURIComponent(values[key])}`;
+    }
+  }
+
+  try {
+    returnData = await fetch(`https://haaws.marketsharpm.com/LeadCapture/MarketSharp/LeadCapture.ashx?${sendData}`,
+      {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/html',
+        "info": `${sendData}`,
+        "version": 2
+      },
+    });
+  } catch (err) {
+    res.send(`Errors: ${err}`);
+  }
+
+  console.log(sendData);
+
+  console.log(returnData);
+
+  res.send(returnData);
+})
+
+router.post('/', async (req, res) => {
   try {
     console.log(req.body);
     const sendData = mainDataHandler(req.body);
@@ -246,9 +282,9 @@ router.post('/', async(req, res) => {
     console.log(req.body);
     console.log(sendData);
     res.json(sendData);
-  } catch(err) {
+  } catch (err) {
     console.err(err);
   }
-})
+});
 
 module.exports = router;

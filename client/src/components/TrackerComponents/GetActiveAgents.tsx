@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getActiveAgents } from '../../utils/TrackerDataAPI';
 import LinearProgress from '@mui/material/LinearProgress';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 
 const GetActiveAgents = () => {
   const [activeAgentsData, setActiveAgentsData] = useState<any>({});
@@ -50,7 +50,7 @@ const GetActiveAgents = () => {
       for(let x = 0; x < signInOutObj.length; x++) {
         if(signInOutObj[0].agtId == null) {
           signInOutObj[0].agtId = activeAgentsData[i].agtId;
-          signInOutObj[0].stamp = dayjs(activeAgentsData[i].stamp).get('hour');
+          // signInOutObj[0].stamp = dayjs(activeAgentsData[i].stamp).get('hour');
           if(activeAgentsData[i].type === 1) {
             signInOutObj[x].signedIn = true;
           } else {
@@ -68,7 +68,7 @@ const GetActiveAgents = () => {
       }
       if(!found) {
         signInOutObj[signInOutObj.length] = {agtId: activeAgentsData[i].agtId,signedIn: null,stamp: null};
-        signInOutObj[signInOutObj.length-1].stamp = dayjs(activeAgentsData[i].stamp).get('hour');
+        // signInOutObj[signInOutObj.length-1].stamp = dayjs(activeAgentsData[i].stamp).get('hour');
         if(activeAgentsData[i].type === 1) {
           signInOutObj[signInOutObj.length-1].signedIn = true;
         } else {

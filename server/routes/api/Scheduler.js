@@ -2,9 +2,9 @@ const router = require('express').Router(); //do not convert to an ES module. It
 const path = require('path'); //allows for combining relative file path with a set file path
 const fsp = require('fs').promises; //this file system call allows for async and await
 const fs = require('fs'); //this one is being used for methods and functions that do not allow for async and await
-const dayjs = require('dayjs'); //allows for easy date manipulation and date math
-const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows for time manipulation
-dayjs.extend(customParseFormat); //brings in the time manipulation extension into the main dayjs function call
+// const dayjs = require('dayjs'); //allows for easy date manipulation and date math
+// const customParseFormat = require('dayjs/plugin/customParseFormat'); //allows for time manipulation
+// dayjs.extend(customParseFormat); //brings in the time manipulation extension into the main dayjs function call
 var filePath; //whenever this file is called the filePath will immediately be cleared to avoid errors
 
 async function pastDateChecker(accountNum) {
@@ -56,9 +56,9 @@ async function schedulerAppend(accountNum, data) {
     data.Time = `${time} ${meridiem}`; // concatinating the time and meridiem with a space between to keep it dynamic
   }
 
-  if (data.Set) {
-    console.log(`Move ${data.Date} and ${dayjs(data.Time, ['h:mm A', 'h A', 'hA', 'h:mmA', 'h:mm a', 'h a', 'ha', 'h:mma']).format("HH:mm")} from Available to Unavailable`);
-  }
+  // if (data.Set) {
+  //   console.log(`Move ${data.Date} and ${dayjs(data.Time, ['h:mm A', 'h A', 'hA', 'h:mmA', 'h:mm a', 'h a', 'ha', 'h:mma']).format("HH:mm")} from Available to Unavailable`);
+  // }
   // current = await schedulerReader(accountNum);
   // if(data.set) {
   //     // for(let i = 0; i < current.date.length(); i++) {
