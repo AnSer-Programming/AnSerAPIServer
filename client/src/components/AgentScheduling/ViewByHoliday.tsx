@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import OverviewOnly from './OverViewOnly';
+import OverviewOnly from './OverviewOnly';
 import SelectHoliday from './SelectHoliday';
 
 const ViewByHoliday = (data: any) => {
