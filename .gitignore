@@ -17,3 +17,11 @@ Charts/
 .github/copilot-instructions.md
 # Ignore running updated file of changes
 .github/meeting-notes.md
+
+# Ignore documentation/analysis markdown files
+*.md
+!README.md
+!client/src/pages/ClientInfo/README.md
+
+# Ignore Claude Code settings
+.claude/
