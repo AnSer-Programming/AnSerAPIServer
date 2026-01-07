@@ -54,10 +54,10 @@ const OfficePersonnelSection = ({ errors = {} }) => {
   return (
     <Box sx={{ mt: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-        Additional Contacts
+        Additional Key Contacts
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Include any other team members we may reference or loop in when callers need help.
+        Add office/administrative contacts we may coordinate with. Do not list on-call personnel here—we'll collect them later. Examples: Scheduling Contact, Maintenance Lead, IT, HR, Regional/Local Manager, Workflow SME.
       </Typography>
 
       {personnel.map((p, idx) => {
@@ -68,6 +68,7 @@ const OfficePersonnelSection = ({ errors = {} }) => {
               <Grid item xs={12} md={4}>
                 <TextField
                   label="Name"
+                  placeholder="e.g., Regional Manager"
                   fullWidth
                   value={p.name}
                   onChange={(e) => updatePerson(idx, { name: e.target.value })}
@@ -78,7 +79,8 @@ const OfficePersonnelSection = ({ errors = {} }) => {
 
               <Grid item xs={12} md={4}>
                 <TextField
-                  label="Title"
+                  label="Team / Department"
+                  placeholder="e.g., Scheduling Contact"
                   fullWidth
                   value={p.title}
                   onChange={(e) => updatePerson(idx, { title: e.target.value })}

@@ -6,14 +6,16 @@ import { Switch, Route, Redirect, useLocation } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 import { WizardProvider } from '../context_API/WizardContext';
 import { ClientInfoThemeProvider } from '../context_API/ClientInfoThemeContext';
+import WizardLayout from './WizardLayout';
 
 const StartNewClient = lazy(() => import('../pages/StartNewClient'));
 const ClientSetUp = lazy(() => import('../pages/ClientSetUp'));
 const OfficeReach = lazy(() => import('../pages/OfficeReach'));
-const AnswerCalls = lazy(() => import('../pages/AnswerCalls'));
+const AnswerCalls = lazy(() => import('../pages/AnswerCallsNew'));
 const FinalDetails = lazy(() => import('../pages/FinalDetails'));
 const ReviewStep = lazy(() => import('../pages/ReviewStep'));
 const OnCall = lazy(() => import('../pages/OnCall'));
+const CallRouting = lazy(() => import('../pages/CallRouting'));
 const InviteLinkHandler = lazy(() => import('../pages/InviteLinkHandler'));
 const AdminInvite = lazy(() => import('../pages/AdminInvite'));
 
@@ -32,15 +34,34 @@ const ClientInfoReactRoutesInner = () => (
       <Switch>
         <Route exact path="/ClientInfoReact" component={StartNewClient} />
         <Route exact path="/ClientInfoReact/NewFormWizard" render={() => <Redirect to="/ClientInfoReact/NewFormWizard/company-info" />} />
-        <Route path="/ClientInfoReact/NewFormWizard/company-info" component={ClientSetUp} />
-    <Route path="/ClientInfoReact/NewFormWizard/office-reach" component={OfficeReach} />
-    <Route path="/ClientInfoReact/NewFormWizard/answer-calls" component={AnswerCalls} />
-  <Route path="/ClientInfoReact/admin-invite" component={AdminInvite} />
-  <Route path="/ClientInfoReact/invite/:token" component={InviteLinkHandler} />
-        <Route path="/ClientInfoReact/NewFormWizard/final-details" component={FinalDetails} />
-        <Route path="/ClientInfoReact/NewFormWizard/on-call" component={OnCall} />
-  <Route path="/ClientInfoReact/NewFormWizard/review" component={ReviewStep} />
-        <Route component={StartNewClient} />
+
+        {/* Wizard routes wrapped in shared WizardLayout so navbar/footer render once */}
+        <Route path="/ClientInfoReact/NewFormWizard">
+          <WizardLayout>
+            <Switch>
+              {/* Wizard routes in desired order */}
+              <Route path="/ClientInfoReact/NewFormWizard/company-info" component={ClientSetUp} />
+              <Route path="/ClientInfoReact/NewFormWizard/answer-calls" component={AnswerCalls} />
+              <Route path="/ClientInfoReact/NewFormWizard/on-call" component={OnCall} />
+              <Route path="/ClientInfoReact/NewFormWizard/call-routing" component={CallRouting} />
+              <Route path="/ClientInfoReact/NewFormWizard/office-reach" component={OfficeReach} />
+              <Route path="/ClientInfoReact/NewFormWizard/final-details" component={FinalDetails} />
+              <Route path="/ClientInfoReact/NewFormWizard/review" component={ReviewStep} />
+
+              {/* Other related routes (kept available) */}
+              <Route path="/ClientInfoReact/admin-invite" component={AdminInvite} />
+              <Route path="/ClientInfoReact/invite/:token" component={InviteLinkHandler} />
+
+              {/* Fast Track route is feature-flag guarded */}
+              {process.env.REACT_APP_FASTTRACK_ENABLED === 'true' && (
+                <Route path="/ClientInfoReact/NewFormWizard/fast-track" component={lazy(() => import('../pages/FastTrack'))} />
+              )}
+
+              <Route component={StartNewClient} />
+            </Switch>
+          </WizardLayout>
+        </Route>
+
       </Switch>
     </Suspense>
   </>

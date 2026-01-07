@@ -72,6 +72,23 @@ const DEFAULTS = {
     },
     holidays: [],
     specialEvents: [],
+    callFiltering: {
+      roboCallBlocking: null,
+      businessGreeting: null,
+      checkInRecording: null,
+    },
+    businessHoursOverflow: {
+      enabled: false,
+      overflowNumber: '',
+      ringCount: '',
+    },
+    dailyRecap: {
+      enabled: false,
+      deliveryTime: '17:00',
+      deliveryMethod: 'email',
+      emailAddress: '',
+      includeDetails: true,
+    },
     websiteAccess: {
       required: false,
       requiresLogin: null,
@@ -110,8 +127,9 @@ const DEFAULTS = {
     },
   },
   onCall: {
+    teamSize: 0,
+    collectEmailsForRecaps: false,
     rotation: {
-      doesNotChange: false,
       otherExplain: '',
       whenChanges: '',
       frequency: '',        // 'daily' | 'weekly' | 'monthly' | ''
@@ -152,6 +170,8 @@ const DEFAULTS = {
       emergencyOnly: false,
       callTypes: '',
     },
+    scheduleType: 'no-schedule', // 'rotating' | 'fixed' | 'no-schedule'
+    fixedOrder: [], // [{ id, name, role }]
   },
   escalationMatrix: [],
   answerCalls: {
@@ -166,6 +186,9 @@ const DEFAULTS = {
       billingQuestion: { enabled: false, customLabel: '', instructions: '', reachPrimary: '', reachSecondary: '', notes: '', autoEmailOffice: false },
       otherText: '',
     },
+  },
+  callRouting: {
+    categoryAssignments: [], // [{ categoryId, categoryName, whenToContact, specialInstructions, escalationSteps: [{ id, contactPerson, contactMethod, notes, ifNaAction, repeatSteps, holdForCheckIn }] }]
   },
   metrics: {
     callVolume: {
@@ -261,6 +284,24 @@ const reducer = (state, action) => {
     default:
       return state;
   }
+};
+
+const STEP_DATA_KEYS = {
+  'company-info': 'companyInfo',
+  'office-reach': 'officeReach',
+  'answer-calls': 'answerCalls',
+  'on-call': 'onCall',
+  'final-details': 'finalDetails',
+};
+
+const STEP_SLUG_BY_KEY = Object.keys(STEP_DATA_KEYS).reduce((acc, slug) => {
+  acc[STEP_DATA_KEYS[slug]] = slug;
+  return acc;
+}, {});
+
+const normalizeStepSlug = (step) => {
+  if (STEP_DATA_KEYS[step]) return step;
+  return STEP_SLUG_BY_KEY[step] || step;
 };
 
 export const WizardProvider = ({ children }) => {
@@ -372,8 +413,9 @@ export const WizardProvider = ({ children }) => {
 
   // Check if a step can be proceeded to (previous steps completed)
   const canProceedToStep = useCallback((targetStep) => {
-    const stepOrder = ['companyInfo', 'officeReach', 'metrics', 'answerCalls', 'onCall', 'finalDetails'];
-    const targetIndex = stepOrder.indexOf(targetStep);
+    const stepOrder = ['company-info', 'office-reach', 'metrics', 'answer-calls', 'on-call', 'final-details'];
+    const normalizedTarget = normalizeStepSlug(targetStep);
+    const targetIndex = stepOrder.indexOf(normalizedTarget);
     
     if (targetIndex === -1) return true; // Unknown step, allow
     if (targetIndex === 0) return true; // First step always accessible
@@ -381,9 +423,11 @@ export const WizardProvider = ({ children }) => {
     // Check if all previous steps have been visited and have minimal data
     for (let i = 0; i < targetIndex; i++) {
       const step = stepOrder[i];
-      if (!state.visitedSteps[step]) return false;
+      const dataKey = STEP_DATA_KEYS[step] || step;
+      const visited = state.visitedSteps[step] || state.visitedSteps[dataKey];
+      if (!visited) return false;
       
-      const sectionData = state.formData[step];
+      const sectionData = state.formData[dataKey] || state.formData[step];
       if (!sectionData || Object.keys(sectionData).length === 0) return false;
     }
     

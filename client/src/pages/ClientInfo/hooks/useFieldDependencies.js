@@ -60,7 +60,7 @@ export const useFieldDependencies = (formData, currentSection) => {
       }
     },
 
-    // Office Reach Dependencies
+    // Other Info Dependencies
     officeReach: {
       // Mobile number required if mobile notifications enabled
       mobileNumber: {

@@ -7,31 +7,33 @@ export const WIZARD_ROUTES = {
   BASE: '/ClientInfoReact',
   ADMIN_INVITE: '/ClientInfoReact/admin-invite',
   INVITE: (token) => `/ClientInfoReact/invite/${token}`,
-  
+
   // Wizard steps
   COMPANY_INFO: `${WIZARD_BASE}/company-info`,
-  OFFICE_REACH: `${WIZARD_BASE}/office-reach`, 
+  OFFICE_REACH: `${WIZARD_BASE}/office-reach`,
   ANSWER_CALLS: `${WIZARD_BASE}/answer-calls`,
   ON_CALL: `${WIZARD_BASE}/on-call`,
+  CALL_ROUTING: `${WIZARD_BASE}/call-routing`,
   FINAL_DETAILS: `${WIZARD_BASE}/final-details`,
   REVIEW: `${WIZARD_BASE}/review`,
-  FAST_TRACK: '/ClientInfoReact/fast-track',
 };
 
 export const WIZARD_STEPS = [
   'company-info',
-  'office-reach', 
   'answer-calls',
   'on-call',
+  'call-routing',
+  'office-reach',
   'final-details',
   'review'
 ];
 
 export const STEP_LABELS = {
   'company-info': 'Company Information',
-  'office-reach': 'Office Reach',
   'answer-calls': 'Answer Calls',
   'on-call': 'On Call',
+  'call-routing': 'Call Routing',
+  'office-reach': 'Other Info',
   'final-details': 'Final Details',
   'review': 'Review & Submit'
 };

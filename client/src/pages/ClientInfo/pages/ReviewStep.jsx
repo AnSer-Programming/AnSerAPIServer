@@ -20,144 +20,14 @@ import {
 } from '@mui/material';
 import { useHistory } from 'react-router-dom';
 
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
-import { WIZARD_ROUTES } from '../constants/routes';
 import { sendSummaryEmail } from '../context_API/ClientWizardAPI';
+import InfoPagePreview from '../components/InfoPagePreview';
 
-const Row = ({ label, value }) => (
-  <Box sx={{ mb: 1.2 }}>
-    <Typography variant="caption" color="text.secondary">{label}</Typography>
-    <Typography variant="body2">{value || '-'}</Typography>
-  </Box>
-);
-
-const Card = ({ title, onEdit, children, sx }) => (
-  <Paper variant="outlined" sx={{ p: 2, ...sx }}>
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{title}</Typography>
-      {onEdit && <Button size="small" onClick={onEdit}>Edit</Button>}
-    </Box>
-    <Divider sx={{ my: 1.5 }} />
-    <Box>{children}</Box>
-  </Paper>
-);
-
-// helpers
-const yn = (b) => (b ? 'Yes' : 'No');
-
-const formatAttachmentSize = (bytes = 0) => {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB';
-  if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-};
-
-const formatContactValues = (value, fallback) => {
-  const source = value ?? fallback;
-  if (Array.isArray(source)) {
-    return source
-      .map((entry) => (entry == null ? '' : String(entry).trim()))
-      .filter((entry) => entry.length > 0)
-      .join(', ');
-  }
-
-  if (source == null) return '';
-  const trimmed = String(source).trim();
-  return trimmed;
-};
-
-const summarizeMemberContacts = (member = {}) => {
-  const parts = [];
-  const cell = formatContactValues(member.cellPhone, member.cell);
-  const text = formatContactValues(member.textCell, member.text);
-  const home = formatContactValues(member.homePhone, member.home);
-  const pager = formatContactValues(member.pager, member.other);
-  const email = formatContactValues(member.email, member.emails);
-
-  if (cell) parts.push(`Cell: ${cell}`);
-  if (text) parts.push(`Text: ${text}`);
-  if (home) parts.push(`Home: ${home}`);
-  if (pager) parts.push(`Pager: ${pager}`);
-  if (email) parts.push(`Email: ${email}`);
-
-  return parts.join(' • ');
-};
-
-const parseScheduleTime = (value) => {
-  if (!value) return null;
-  const str = String(value).trim();
-
-  const meridiemMatch = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
-  if (meridiemMatch) {
-    const rawHour = Number(meridiemMatch[1]);
-    const minutes = Number(meridiemMatch[2]);
-    if (Number.isNaN(rawHour) || Number.isNaN(minutes)) return null;
-    const displayHour = rawHour % 12 || 12;
-    const meridiem = meridiemMatch[4].toUpperCase();
-    return { displayHour, minutes, meridiem };
-  }
-
-  const militaryMatch = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (militaryMatch) {
-    const hour24 = Number(militaryMatch[1]);
-    const minutes = Number(militaryMatch[2]);
-    if (Number.isNaN(hour24) || Number.isNaN(minutes)) return null;
-    const meridiem = hour24 >= 12 ? 'PM' : 'AM';
-    const displayHour = hour24 % 12 || 12;
-    return { displayHour, minutes, meridiem };
-  }
-
-  return null;
-};
-
-const formatScheduleTime = (value) => {
-  const parsed = parseScheduleTime(value);
-  if (!parsed) return value || '-';
-  const minutes = parsed.minutes.toString().padStart(2, '0');
-  return `${parsed.displayHour}:${minutes} ${parsed.meridiem}`;
-};
-
-const formatScheduleDate = (value) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date);
-};
-
-const ordinalSuffix = (value) => {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return value;
-  const abs = Math.abs(num);
-  const mod100 = abs % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${num}th`;
-  switch (abs % 10) {
-    case 1:
-      return `${num}st`;
-    case 2:
-      return `${num}nd`;
-    case 3:
-      return `${num}rd`;
-    default:
-      return `${num}th`;
-  }
-};
-
-const formatSelectedDays = (days) => {
-  if (!Array.isArray(days) || days.length === 0) return '';
-  return days
-    .map((day) => (day ? String(day).slice(0, 3) : ''))
-    .filter(Boolean)
-    .join(', ');
-};
-
+// Mapping for meeting types used in the Final Details / Review step
 const MEETING_TYPE_MAP = {
   video: {
     label: 'Video Call',
@@ -173,71 +43,60 @@ const MEETING_TYPE_MAP = {
   },
 };
 
+// Mapping for call type labels
 const CALL_TYPE_LABELS = {
-  newLead: 'New customer or sales inquiry',
-  existingClient: 'Existing client needs assistance',
-  urgentIssue: 'Urgent or emergency issue',
-  serviceRequest: 'Service or maintenance request',
-  billingQuestion: 'Billing or account question',
+  newLead: 'New Lead/Inquiry',
+  existingClient: 'Existing Client',
+  urgentIssue: 'Urgent Issue',
+  serviceRequest: 'Service Request',
+  billingQuestion: 'Billing Question',
 };
 
-const FAST_TRACK_PLATFORM_LABELS = {
-  teams: 'Microsoft Teams',
-  zoom: 'Zoom',
-  phone: 'Phone Call',
-  'google-meet': 'Google Meet',
-  other: 'Other',
+// Simple boolean formatter used in the review view
+const yn = (b) => (b ? 'Yes' : 'No');
+
+// Helper to summarize member contact info
+const summarizeMemberContacts = (member) => {
+  if (!member) return '';
+  const parts = [];
+
+  // Get first non-empty value from arrays or single values
+  const getFirst = (val) => {
+    if (Array.isArray(val)) {
+      const first = val.find(v => v && String(v).trim());
+      return first ? String(first).trim() : '';
+    }
+    return val && String(val).trim() ? String(val).trim() : '';
+  };
+
+  const cell = getFirst(member.cellPhone);
+  const email = getFirst(member.email);
+
+  if (cell) parts.push(cell);
+  if (email) parts.push(email);
+
+  return parts.join(', ');
 };
 
-const meetingTimeToMinutes = (time) => {
-  if (!time) return 0;
-  const match = String(time).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return 0;
-  let hours = Number(match[1]) % 12;
-  if (match[3].toUpperCase() === 'PM') hours += 12;
-  const minutes = Number(match[2]);
-  return hours * 60 + minutes;
-};
+// Small Card wrapper used in the review view (title + optional Edit action)
+const Card = ({ title, onEdit, children, sx = {} }) => (
+  <Paper variant="outlined" sx={{ p: 2, ...sx }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{title}</Typography>
+      {onEdit && <Button size="small" onClick={onEdit}>Edit</Button>}
+    </Box>
+    <Divider sx={{ my: 1.5 }} />
+    <Box>{children}</Box>
+  </Paper>
+);
 
-const formatConsultationSlot = (slot) => {
-  if (!slot?.date || !slot?.time) return null;
-  const date = new Date(slot.date);
-  if (!Number.isNaN(date.getTime())) {
-    const label = date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-    return `${label} • ${slot.time}`;
-  }
-  return `${slot.date} • ${slot.time}`;
-};
 
-const describeSchedule = (schedule = {}) => {
-  const hasTime = schedule.startTime || schedule.endTime;
-  const range = hasTime
-    ? `${formatScheduleTime(schedule.startTime)} – ${formatScheduleTime(schedule.endTime)}`
-    : 'Time TBD';
-
-  const recurrence = schedule.recurrence || '';
-
-  if (!recurrence) {
-    return range;
-  }
-
-  if (recurrence === 'On Date') {
-    const dateLabel = formatScheduleDate(schedule.specificDate);
-    return dateLabel ? `${range} • On ${dateLabel}` : `${range} • One-time schedule`;
-  }
-
-  if (recurrence === 'Every Month') {
-    const dayLabel = ordinalSuffix(schedule.monthDay);
-    return dayLabel ? `${range} • Monthly on the ${dayLabel}` : `${range} • Monthly`;
-  }
-
-  const daysLabel = formatSelectedDays(schedule.selectedDays);
-  return daysLabel ? `${range} • ${recurrence} on ${daysLabel}` : `${range} • ${recurrence}`;
-};
+const Row = ({ label, value }) => (
+  <Box sx={{ mb: 1.2 }}>
+    <Typography variant="caption" color="text.secondary">{label}</Typography>
+    <Typography variant="body2">{value || '-'}</Typography>
+  </Box>
+);
 
 const ReviewStep = () => {
   const { darkMode } = useClientInfoTheme();
@@ -274,6 +133,20 @@ const ReviewStep = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Review & submit — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Review your AnSer setup details and submit the intake form to start the onboarding process.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
+
   const ci = formData.companyInfo || {};
   const ac = formData.answerCalls || { routine: {}, urgent: {}, callTypes: [] };
   const oc = formData.onCall || {
@@ -293,26 +166,7 @@ const ReviewStep = () => {
   const consultation = ci.consultationMeeting || {};
   const fastTrack = formData.fastTrack || {};
   const fastTrackEnabled = fastTrack.enabled === true;
-  const fastTrackPayment = fastTrack.payment || {};
-  const fastTrackContacts = Array.isArray(fastTrack.onCallContacts)
-    ? fastTrack.onCallContacts.filter((contact) => contact && (
-        contact.name || contact.phone || contact.email || contact.role || contact.availability
-      ))
-    : [];
-  const fastTrackSlots = Array.isArray(fastTrack.callTypeSlots) ? fastTrack.callTypeSlots : [];
-  const fastTrackMeeting = fastTrack.meeting || {};
-  const fastTrackMeetingDate = fastTrackMeeting.date ? (formatScheduleDate(fastTrackMeeting.date) || fastTrackMeeting.date) : '-';
-  const fastTrackMeetingTime = fastTrackMeeting.time ? (formatScheduleTime(fastTrackMeeting.time) || fastTrackMeeting.time) : '-';
-  const fastTrackPlatformLabel = fastTrackMeeting.platform
-    ? (FAST_TRACK_PLATFORM_LABELS[fastTrackMeeting.platform] || fastTrackMeeting.platform)
-    : '-';
-  const fastTrackPaymentSummary = (() => {
-    const parts = [];
-    if (fastTrackPayment.cardholderName) parts.push(fastTrackPayment.cardholderName);
-    if (fastTrackPayment.cardBrand) parts.push(fastTrackPayment.cardBrand);
-    if (fastTrackPayment.cardLast4) parts.push(`**** ${fastTrackPayment.cardLast4}`);
-    return parts.length ? parts.join(' • ') : 'Details pending';
-  })();
+  const featureFastTrackEnabled = process.env.REACT_APP_FASTTRACK_ENABLED === 'true';
   const consultationSlots = Array.isArray(consultation.selectedDateTimes)
     ? consultation.selectedDateTimes.filter((slot) => slot && (slot.date || slot.time))
     : [];
@@ -583,7 +437,6 @@ const ReviewStep = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: darkMode ? 'background.default' : '#f5f6f8' }}>
-      <ClientInfoNavbar />
 
       <Container maxWidth="md" sx={{ py: 3 }}>
         {/* Modern Header Section */}
@@ -593,7 +446,7 @@ const ReviewStep = () => {
             mb: 4,
             background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
             borderRadius: 3,
-            p: 4,
+            p: { xs: 2, md: 3 },
             color: 'white',
             position: 'relative',
             overflow: 'hidden',
@@ -628,86 +481,6 @@ const ReviewStep = () => {
         )}
 
         <Stack spacing={3}>
-          {mounted && fastTrackEnabled && (
-            <Card
-              title="Fast Track Launch"
-              onEdit={() => history.push(WIZARD_ROUTES.FAST_TRACK)}
-              sx={{ backgroundColor: 'rgba(25, 118, 210, 0.035)' }}
-            >
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Payment Authorization</Typography>
-                  <Typography variant="body2">{fastTrackPaymentSummary}</Typography>
-                  <Typography variant="body2">Billing ZIP: {fastTrackPayment.billingZip || '-'}</Typography>
-                  <Typography variant="body2">Rush Fee Accepted: {yn(!!fastTrackPayment.rushFeeAccepted)}</Typography>
-                  <Typography variant="body2">Authorization: {fastTrackPayment.authorization ? 'Approved' : 'Pending'}</Typography>
-                  <Typography variant="body2">High call volume expected: {fastTrack?.highCallVolumeExpected ? 'Yes — stage extra coverage.' : 'No'}</Typography>
-                  {fastTrackPayment.notes && (
-                    <Typography variant="body2" color="text.secondary">Notes: {fastTrackPayment.notes}</Typography>
-                  )}
-                </Box>
-                <Divider />
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Launch Week Contacts</Typography>
-                  {fastTrackContacts.length ? (
-                    <Stack spacing={1}>
-                      {fastTrackContacts.map((contact, idx) => (
-                        <Box key={contact.id || idx}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {contact.name || `Contact ${idx + 1}`}
-                            {contact.role ? ` — ${contact.role}` : ''}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {contact.phone ? `Phone: ${contact.phone}` : 'Phone: -'}
-                            {contact.email ? ` • Email: ${contact.email}` : ''}
-                            {contact.availability ? ` • ${contact.availability}` : ''}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">Fast Track contacts pending.</Typography>
-                  )}
-                </Box>
-                <Divider />
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Rapid Call Types</Typography>
-                  {fastTrackSlots.length ? (
-                    <Stack spacing={1}>
-                      {fastTrackSlots.map((slot, idx) => (
-                        <Box key={slot.id || idx}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{slot.label || slot.id || `Scenario ${idx + 1}`}</Typography>
-                          <Typography variant="body2" color={slot.instructions ? 'text.primary' : 'text.secondary'}>
-                            {slot.instructions || 'Instructions pending.'}
-                          </Typography>
-                          {slot.afterHoursNotes && (
-                            <Typography variant="caption" color="text.secondary">
-                              After-hours: {slot.afterHoursNotes}
-                            </Typography>
-                          )}
-                        </Box>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">No rapid call type guidance provided.</Typography>
-                  )}
-                </Box>
-                <Divider />
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Kickoff Meeting</Typography>
-                  <Typography variant="body2">Platform: {fastTrackPlatformLabel}</Typography>
-                  <Typography variant="body2">Preferred: {fastTrackMeetingDate} at {fastTrackMeetingTime}</Typography>
-                  {fastTrackMeeting.timezone && (
-                    <Typography variant="body2">Timezone: {fastTrackMeeting.timezone}</Typography>
-                  )}
-                  {fastTrackMeeting.notes && (
-                    <Typography variant="body2" color="text.secondary">Notes: {fastTrackMeeting.notes}</Typography>
-                  )}
-                </Box>
-              </Stack>
-            </Card>
-          )}
-
           {mounted && (
             <Card
               title="Company Information"
@@ -1120,10 +893,17 @@ const ReviewStep = () => {
             </Card>
           )}
 
+          {/* Info Page Preview */}
           {mounted && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <Box sx={{ mt: 4 }}>
+              <InfoPagePreview formData={formData} />
+            </Box>
+          )}
+
+          {mounted && (
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
               mt: 4,
               gap: 2
             }}>
@@ -1172,7 +952,6 @@ const ReviewStep = () => {
         </Stack>
       </Container>
 
-      <ClientInfoFooter />
 
       <Dialog
         open={summaryDialog.open}

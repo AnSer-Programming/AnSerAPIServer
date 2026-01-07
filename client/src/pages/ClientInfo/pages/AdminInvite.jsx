@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Container, Paper, Typography, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
 import { createMockInvite, listMockInvites } from '../context_API/mockInviteService';
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 
 // Simple passphrase protection for local dev. Change as needed.
 const ADMIN_PASSPHRASE = 'letmein';
@@ -16,6 +16,20 @@ export default function AdminInvite() {
   const [message, setMessage] = useState('Please pre-fill your info');
   const [created, setCreated] = useState(null);
   const [list, setList] = useState(listMockInvites());
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Admin Invite (dev) — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Development tool: create and manage mock invites for the ClientInfo wizard.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
 
   const handleAuth = () => {
     if (pass === ADMIN_PASSPHRASE) setAuthorized(true);
@@ -32,12 +46,11 @@ export default function AdminInvite() {
 
   return (
     <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh' }}>
-      <ClientInfoNavbar />
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 } }} role="region" aria-labelledby="admininvite-title">
           {!authorized ? (
             <Box>
-              <Typography variant="h6" sx={{ mb: 2 }}>Admin Invite (local)</Typography>
+              <Typography id="admininvite-title" component="h1" variant="h6" sx={{ mb: 2 }}>Admin Invite (local)</Typography>
               <TextField label="Passphrase" value={pass} onChange={(e) => setPass(e.target.value)} />
               <Button sx={{ ml: 2 }} onClick={handleAuth}>Enter</Button>
             </Box>
@@ -71,7 +84,6 @@ export default function AdminInvite() {
           )}
         </Paper>
       </Container>
-      <ClientInfoFooter />
     </Box>
   );
 }

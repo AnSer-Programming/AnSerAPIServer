@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -27,8 +27,8 @@ import {
   LocationOn
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import AttachmentsSection from '../sections/AttachmentsSection';
@@ -149,8 +149,8 @@ const FinalDetails = () => {
     clearError('selectedDateTimes');
   };
 
-  // ⬇️ Back now goes to the new On Call step
-  const onBack = () => history.push('/ClientInfoReact/NewFormWizard/on-call');
+  // Back now goes to Other Info (previous step in the wizard).
+  const onBack = () => history.push('/ClientInfoReact/NewFormWizard/office-reach');
 
   const deriveValidationMessage = (validationErrors) => {
     if (!validationErrors) return '';
@@ -208,22 +208,35 @@ const FinalDetails = () => {
     }
   };
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Final details — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Provide your final availability options and attachments to complete the AnSer setup.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: darkMode ? 'background.default' : '#f8fafc' }}>
-      <ClientInfoNavbar />
       <Container maxWidth="md" sx={{ py: 3 }}>
         <Fade in={true} timeout={600}>
-          <Paper 
+          <Paper role="region" aria-labelledby="finaldetails-title"
             elevation={0}
             sx={{ 
-              p: 4,
+              p: { xs: 2, md: 3 },
               borderRadius: 3,
               bgcolor: darkMode ? 'background.paper' : '#ffffff',
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             }}
           >
             {/* Enhanced Header Section */}
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
               <Box sx={{ 
                 p: 1.5, 
                 borderRadius: 2, 
@@ -234,18 +247,18 @@ const FinalDetails = () => {
               </Box>
               <Box>
                 <Stack direction="row" alignItems="center" spacing={2}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                  <Typography id="finaldetails-title" component="h1" variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                     Your Availability Options
                   </Typography>
                   <Chip 
-                    label="Final Step" 
+                    label="Almost done" 
                     color="primary" 
                     size="small" 
                     variant="outlined"
                     icon={<CheckCircleOutline />}
                   />
                 </Stack>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                   Please provide at least 3 date and time options when you're available to meet
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -579,7 +592,7 @@ const FinalDetails = () => {
                   py: 1
                 }}
               >
-                ← Back to On-Call Setup
+                Back to Other Info
               </Button>
               <Stack direction="row" spacing={2}>
                 <Button 
@@ -598,6 +611,8 @@ const FinalDetails = () => {
                   variant="contained" 
                   color="success"
                   onClick={onSubmit}
+                  aria-label="Complete setup"
+                  aria-live="polite"
                   sx={{ 
                     borderRadius: 2,
                     px: 3,
@@ -615,7 +630,6 @@ const FinalDetails = () => {
           </Paper>
         </Fade>
       </Container>
-      <ClientInfoFooter />
       <Snackbar open={snack} autoHideDuration={4000} onClose={() => setSnack(false)}>
         <Alert severity="warning" sx={{ width: '100%' }}>
           {snackMessage || 'Please complete the required fields.'}

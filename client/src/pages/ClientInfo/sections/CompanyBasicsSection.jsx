@@ -17,16 +17,22 @@ import {
   MenuItem,
   Select,
 } from '@mui/material';
+import FieldRow from '../components/FieldRow';
 import { AddCircleOutline, DeleteOutline } from '@mui/icons-material';
 
 const cleanPhone = (v = '') => v.replace(/[^\d\-()+ ]/g, '').slice(0, 30);
 
 const CONTACT_TYPE_OPTIONS = [
-  { value: 'main', label: 'Main phone' },
-  { value: 'toll-free', label: 'Toll-free phone' },
+  { value: 'phone', label: 'Phone' },
+  { value: 'toll-free', label: 'Toll-Free Phone' },
   { value: 'fax', label: 'Fax' },
-  { value: 'other', label: 'Other phone' },
   { value: 'website', label: 'Website' },
+  { value: 'group-email', label: 'Group Email (distribution)' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'x-twitter', label: 'X (Twitter)' },
+  { value: 'instagram', label: 'Instagram' },
 ];
 
 const uid = () => `channel-${Math.random().toString(36).slice(2, 8)}-${Date.now().toString(36)}`;
@@ -40,23 +46,33 @@ const normalizeChannel = (channel) => {
     ? channel.type
     : 'main';
 
+  // Defensive: if the incoming channel.value accidentally equals the human
+  // label for the selected type (e.g., value === 'WhatsApp'), treat it as
+  // an empty value instead of using the label as the stored value.
+  const option = CONTACT_TYPE_OPTIONS.find((o) => o.value === allowed);
+  const label = option ? option.label : '';
+  const incomingValue = channel.value ?? '';
+  const value = (typeof incomingValue === 'string' && incomingValue.trim())
+    ? (incomingValue.trim().toLowerCase() === (label || '').toLowerCase() ? '' : incomingValue)
+    : (incomingValue || '');
+
   return {
     id: channel.id || uid(),
     type: allowed,
-    value: channel.value ?? '',
+    value,
   };
 };
 
 const fallbackFromContacts = (contacts = {}) => {
   const candidates = [];
-  if (contacts.primaryOfficeLine) candidates.push({ type: 'main', value: contacts.primaryOfficeLine });
-  if (contacts.secondaryLine) candidates.push({ type: 'other', value: contacts.secondaryLine });
+  if (contacts.primaryOfficeLine) candidates.push({ type: 'phone', value: contacts.primaryOfficeLine });
+  if (contacts.secondaryLine) candidates.push({ type: 'phone', value: contacts.secondaryLine });
   if (contacts.tollFree) candidates.push({ type: 'toll-free', value: contacts.tollFree });
   if (contacts.fax) candidates.push({ type: 'fax', value: contacts.fax });
   if (contacts.website) candidates.push({ type: 'website', value: contacts.website });
 
   if (!candidates.length) {
-    candidates.push({ type: 'main', value: '' });
+    candidates.push({ type: 'phone', value: '' });
   }
 
   return candidates.map(normalizeChannel);
@@ -93,10 +109,47 @@ const CompanyBasicsSection = ({
     : [];
 
   const [channels, setChannels] = useState(() => hydrateChannels(data.contactChannels, contacts));
+  // transient helper text messages for channels after normalization (e.g., "Added leading @")
+  const [channelNotes, setChannelNotes] = useState({});
+  // track which channel input is currently focused to avoid overwriting while editing
+  const [focusedChannelId, setFocusedChannelId] = useState(null);
 
   useEffect(() => {
-    setChannels(hydrateChannels(data.contactChannels, contacts));
-  }, [data.contactChannels, contacts.primaryOfficeLine, contacts.tollFree, contacts.fax, contacts.secondaryLine, contacts.website]);
+    // Only update local channels state when the hydrated result differs from
+    // the current channels to avoid overwriting user edits during typing.
+    try {
+      const hydrated = hydrateChannels(data.contactChannels, contacts);
+
+      // If a channel is currently focused, preserve its local value into the
+      // hydrated result so we do not clobber user input.
+      if (focusedChannelId && Array.isArray(hydrated)) {
+        for (let i = 0; i < hydrated.length; i++) {
+          const h = hydrated[i];
+          const local = channels[i];
+          if (h && local && h.id === focusedChannelId) {
+            hydrated[i] = { ...h, value: local.value };
+            break;
+          }
+        }
+      }
+
+      const same = (() => {
+        if (!Array.isArray(hydrated) || !Array.isArray(channels)) return false;
+        if (hydrated.length !== channels.length) return false;
+        for (let i = 0; i < hydrated.length; i++) {
+          const a = hydrated[i];
+          const b = channels[i];
+          if ((a.id || '') !== (b.id || '')) return false;
+          if ((a.type || '') !== (b.type || '')) return false;
+          if ((a.value || '') !== (b.value || '')) return false;
+        }
+        return true;
+      })();
+      if (!same) setChannels(hydrated);
+    } catch (e) {
+      setChannels(hydrateChannels(data.contactChannels, contacts));
+    }
+  }, [data.contactChannels, contacts.primaryOfficeLine, contacts.tollFree, contacts.fax, contacts.secondaryLine, contacts.website, focusedChannelId]);
 
   const emit = (patch) => {
     if (typeof onChange === 'function') {
@@ -120,6 +173,9 @@ const CompanyBasicsSection = ({
       const value = channel.value || '';
       switch (channel.type) {
         case 'main':
+        case 'phone':
+        case 'whatsapp':
+          // Treat phone-like channels similarly: prefer primaryOfficeLine, then secondaryLine
           if (!baseContacts.primaryOfficeLine) {
             baseContacts.primaryOfficeLine = value;
           } else if (!baseContacts.secondaryLine) {
@@ -138,6 +194,9 @@ const CompanyBasicsSection = ({
         case 'website':
           baseContacts.website = value;
           break;
+        case 'group-email':
+          baseContacts.officeEmail = value;
+          break;
         default:
           break;
       }
@@ -152,16 +211,68 @@ const CompanyBasicsSection = ({
   const handleChannelValueChange = (index) => (event) => {
     const { value } = event.target;
     const current = channels[index];
-    const sanitized = current?.type === 'website' ? value : cleanPhone(value);
+    // Allow immediate typing of any characters; normalization occurs on blur.
+    const sanitized = value;
     const next = channels.map((channel, idx) => (idx === index ? { ...channel, value: sanitized } : channel));
     syncChannels(next);
+    // clear any transient note for this channel while the user is editing
+    try {
+      const id = current?.id || `channel-${index}`;
+      setChannelNotes((prev) => {
+        if (!prev || !prev[id]) return prev;
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    } catch (e) {
+      // noop
+    }
+  };
+
+  const handleChannelBlur = (index) => (event) => {
+    const channel = channels[index] || {};
+    const { normalizeContactValue } = require('../utils/contactValidators');
+    const { value } = event.target;
+    const { value: normalized, changed } = normalizeContactValue(channel.type, value);
+    if (changed) {
+      const next = channels.map((c, idx) => (idx === index ? { ...c, value: normalized } : c));
+      syncChannels(next);
+      // show a transient helper message for this channel to inform what changed
+      const selectedType = CONTACT_TYPE_OPTIONS.find((o) => o.value === channel.type);
+      const labelText = selectedType ? selectedType.label : (channel.type || 'Value');
+      let msg = '';
+      if (normalized.startsWith('@')) {
+        msg = `Added leading @ for ${labelText} handle`;
+      } else if (/^https?:\/\//i.test(normalized) && !/^https?:\/\//i.test(value.trim())) {
+        msg = `Added https:// to ${labelText}`;
+      } else {
+        msg = `Normalized ${labelText}`;
+      }
+      const id = channel.id || `channel-${index}`;
+      setChannelNotes((prev) => ({ ...(prev || {}), [id]: msg }));
+      // clear the note after a short delay
+      setTimeout(() => {
+        setChannelNotes((prev) => {
+          if (!prev) return prev;
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }, 4000);
+    }
   };
 
   const handleChannelTypeChange = (index) => (event) => {
     const { value } = event.target;
-    const next = channels.map((channel, idx) =>
-      idx === index ? { ...channel, type: value } : channel
-    );
+    const selectedOption = CONTACT_TYPE_OPTIONS.find((o) => o.value === value);
+    const selectedLabel = selectedOption ? selectedOption.label : '';
+    const next = channels.map((channel, idx) => {
+      if (idx !== index) return channel;
+      // If the current value equals the new type's label (or was empty), clear it
+      const currentVal = channel?.value || '';
+      const newVal = (currentVal && currentVal.trim().toLowerCase() === selectedLabel.toLowerCase()) ? '' : currentVal;
+      return { ...channel, type: value, value: newVal };
+    });
     syncChannels(next);
   };
 
@@ -235,31 +346,33 @@ const CompanyBasicsSection = ({
     <Box sx={{ p: { xs: 1, md: 2 }, display: 'grid', gap: 3 }}>
       <Box>
         <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>
-          Company Details
+          Basic Company Details
         </Typography>
         <Divider />
       </Box>
 
       <Box sx={{ display: 'grid', gap: 2 }}>
-        <TextField
-          label="Business Name"
-          fullWidth
-          value={data.businessName || data.company || ''}
-          onChange={(e) => emit({ businessName: e.target.value, company: e.target.value })}
-          error={Boolean(errors.businessName || errors.company)}
-          helperText={errors.businessName || errors.company}
-        />
+        <FieldRow helperText={errors.businessName || errors.company}>
+          <TextField
+            label="Business Name"
+            fullWidth
+            value={data.businessName || data.company || ''}
+            onChange={(e) => emit({ businessName: e.target.value, company: e.target.value })}
+            error={Boolean(errors.businessName || errors.company)}
+          />
+        </FieldRow>
 
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
-            <TextField
-              label="Physical Street Address"
-              fullWidth
-              value={data.physicalLocation || ''}
-              onChange={handlePhysicalField('physicalLocation')}
-              error={Boolean(errors.physicalLocation)}
-              helperText={errors.physicalLocation}
-            />
+            <FieldRow helperText={errors.physicalLocation}>
+              <TextField
+                label="Physical Street Address"
+                fullWidth
+                value={data.physicalLocation || ''}
+                onChange={handlePhysicalField('physicalLocation')}
+                error={Boolean(errors.physicalLocation)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
@@ -291,7 +404,7 @@ const CompanyBasicsSection = ({
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="ZIP / Postal Code"
+              label="Zip / Postal Code"
               fullWidth
               value={data.physicalPostalCode || ''}
               onChange={handlePhysicalField('physicalPostalCode')}
@@ -302,28 +415,31 @@ const CompanyBasicsSection = ({
         </Grid>
 
         <Box sx={{ pl: { xs: 0.5, md: 1 } }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={Boolean(mailingSameAsPhysical)}
-                onChange={(e) => handleMailingToggle(e.target.checked)}
-              />
-            }
-            label="Mailing address is the same as physical location"
-          />
+          <FieldRow>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={Boolean(mailingSameAsPhysical)}
+                  onChange={(e) => handleMailingToggle(e.target.checked)}
+                />
+              }
+              label="Mailing address is the same as physical location"
+            />
+          </FieldRow>
         </Box>
 
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
-            <TextField
-              label="Mailing Street Address"
-              fullWidth
-              value={mailingSameAsPhysical ? (data.physicalLocation || '') : (data.mailingAddress || '')}
-              onChange={mailingField('mailingAddress')}
-              disabled={mailingSameAsPhysical}
-              error={Boolean(errors.mailingAddress)}
-              helperText={errors.mailingAddress}
-            />
+            <FieldRow helperText={errors.mailingAddress}>
+              <TextField
+                label="Mailing Street Address"
+                fullWidth
+                value={mailingSameAsPhysical ? (data.physicalLocation || '') : (data.mailingAddress || '')}
+                onChange={mailingField('mailingAddress')}
+                disabled={mailingSameAsPhysical}
+                error={Boolean(errors.mailingAddress)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
@@ -360,7 +476,7 @@ const CompanyBasicsSection = ({
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="ZIP / Postal Code"
+              label="Zip / Postal Code"
               fullWidth
               value={mailingSameAsPhysical ? (data.physicalPostalCode || '') : (data.mailingPostalCode || '')}
               onChange={mailingField('mailingPostalCode')}
@@ -377,7 +493,7 @@ const CompanyBasicsSection = ({
           Additional Locations
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Add any other offices or service areas your callers might mention.
+          Add any other offices or service areas your callers might mention. Examples: Billing, Mailing, Warehouse.
         </Typography>
 
         <Stack spacing={2}>
@@ -441,7 +557,7 @@ const CompanyBasicsSection = ({
                   </Grid>
                   <Grid item xs={12} md={3}>
                     <TextField
-                      label="Postal Code"
+                      label="Zip / Postal Code"
                       fullWidth
                       value={location.postalCode || ''}
                       onChange={(e) => updateLocation(index, { postalCode: e.target.value })}
@@ -487,10 +603,10 @@ const CompanyBasicsSection = ({
 
       <Box>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-          Contact Channels
+          Public Contact Channels
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Pick the contact types we should reference and add numbers or links for each.
+          Public-facing business channels (as published on your website/Google). Examples: main phone, toll-free, group email, website, and official social profiles.
         </Typography>
 
         <Stack spacing={2}>
@@ -498,6 +614,8 @@ const CompanyBasicsSection = ({
             const channelError = Array.isArray(errors.contactChannels) ? errors.contactChannels[index] || {} : {};
             const typeOptions = CONTACT_TYPE_OPTIONS;
             const isWebsite = channel.type === 'website';
+            const selectedType = typeOptions.find((o) => o.value === channel.type);
+            const labelText = selectedType ? selectedType.label : (isWebsite ? 'Link' : 'Value');
 
             return (
               <Grid container spacing={2} key={channel.id || index} alignItems="flex-end">
@@ -520,13 +638,22 @@ const CompanyBasicsSection = ({
                 </Grid>
                 <Grid item xs={12} md={7}>
                   <TextField
-                    label={isWebsite ? 'Link' : 'Number'}
+                    label={labelText}
+                    placeholder={labelText}
                     fullWidth
-                    value={channel.value}
+                    value={(() => {
+                      // If the stored value accidentally equals the human label, render empty
+                      const v = channel.value || '';
+                      if (v.trim() && v.trim().toLowerCase() === labelText.toLowerCase()) return '';
+                      return v;
+                    })()}
                     onChange={handleChannelValueChange(index)}
-                    inputMode={isWebsite ? 'url' : 'tel'}
+                    onBlur={(e) => { handleChannelBlur(index)(e); setFocusedChannelId(null); }}
+                    onFocus={() => setFocusedChannelId(channel.id || `channel-${index}`)}
+                    // Use text input mode for alphanumeric support; websites keep 'url'
+                    inputMode={isWebsite ? 'url' : 'text'}
                     error={Boolean(channelError.value)}
-                    helperText={channelError.value}
+                    helperText={channelNotes[channel.id] || channelError.value}
                   />
                 </Grid>
                 <Grid item xs={12} md={1}>

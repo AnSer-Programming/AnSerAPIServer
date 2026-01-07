@@ -221,7 +221,7 @@ export const billingContactSchema = (data = {}) => {
 };
 
 // ==============================
-//   OFFICE REACH SCHEMA
+//   OTHER INFO SCHEMA
 // ==============================
 export const officeReachSchema = (/* data = {} */) => {
   // All fields optional for now
@@ -925,6 +925,47 @@ export const fastTrackSchema = (data = {}) => {
     errors.meeting = meetingErrors;
   }
 
+  return Object.keys(errors).length ? errors : null;
+};
+
+// ------------------------------
+// On Call: Schedule Type & Fixed Order
+// ------------------------------
+export const onCallScheduleTypeSchema = (data = {}) => {
+  const errors = {};
+  
+  const scheduleType = data.scheduleType;
+  const fixedOrder = data.fixedOrder;
+  
+  // Schedule type is required
+  if (!scheduleType || !['rotating', 'fixed', 'no-schedule'].includes(scheduleType)) {
+    errors.scheduleType = 'Please select how your after-hours coverage is organized.';
+  }
+  
+  // If fixed schedule, fixedOrder array must have at least one entry
+  if (scheduleType === 'fixed') {
+    if (!Array.isArray(fixedOrder) || fixedOrder.length === 0) {
+      errors.fixedOrder = 'Add at least one person to the fixed order list.';
+    } else {
+      const orderErrors = [];
+      fixedOrder.forEach((person, idx) => {
+        const personErrors = {};
+        if (!person.name || !person.name.trim()) {
+          personErrors.name = 'Name is required.';
+        }
+        if (!person.role || !person.role.trim()) {
+          personErrors.role = 'Role/title is required.';
+        }
+        if (Object.keys(personErrors).length) {
+          orderErrors[idx] = personErrors;
+        }
+      });
+      if (orderErrors.length) {
+        errors.fixedOrderItems = orderErrors;
+      }
+    }
+  }
+  
   return Object.keys(errors).length ? errors : null;
 };
 

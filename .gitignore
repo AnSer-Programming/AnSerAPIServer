@@ -13,3 +13,7 @@ vesselJSON/
 disconnectJSON/
 SignatureImage/
 Charts/
+# Ignore Copilot instructions file
+.github/copilot-instructions.md
+# Ignore running updated file of changes
+.github/meeting-notes.md

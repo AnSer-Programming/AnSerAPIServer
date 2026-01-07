@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Box,
@@ -33,8 +33,8 @@ import {
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
 
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
@@ -160,17 +160,48 @@ const FastTrack = () => {
       </Typography>
     );
   };
+  const featureFastTrackEnabled = process.env.REACT_APP_FASTTRACK_ENABLED === 'true';
+
+  if (!featureFastTrackEnabled) {
+    // Render a small informative placeholder so the component remains present for data integrity,
+    // but the full Fast Track UI is hidden unless the feature flag is enabled.
+    return (
+      <Box sx={{ minHeight: '40vh', p: 4 }}>
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6">Fast Track (disabled)</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Fast Track has been temporarily disabled for this environment. Existing fast-track data is preserved and can be re-enabled via configuration.
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Button variant="contained" disabled>Fast Track (disabled)</Button>
+          </Box>
+        </Paper>
+      </Box>
+    );
+  }
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Fast Track — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Provide expedited onboarding details for Fast Track activation with AnSer.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: darkMode ? 'background.default' : '#f4f6fb' }}>
-      <ClientInfoNavbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Stack spacing={3}>
-          <Paper
+          <Paper role="region" aria-labelledby="fasttrack-title"
             elevation={0}
             sx={{
-              p: { xs: 3, md: 4 },
+              p: { xs: 2, md: 3 },
               borderRadius: 3,
               bgcolor: darkMode ? 'background.paper' : '#ffffff',
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
@@ -194,7 +225,7 @@ const FastTrack = () => {
 
               <Box sx={{ flexGrow: 1 }}>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', md: 'center' }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                  <Typography id="fasttrack-title" component="h1" variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                     Fast Track Launch Checklist
                   </Typography>
                   <Chip label="72 Hour Activation" color="secondary" variant="filled" sx={{ fontWeight: 600 }} />
@@ -682,7 +713,6 @@ const FastTrack = () => {
         </Stack>
       </Container>
 
-      <ClientInfoFooter />
 
       <Snackbar
         open={snackState.open}

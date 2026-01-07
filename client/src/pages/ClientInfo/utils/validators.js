@@ -25,6 +25,7 @@ import {
   onCallProceduresSchema,
   onCallTeamSchema,
   onCallSchedulesSchema,
+  onCallScheduleTypeSchema,
   onCallEscalationSchema,
 
   // Final Details schema
@@ -38,6 +39,7 @@ const onCallAggregate = (onCall = {}) => {
   const proceduresErr = onCallProceduresSchema(onCall.procedures || {});
   const teamErr       = onCallTeamSchema(onCall.team || []);
   const schedulesErr  = onCallSchedulesSchema(onCall.schedules || []);
+  const scheduleTypeErr = onCallScheduleTypeSchema(onCall || {});
   const escalationErr = onCallEscalationSchema(onCall.escalation || []);
 
   const out = {};
@@ -46,6 +48,7 @@ const onCallAggregate = (onCall = {}) => {
   if (proceduresErr) out.procedures = proceduresErr;
   if (teamErr)       out.team = teamErr;
   if (schedulesErr)  out.schedules = schedulesErr;
+  if (scheduleTypeErr) out.scheduleType = scheduleTypeErr;
   if (escalationErr) out.escalation = escalationErr;
 
   return Object.keys(out).length ? out : null;

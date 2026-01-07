@@ -1,6 +1,6 @@
 // src/pages/ClientInfo/pages/ClientSetUp.jsx
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -13,13 +13,14 @@ import {
   Step,
   StepLabel,
   Grid,
-  Card,
-  CardContent,
   Chip,
   LinearProgress,
   Fade,
   useTheme,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   BusinessOutlined,
@@ -28,11 +29,13 @@ import {
   CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
+import { WIZARD_ROUTES, WIZARD_STEPS, STEP_LABELS } from '../constants/routes';
 
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
@@ -104,6 +107,26 @@ const ClientSetUp = () => {
   const [snack, setSnack] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Client setup — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Provide company basics, contacts, and addresses to begin setup with AnSer.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
+
+  // Move focus to the main heading on mount for better keyboard/a11y
+  useEffect(() => {
+    const el = document.getElementById('clientsetup-title');
+    if (el && typeof el.focus === 'function') el.focus();
+  }, []);
+
   const merge = (patch) => updateSection('companyInfo', patch);
 
   const setBasics = (patch) => {
@@ -161,8 +184,8 @@ const ClientSetUp = () => {
     
     setSaving(false);
     
-    // Always proceed to next step
-    history.push('/ClientInfoReact/NewFormWizard/office-reach');
+  // Always proceed to next step — new order: go to Answer Calls
+  history.push(WIZARD_ROUTES.ANSWER_CALLS);
   };
 
   // Calculate completion percentage
@@ -187,7 +210,8 @@ const ClientSetUp = () => {
 
   const progress = getCompletionPercentage();
 
-  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'Review'];
+  // Derive step labels from constants to avoid drift
+  const steps = (WIZARD_STEPS || []).slice(0, 4).map((s) => STEP_LABELS[s] || s);
 
   const sectionCards = [
     {
@@ -232,25 +256,27 @@ const ClientSetUp = () => {
 
   return (
     <Box sx={sharedStyles.layout.pageWrapper}>
-      <ClientInfoNavbar />
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         {/* Header Section */}
         <Fade in timeout={600}>
           <Paper
             elevation={2}
+            role="region" aria-labelledby="clientsetup-title"
             sx={{
-              p: { xs: 3, md: 4 },
+              p: { xs: 2, md: 3 },
               mb: 4,
               background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
               border: `1px solid ${theme.palette.primary.main}20`,
             }}
           >
-            <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 3 }}>
               <Typography
-                variant="h4"
+                id="clientsetup-title"
+                component="h1"
+                variant="h5"
                 sx={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: theme.palette.primary.main,
                   mb: 1,
                 }}
@@ -258,15 +284,15 @@ const ClientSetUp = () => {
                 Basic Info
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 color="text.secondary"
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
               >
                 Let’s start with the basics we need.
               </Typography>
 
               {/* Progress Stepper */}
-              <Stepper activeStep={0} alternativeLabel sx={{ mb: 3 }}>
+              <Stepper activeStep={0} alternativeLabel sx={{ mb: 2 }}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
@@ -311,63 +337,47 @@ const ClientSetUp = () => {
           </Paper>
         </Fade>
 
-        {/* Section Cards */}
+        {/* Section Accordions */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {sectionCards.map((section, index) => (
             <Grid item xs={12} key={section.id}>
               <Fade in timeout={800 + index * 200}>
-                <Card
+                <Accordion
+                  defaultExpanded={false}
                   elevation={2}
                   sx={{
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: theme.shadows[6],
-                      transform: 'translateY(-2px)',
-                    },
+                    '&:before': { display: 'none' },
+                    '& .MuiAccordion-root': { boxShadow: 'none' },
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
-                    {/* Section Header */}
-                    <Box
-                      sx={{
-                        p: 3,
-                        pb: 2,
-                        background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box
-                          sx={{
-                            color: theme.palette.primary.main,
-                            '& svg': { fontSize: 28 },
-                          }}
-                        >
-                          {section.icon}
-                        </Box>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 0.5 }}
-                          >
-                            {section.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            {section.description}
-                          </Typography>
-                        </Box>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`${section.id}-content`}
+                    id={`${section.id}-header`}
+                    sx={{
+                      p: 2,
+                      background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                      <Box sx={{ color: theme.palette.primary.main, '& svg': { fontSize: 28 } }}>
+                        {section.icon}
+                      </Box>
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {section.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {section.description}
+                        </Typography>
                       </Box>
                     </Box>
-
-                    {/* Section Content */}
-                    <Box sx={{ p: 3 }}>
-                      {section.component}
-                    </Box>
-                  </CardContent>
-                </Card>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ p: 3 }}>
+                    {section.component}
+                  </AccordionDetails>
+                </Accordion>
               </Fade>
             </Grid>
           ))}
@@ -385,10 +395,10 @@ const ClientSetUp = () => {
               background: darkMode ? theme.palette.grey[900] : theme.palette.grey[50],
             }}
           >
-            <Button
+                <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push('/ClientInfoReact')}
+              onClick={() => history.push(WIZARD_ROUTES.BASE)}
               sx={{ minWidth: 120 }}
             >
               Back
@@ -399,6 +409,8 @@ const ClientSetUp = () => {
                 variant="outlined"
                 onClick={() => setSnack(true)}
                 disabled={saving}
+                aria-label={saving ? 'Saving draft' : 'Save draft'}
+                aria-live="polite"
               >
                 {saving ? 'Saving...' : 'Save Draft'}
               </Button>
@@ -407,6 +419,9 @@ const ClientSetUp = () => {
                 endIcon={saving ? <CircularProgress size={16} /> : <NavigateNextRounded />}
                 onClick={handleSave}
                 disabled={saving}
+                aria-label={saving ? 'Processing and continuing' : 'Save & Continue'}
+                aria-busy={saving}
+                aria-live="polite"
                 sx={{
                   minWidth: 160,
                   py: 1.5,
@@ -420,7 +435,8 @@ const ClientSetUp = () => {
         </Fade>
       </Container>
 
-      <ClientInfoFooter />
+      {/* SEO meta handled in component useEffect */}
+
 
       <Snackbar
         open={snack}

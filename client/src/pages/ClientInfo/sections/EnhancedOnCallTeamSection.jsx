@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Typography,
@@ -11,10 +12,24 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Menu,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemSecondaryAction,
+  Chip,
+  Tooltip,
+  Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   IconButton,
   Alert,
   Collapse,
 } from '@mui/material';
+import FieldRow from '../components/FieldRow';
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
@@ -68,6 +83,7 @@ const createDefaultTeamMember = () => ({
   id: generateId(),
   name: '',
   title: '',
+  role: 'primary', // 'primary' or 'backup'
   email: [''],
   cellPhone: [''],
   homePhone: [''],
@@ -84,6 +100,7 @@ const normalizeMember = (member = {}) => {
     id: member?.id || base.id,
     name: member?.name || '',
     title: member?.title || '',
+    role: member?.role || 'primary',
     email: ensureArray(member?.email ?? member?.emails),
     cellPhone: ensureArray(member?.cellPhone ?? member?.cell),
     homePhone: ensureArray(member?.homePhone ?? member?.home),
@@ -158,10 +175,61 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
   // Refs for scrolling
   const teamMembersRefs = React.useRef({});
 
+  // Anchor elements for the add-method menu per member
+  const [addMethodAnchor, setAddMethodAnchor] = useState({});
+
+  const openAddMethodMenu = (memberId, event) => {
+    setAddMethodAnchor((prev) => ({ ...prev, [memberId]: event.currentTarget }));
+  };
+
+  const closeAddMethodMenu = (memberId) => {
+    setAddMethodAnchor((prev) => ({ ...prev, [memberId]: null }));
+  };
+
+  // Confirmation dialog for applying defaults
+  const [confirmApplyOpen, setConfirmApplyOpen] = useState(false);
+  const [confirmApplyMemberId, setConfirmApplyMemberId] = useState(null);
+
+  const openConfirmApply = (memberId) => {
+    setConfirmApplyMemberId(memberId);
+    setConfirmApplyOpen(true);
+  };
+
+  const closeConfirmApply = () => {
+    setConfirmApplyMemberId(null);
+    setConfirmApplyOpen(false);
+  };
+
+  const clearSavedDefaults = () => {
+    // Clear defaults on the onCall section
+    setOnCall({ ...onCall, defaultContactMethods: [], defaultEscalationSteps: [] });
+  };
+
+  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
+
   const inputBg = darkMode ? alpha('#fff', 0.06) : theme.palette.common.white;
+
+  const [compactView, setCompactView] = useState(false);
 
   const addTeamMember = () => {
     const newMember = createDefaultTeamMember();
+    // If there are default contact methods on the onCall section, add them so the new member shows those fields
+    const defaults = Array.isArray(onCall?.defaultContactMethods) ? onCall.defaultContactMethods : [];
+    if (defaults.length) {
+      const added = new Set(defaults.filter(Boolean));
+      // ensure cellPhone is always present
+      added.add('cellPhone');
+      newMember._methodsAdded = Array.from(added);
+      // ensure arrays exist for the fields
+      for (const k of added) {
+        if (!Array.isArray(newMember[k])) newMember[k] = [''];
+      }
+    }
+    // If there are default escalation steps, apply them to the new member
+    const defaultEsc = Array.isArray(onCall?.defaultEscalationSteps) ? onCall.defaultEscalationSteps : [];
+    if (defaultEsc.length) {
+      newMember.escalationSteps = normalizeEscalationSteps(defaultEsc);
+    }
     const updatedTeam = normalizeTeam([...teamMembers, newMember]);
     setTeamMembers(updatedTeam);
     setOnCall({ team: updatedTeam });
@@ -218,10 +286,15 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
   const addContactMethod = (memberId, contactType) => {
     const updatedTeam = teamMembers.map(member => {
       if (member.id === memberId) {
-        const currentArray = member[contactType] || [];
+        const currentArray = Array.isArray(member[contactType]) ? member[contactType] : [];
+        const hasOnlyEmpty = currentArray.length === 1 && (currentArray[0] === '' || currentArray[0] == null);
+        const nextArray = currentArray.length === 0 || hasOnlyEmpty ? [''] : [...currentArray, ''];
+        const added = Array.isArray(member._methodsAdded) ? new Set(member._methodsAdded) : new Set();
+        added.add(contactType);
         return {
           ...member,
-          [contactType]: [...currentArray, '']
+          [contactType]: nextArray,
+          _methodsAdded: Array.from(added),
         };
       }
       return member;
@@ -372,11 +445,74 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
     setOnCall({ team: normalizedTeam });
   };
 
+  // Apply defaults (escalation steps + contact methods) from the selected member to all members and save as onCall defaults
+  const applyDefaultsToAll = (memberId) => {
+    const member = teamMembers.find(m => m.id === memberId);
+    if (!member) return;
+    const thisSteps = member.escalationSteps || [];
+    const methodKeys = ['cellPhone', 'homePhone', 'email', 'textCell', 'pager'];
+    const methodsToDefault = methodKeys.filter(k => k !== 'cellPhone' && ((Array.isArray(member._methodsAdded) && member._methodsAdded.includes(k)) || (member[k] && member[k].some(v => (v || '').trim()))));
+
+    const next = teamMembers.map(m => {
+      const existingAdded = new Set(Array.isArray(m._methodsAdded) ? m._methodsAdded : []);
+      methodsToDefault.forEach(k => existingAdded.add(k));
+      existingAdded.add('cellPhone');
+      const nm = { ...m, escalationSteps: thisSteps.length ? thisSteps : (m.escalationSteps || []), _methodsAdded: Array.from(existingAdded) };
+      methodsToDefault.forEach((k) => {
+        if (!Array.isArray(nm[k]) || nm[k].length === 0) nm[k] = [''];
+      });
+      return nm;
+    });
+
+    setTeamMembers(normalizeTeam(next));
+    setOnCall({ team: next, defaultEscalationSteps: thisSteps, defaultContactMethods: methodsToDefault });
+    // Show summary toast
+    setSnack({ open: true, msg: `Applied ${methodsToDefault.length} contact method(s) and ${thisSteps.length} escalation step(s) to ${next.length} members.`, severity: 'success' });
+  };
+
   const teamErrors = Array.isArray(errors) ? errors : [];
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+    <>
+      <Box sx={{ mb: 3 }}>
+        {/* Team Size Question */}
+        <Box sx={{ mb: 3, p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.08), border: `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: theme.palette.info.main }}>
+            How many people are on your on-call team?
+          </Typography>
+          <TextField
+            type="number"
+            size="small"
+            value={onCall?.teamSize || 0}
+            onChange={(e) => setOnCall({ teamSize: parseInt(e.target.value) || 0 })}
+            inputProps={{ min: 0, max: 100 }}
+            sx={{ width: 120 }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            This helps us understand the size of your rotation
+          </Typography>
+        </Box>
+
+        {/* Email Collection Toggle */}
+        <Box sx={{ mb: 3, p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.secondary.main, 0.08), border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}` }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
+                Would you like to collect email addresses for daily recaps?
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                If enabled, we'll gather team member emails for automated recap reports
+              </Typography>
+            </Box>
+            <Switch
+              checked={onCall?.collectEmailsForRecaps || false}
+              onChange={(e) => setOnCall({ collectEmailsForRecaps: e.target.checked })}
+              color="secondary"
+            />
+          </Stack>
+        </Box>
+
+  <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Box sx={{ 
           p: 1.5, 
           borderRadius: 2, 
@@ -387,36 +523,78 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
         </Box>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
-            On-Call Team Members & Escalation
+            On-Call & Team Members
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Add team members and configure escalation procedures for each contact method
+            Add team members and configure how to reach them during after-hours situations
           </Typography>
+        </Box>
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="caption" color="text.secondary">Detailed</Typography>
+          <Switch size="small" checked={compactView} onChange={(e) => setCompactView(e.target.checked)} />
+          <Typography variant="caption" color="text.secondary">Compact</Typography>
         </Box>
       </Stack>
 
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={addTeamMember}
-        sx={{ 
-          mb: 3,
-          background: `linear-gradient(135deg, ${theme.palette.success.main}, ${alpha(theme.palette.success.main, 0.8)})`,
-          '&:hover': {
-            background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.9)}, ${alpha(theme.palette.success.main, 0.7)})`,
-          }
-        }}
-      >
-        Add Team Member
-      </Button>
+      {/* Add Team Member button is rendered after the member list so it appears after the last added member */}
 
-      {teamMembers.length === 0 && (
+      {compactView ? (
+        <List>
+          {teamMembers.map((member, index) => {
+            const primaryContact = getPrimaryContactValue(member.cellPhone)
+              || getPrimaryContactValue(member.email)
+              || getPrimaryContactValue(member.homePhone)
+              || getPrimaryContactValue(member.pager);
+            return (
+              <React.Fragment key={member.id}>
+                <ListItem disablePadding>
+                  <ListItemButton onClick={() => toggleMemberExpansion(member.id)}>
+                    <ListItemText
+                      primary={member.name || `Team Member ${index + 1}`}
+                      secondary={member.title || primaryContact}
+                    />
+                    <ListItemSecondaryAction>
+                      <Chip label={`${(member.escalationSteps || []).length} steps`} size="small" sx={{ mr: 1 }} />
+                      <Tooltip title="Edit">
+                        <IconButton edge="end" onClick={() => toggleMemberExpansion(member.id)}>
+                          {expandedMembers.has(member.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButton>
+                      </Tooltip>
+                    </ListItemSecondaryAction>
+                  </ListItemButton>
+                </ListItem>
+                <Collapse in={expandedMembers.has(member.id)} timeout={200} unmountOnExit>
+                  <Box sx={{ p: 2, bgcolor: alpha(theme.palette.background.paper, 0.5) }}>
+                    {/* reuse the same detailed editor UI inside collapse: we'll call updateTeamMember etc. */}
+                    {/* Basic Info */}
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <FieldRow>
+                          <TextField label="Full Name" value={member.name} onChange={(e) => updateTeamMember(member.id, 'name', e.target.value)} size="small" fullWidth />
+                        </FieldRow>
+                        <FieldRow>
+                          <TextField label="Job Title" value={member.title} onChange={(e) => updateTeamMember(member.id, 'title', e.target.value)} size="small" fullWidth />
+                        </FieldRow>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        {renderContactMethodField(member, 'cellPhone', 'Cell Phone', <Phone fontSize="small" />, resolveContactError({}, 'cellPhone'))}
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Collapse>
+              </React.Fragment>
+            );
+          })}
+        </List>
+      ) : (
+        teamMembers.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
           No team members added yet. Click "Add Team Member" to get started.
         </Alert>
+        )
       )}
 
-      {teamMembers.map((member, index) => {
+      {!compactView && teamMembers.map((member, index) => {
         const isExpanded = expandedMembers.has(member.id);
         const memberErrors = teamErrors[index] || {};
         const hasMemberError = Object.keys(memberErrors).length > 0;
@@ -523,13 +701,38 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
                         helperText={memberErrors?.name || ''}
                       />
                       <TextField
-                        label="Title/Position"
+                        label="Job Title"
                         value={member.title}
                         onChange={(e) => updateTeamMember(member.id, 'title', e.target.value)}
                         fullWidth
                         size="small"
-                        sx={{ bgcolor: inputBg }}
+                        sx={{ mb: 2, bgcolor: inputBg }}
                       />
+                      
+                      {/* Role Selection */}
+                      <Box>
+                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+                          Role
+                        </Typography>
+                        <Stack direction="row" spacing={2}>
+                          <Button
+                            variant={member.role === 'primary' ? 'contained' : 'outlined'}
+                            size="small"
+                            onClick={() => updateTeamMember(member.id, 'role', 'primary')}
+                            sx={{ flex: 1 }}
+                          >
+                            Primary
+                          </Button>
+                          <Button
+                            variant={member.role === 'backup' ? 'contained' : 'outlined'}
+                            size="small"
+                            onClick={() => updateTeamMember(member.id, 'role', 'backup')}
+                            sx={{ flex: 1 }}
+                          >
+                            Backup
+                          </Button>
+                        </Stack>
+                      </Box>
                     </Box>
                   </Grid>
 
@@ -546,11 +749,72 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
                       </Alert>
                     )}
                     
+                    {/* Always show Cell Phone first */}
                     {renderContactMethodField(member, 'cellPhone', 'Cell Phone', <Phone fontSize="small" />, resolveContactError(memberErrors, 'cellPhone'))}
-                    {renderContactMethodField(member, 'homePhone', 'Home Phone', <Home fontSize="small" />, resolveContactError(memberErrors, 'homePhone'))}
-                    {renderContactMethodField(member, 'email', 'Email', <Email fontSize="small" />, resolveContactError(memberErrors, 'email'))}
-                    {renderContactMethodField(member, 'textCell', 'Text Cell', <Message fontSize="small" />, resolveContactError(memberErrors, 'textCell'))}
-                    {renderContactMethodField(member, 'pager', 'Send Page', <Notifications fontSize="small" />, resolveContactError(memberErrors, 'pager'))}
+
+                    {/* Render other contact methods the user has added or that already contain values, in the order they were added */}
+                    {(() => {
+                      const methodKeys = ['homePhone', 'email', 'textCell', 'pager'];
+                      const addedArray = Array.isArray(member._methodsAdded) ? member._methodsAdded : [];
+                      const addedOrdered = addedArray.filter(k => k !== 'cellPhone' && methodKeys.includes(k));
+                      const fallback = methodKeys.filter(k => !addedOrdered.includes(k) && (member[k] && member[k].some(v => (v || '').trim())));
+                      const finalList = [...addedOrdered, ...fallback];
+                      const labelMap = {
+                        cellPhone: 'Cell Phone',
+                        homePhone: 'Home Phone',
+                        email: 'Email',
+                        textCell: 'Text Cell',
+                        pager: 'Send Page',
+                      };
+                      const iconMap = {
+                        cellPhone: <Phone fontSize="small" />,
+                        homePhone: <Home fontSize="small" />,
+                        email: <Email fontSize="small" />,
+                        textCell: <Message fontSize="small" />,
+                        pager: <Notifications fontSize="small" />,
+                      };
+                      return finalList.map((k) => (
+                        <React.Fragment key={k}>
+                          {renderContactMethodField(member, k, labelMap[k], iconMap[k], resolveContactError(memberErrors, k))}
+                        </React.Fragment>
+                      ));
+                    })()}
+
+                    {/* Button to add another contact method - placed after the last visible method */}
+                    <Box sx={{ mb: 2 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={(e) => openAddMethodMenu(member.id, e)}
+                        startIcon={<AddIcon />}
+                        fullWidth
+                      >
+                        Add another contact method
+                      </Button>
+                      <Menu
+                        anchorEl={addMethodAnchor[member.id]}
+                        open={Boolean(addMethodAnchor[member.id])}
+                        onClose={() => closeAddMethodMenu(member.id)}
+                      >
+                        {[
+                          ['homePhone', 'Home Phone'],
+                          ['email', 'Email'],
+                          ['textCell', 'Text Cell'],
+                          ['pager', 'Send Page'],
+                        ].map(([key, label]) => {
+                          const already = (Array.isArray(member._methodsAdded) && member._methodsAdded.includes(key)) || (member[key] && member[key].some(v => (v || '').trim()));
+                          return (
+                            <MenuItem
+                              key={key}
+                              disabled={already}
+                              onClick={() => { addContactMethod(member.id, key); closeAddMethodMenu(member.id); }}
+                            >
+                              {label}
+                            </MenuItem>
+                          );
+                        })}
+                      </Menu>
+                    </Box>
                   </Grid>
 
                   {/* Escalation Procedures */}
@@ -644,15 +908,38 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
                       </Box>
                     ))}
 
-                    <Button
-                      startIcon={<AddIcon />}
-                      onClick={() => addEscalationStep(member.id)}
-                      size="small"
-                      variant="outlined"
-                      color="success"
-                    >
-                      Add Escalation Step
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <Button
+                        startIcon={<AddIcon />}
+                        onClick={() => addEscalationStep(member.id)}
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                      >
+                        Add Escalation Step
+                      </Button>
+
+                      <Button
+                        startIcon={<AddIcon />}
+                        onClick={() => openConfirmApply(member.id)}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                      >
+                        Apply to all contacts
+                      </Button>
+
+                      <Button
+                        startIcon={<RemoveIcon />}
+                        onClick={() => clearSavedDefaults()}
+                        size="small"
+                        variant="text"
+                        color="warning"
+                        sx={{ ml: 1 }}
+                      >
+                        Clear saved defaults
+                      </Button>
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>
@@ -660,8 +947,69 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
           </Box>
         );
       })}
-    </Box>
+      {/* Add Team Member button placed after the list so it follows the most recently added member */}
+      <Box sx={{ mt: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={addTeamMember}
+          sx={{
+            mt: 1,
+            background: `linear-gradient(135deg, ${theme.palette.success.main}, ${alpha(theme.palette.success.main, 0.8)})`,
+            '&:hover': {
+              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.9)}, ${alpha(theme.palette.success.main, 0.7)})`,
+            }
+          }}
+        >
+          Add Team Member
+        </Button>
+      </Box>
+      </Box>
+
+      <Dialog open={confirmApplyOpen} onClose={closeConfirmApply} maxWidth="sm" fullWidth>
+        <DialogTitle>Apply defaults to all contacts?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">This will copy the selected member's escalation steps and contact methods to all existing team members and save them as defaults for future members. This will overwrite existing escalation steps for team members.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirmApply}>Cancel</Button>
+          <Button onClick={() => { applyDefaultsToAll(confirmApplyMemberId); closeConfirmApply(); }} variant="contained" color="primary">Apply</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
+};
+
+EnhancedOnCallTeamSection.propTypes = {
+  onCall: PropTypes.shape({
+    team: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+        title: PropTypes.string,
+        email: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+        cellPhone: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+        homePhone: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+        otherPhone: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+        contactMethods: PropTypes.arrayOf(PropTypes.string),
+        notificationPreferences: PropTypes.shape({
+          email: PropTypes.bool,
+          sms: PropTypes.bool,
+          call: PropTypes.bool,
+        }),
+        escalationSteps: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.string,
+            method: PropTypes.string,
+            value: PropTypes.string,
+            wait: PropTypes.string,
+          })
+        ),
+      })
+    ),
+  }).isRequired,
+  setOnCall: PropTypes.func.isRequired,
+  errors: PropTypes.arrayOf(PropTypes.any),
 };
 
 export default EnhancedOnCallTeamSection;

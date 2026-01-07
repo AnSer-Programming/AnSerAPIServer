@@ -8,6 +8,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import FieldRow from '../components/FieldRow';
 
 const SYNC_FIELDS = ['name', 'title', 'phone', 'email'];
 
@@ -29,6 +31,8 @@ const PrimaryContactsSection = ({
       onChange(patch);
     }
   };
+
+  const theme = useTheme();
 
   const applyMirror = (source, target) => {
     const next = { ...target };
@@ -71,120 +75,132 @@ const PrimaryContactsSection = ({
           Primary Contact
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Tell us who we should reach first when an urgent caller needs help.
+          Who is authorized to make all final decisions for this account?
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+          This is the ultimate approver for setup choices, escalations, and exceptions.
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Name"
-              fullWidth
-              value={primaryContact.name || ''}
-              onChange={handlePrimaryChange('name')}
-              error={Boolean(primaryErrors.name)}
-              helperText={primaryErrors.name}
-            />
+            <FieldRow helperText={primaryErrors.name}>
+              <TextField
+                label="Name"
+                fullWidth
+                value={primaryContact.name || ''}
+                onChange={handlePrimaryChange('name')}
+                error={Boolean(primaryErrors.name)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Direct Phone"
-              fullWidth
-              inputMode="tel"
-              value={primaryContact.phone || ''}
-              onChange={handlePrimaryChange('phone')}
-              error={Boolean(primaryErrors.phone)}
-              helperText={primaryErrors.phone}
-            />
+            <FieldRow helperText={primaryErrors.phone}>
+              <TextField
+                label="Direct Phone"
+                fullWidth
+                inputMode="tel"
+                value={primaryContact.phone || ''}
+                onChange={handlePrimaryChange('phone')}
+                error={Boolean(primaryErrors.phone)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Email"
-              fullWidth
-              inputMode="email"
-              value={primaryContact.email || ''}
-              onChange={handlePrimaryChange('email')}
-              error={Boolean(primaryErrors.email)}
-              helperText={primaryErrors.email}
-            />
+            <FieldRow helperText={primaryErrors.email}>
+              <TextField
+                label="Email"
+                fullWidth
+                inputMode="email"
+                value={primaryContact.email || ''}
+                onChange={handlePrimaryChange('email')}
+                error={Boolean(primaryErrors.email)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Title / Role"
-              fullWidth
-              value={primaryContact.title || ''}
-              onChange={handlePrimaryChange('title')}
-              error={Boolean(primaryErrors.title)}
-              helperText={primaryErrors.title}
-            />
+            <FieldRow helperText={primaryErrors.title}>
+              <TextField
+                label="Title / Role"
+                fullWidth
+                value={primaryContact.title || ''}
+                onChange={handlePrimaryChange('title')}
+                error={Boolean(primaryErrors.title)}
+              />
+            </FieldRow>
           </Grid>
         </Grid>
       </Box>
 
-      <Divider />
+  <Divider sx={{ my: 1, borderColor: alpha(theme.palette.divider, 0.85) }} />
+
+      {/* Same-as-primary toggle placed directly under Primary Contact for clearer flow */}
+      <Box sx={{ mt: 1, mb: 0 }}>
+        <FormControlLabel
+          control={<Checkbox checked={Boolean(sameAs)} onChange={toggleSame} />}
+          label="Same as primary contact"
+          sx={{ ml: 0 }}
+          aria-label="Use primary contact as billing contact"
+        />
+      </Box>
 
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap', gap: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
             Billing Contact
           </Typography>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={Boolean(sameAs)}
-                onChange={toggleSame}
-              />
-            }
-            label="Same as primary contact"
-          />
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           We’ll send invoices and payment questions here.
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Name"
-              fullWidth
-              value={billingContact.name || ''}
-              onChange={handleBillingChange('name')}
-              disabled={sameAs}
-              error={Boolean(billingErrors.name)}
-              helperText={billingErrors.name}
-            />
+            <FieldRow helperText={billingErrors.name}>
+              <TextField
+                label="Name"
+                fullWidth
+                value={billingContact.name || ''}
+                onChange={handleBillingChange('name')}
+                disabled={sameAs}
+                error={Boolean(billingErrors.name)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Phone"
-              fullWidth
-              inputMode="tel"
-              value={billingContact.phone || ''}
-              onChange={handleBillingChange('phone')}
-              disabled={sameAs}
-              error={Boolean(billingErrors.phone)}
-              helperText={billingErrors.phone}
-            />
+            <FieldRow helperText={billingErrors.phone}>
+              <TextField
+                label="Phone"
+                fullWidth
+                inputMode="tel"
+                value={billingContact.phone || ''}
+                onChange={handleBillingChange('phone')}
+                disabled={sameAs}
+                error={Boolean(billingErrors.phone)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Email"
-              fullWidth
-              inputMode="email"
-              value={billingContact.email || ''}
-              onChange={handleBillingChange('email')}
-              disabled={sameAs}
-              error={Boolean(billingErrors.email)}
-              helperText={billingErrors.email}
-            />
+            <FieldRow helperText={billingErrors.email}>
+              <TextField
+                label="Email"
+                fullWidth
+                inputMode="email"
+                value={billingContact.email || ''}
+                onChange={handleBillingChange('email')}
+                disabled={sameAs}
+                error={Boolean(billingErrors.email)}
+              />
+            </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField
-              label="Title / Role"
-              fullWidth
-              value={billingContact.title || ''}
-              onChange={handleBillingChange('title')}
-              disabled={sameAs}
-              error={Boolean(billingErrors.title)}
-              helperText={billingErrors.title}
-            />
+            <FieldRow helperText={billingErrors.title}>
+              <TextField
+                label="Title / Role"
+                fullWidth
+                value={billingContact.title || ''}
+                onChange={handleBillingChange('title')}
+                disabled={sameAs}
+                error={Boolean(billingErrors.title)}
+              />
+            </FieldRow>
           </Grid>
         </Grid>
       </Box>
