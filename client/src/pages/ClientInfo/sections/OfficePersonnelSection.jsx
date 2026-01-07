@@ -53,10 +53,11 @@ const OfficePersonnelSection = ({ errors = {} }) => {
 
   return (
     <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ color: '#b00', fontWeight: 700, mb: 1 }}>
-        Primary Office Personnel <Typography component="span" variant="body2" color="text.secondary">
-          &nbsp;(This is not people on call)
-        </Typography>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        Additional Key Contacts
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Add office/administrative contacts we may coordinate with. Do not list on-call personnel here—we'll collect them later. Examples: Scheduling Contact, Maintenance Lead, IT, HR, Regional/Local Manager, Workflow SME.
       </Typography>
 
       {personnel.map((p, idx) => {
@@ -67,6 +68,7 @@ const OfficePersonnelSection = ({ errors = {} }) => {
               <Grid item xs={12} md={4}>
                 <TextField
                   label="Name"
+                  placeholder="e.g., Regional Manager"
                   fullWidth
                   value={p.name}
                   onChange={(e) => updatePerson(idx, { name: e.target.value })}
@@ -77,7 +79,8 @@ const OfficePersonnelSection = ({ errors = {} }) => {
 
               <Grid item xs={12} md={4}>
                 <TextField
-                  label="Title"
+                  label="Team / Department"
+                  placeholder="e.g., Scheduling Contact"
                   fullWidth
                   value={p.title}
                   onChange={(e) => updatePerson(idx, { title: e.target.value })}
@@ -157,7 +160,7 @@ const OfficePersonnelSection = ({ errors = {} }) => {
         );
       })}
 
-      <Button variant="outlined" onClick={addPerson}>Add Person</Button>
+      <Button variant="outlined" onClick={addPerson}>Add Contact</Button>
     </Box>
   );
 };

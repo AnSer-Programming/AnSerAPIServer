@@ -1,44 +1,47 @@
 // src/pages/ClientInfo/pages/ClientSetUp.jsx
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
-  Box, 
-  Paper, 
-  Container, 
-  Snackbar, 
-  Alert, 
+  Box,
+  Paper,
+  Container,
+  Snackbar,
+  Alert,
   Button,
   Typography,
   Stepper,
   Step,
   StepLabel,
   Grid,
-  Card,
-  CardContent,
   Chip,
   LinearProgress,
   Fade,
   useTheme,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   BusinessOutlined,
   PeopleOutlined,
-  PaymentOutlined,
+  ContactPhoneOutlined,
   CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
+import { WIZARD_ROUTES, WIZARD_STEPS, STEP_LABELS } from '../constants/routes';
 
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
 
+import PrimaryContactsSection from '../sections/PrimaryContactsSection';
 import CompanyBasicsSection from '../sections/CompanyBasicsSection';
-import BillingContactSection from '../sections/BillingContactSection';
 import OfficePersonnelSection from '../sections/OfficePersonnelSection';
 
 const ClientSetUp = () => {
@@ -50,15 +53,27 @@ const ClientSetUp = () => {
 
   const ci = formData.companyInfo || {};
 
-  // Shape the section data with safe fallbacks (including new contactNumbers)
+  const mirrorFields = {
+    physicalLocation: 'mailingAddress',
+    physicalCity: 'mailingCity',
+    physicalState: 'mailingState',
+    physicalPostalCode: 'mailingPostalCode',
+    suiteOrUnit: 'mailingSuite',
+  };
+
   const data = {
     businessName: ci.businessName ?? ci.company ?? '',
     company: ci.company ?? ci.businessName ?? '',
-    complexName: ci.complexName ?? '',
     physicalLocation: ci.physicalLocation ?? '',
     suiteOrUnit: ci.suiteOrUnit ?? '',
+    physicalCity: ci.physicalCity ?? '',
+    physicalState: ci.physicalState ?? '',
+    physicalPostalCode: ci.physicalPostalCode ?? '',
     mailingAddress: ci.mailingAddress ?? '',
-    timeZone: ci.timeZone ?? '',
+    mailingSuite: ci.mailingSuite ?? '',
+    mailingCity: ci.mailingCity ?? '',
+    mailingState: ci.mailingState ?? '',
+    mailingPostalCode: ci.mailingPostalCode ?? '',
     mailingSameAsPhysical: ci.mailingSameAsPhysical ?? false,
     additionalLocations: Array.isArray(ci.additionalLocations) ? ci.additionalLocations : [],
     contactNumbers: {
@@ -69,39 +84,80 @@ const ClientSetUp = () => {
       officeEmail: ci.contactNumbers?.officeEmail ?? '',
       website: ci.contactNumbers?.website ?? '',
     },
+    contactChannels: Array.isArray(ci.contactChannels) ? ci.contactChannels : [],
+    primaryContact: {
+      name: ci.primaryContact?.name ?? '',
+      title: ci.primaryContact?.title ?? '',
+      phone: ci.primaryContact?.phone ?? '',
+      email: ci.primaryContact?.email ?? '',
+    },
     billingContact: {
       name: ci.billingContact?.name ?? '',
       email: ci.billingContact?.email ?? '',
       phone: ci.billingContact?.phone ?? '',
+      title: ci.billingContact?.title ?? '',
       purchaseOrder: ci.billingContact?.purchaseOrder ?? '',
       notes: ci.billingContact?.notes ?? '',
-      title: ci.billingContact?.title ?? '',
     },
+    billingSameAsPrimary: ci.billingSameAsPrimary ?? false,
+    timeZone: ci.timeZone ?? '',
   };
 
   const [errors, setErrors] = React.useState({});
   const [snack, setSnack] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Client setup — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Provide company basics, contacts, and addresses to begin setup with AnSer.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
+
+  // Move focus to the main heading on mount for better keyboard/a11y
+  useEffect(() => {
+    const el = document.getElementById('clientsetup-title');
+    if (el && typeof el.focus === 'function') el.focus();
+  }, []);
+
   const merge = (patch) => updateSection('companyInfo', patch);
 
-  // Keep Mailing synced if the toggle is on when Physical changes.
   const setBasics = (patch) => {
-    const willSync =
-      (ci.mailingSameAsPhysical ?? data.mailingSameAsPhysical) &&
-      Object.prototype.hasOwnProperty.call(patch, 'physicalLocation');
+    const shouldMirror = ci.mailingSameAsPhysical ?? data.mailingSameAsPhysical;
+    const nextPatch = { ...patch };
 
-    merge({
-      ...patch,
-      ...(willSync ? { mailingAddress: patch.physicalLocation } : {}),
-    });
+    if (shouldMirror) {
+      Object.entries(mirrorFields).forEach(([source, target]) => {
+        if (Object.prototype.hasOwnProperty.call(patch, source)) {
+          nextPatch[target] = patch[source];
+        }
+      });
+    }
+
+    merge(nextPatch);
   };
 
   const handleMailingSameAsPhysicalChange = (checked) => {
-    merge({
-      mailingSameAsPhysical: checked,
-      ...(checked ? { mailingAddress: formData.companyInfo?.physicalLocation || '' } : {}),
-    });
+    if (checked) {
+      merge({
+        mailingSameAsPhysical: true,
+        mailingAddress: data.physicalLocation || '',
+        mailingSuite: data.suiteOrUnit || '',
+        mailingCity: data.physicalCity || '',
+        mailingState: data.physicalState || '',
+        mailingPostalCode: data.physicalPostalCode || '',
+      });
+      return;
+    }
+
+    merge({ mailingSameAsPhysical: false });
   };
 
   const handleAdditionalLocationsChange = (list) => {
@@ -128,35 +184,63 @@ const ClientSetUp = () => {
     
     setSaving(false);
     
-    // Always proceed to next step
-    history.push('/ClientInfoReact/NewFormWizard/office-reach');
+  // Always proceed to next step — new order: go to Answer Calls
+  history.push(WIZARD_ROUTES.ANSWER_CALLS);
   };
 
   // Calculate completion percentage
   const getCompletionPercentage = () => {
-    const fields = [
-      data.businessName,
-      data.physicalLocation,
-      data.timeZone,
-      data.contactNumbers.primaryOfficeLine,
-      data.contactNumbers.officeEmail,
-      data.billingContact.name,
-      data.billingContact.email,
+    const checks = [
+      Boolean(data.businessName && data.businessName.trim()),
+      Boolean(data.physicalLocation && data.physicalLocation.trim()),
+      Boolean(data.physicalCity && data.physicalCity.trim()),
+      Boolean(data.primaryContact.name && data.primaryContact.name.trim()),
+      Boolean(data.primaryContact.phone && data.primaryContact.phone.trim()),
+      data.billingSameAsPrimary
+        ? true
+        : Boolean(data.billingContact.email && data.billingContact.email.trim()),
+      Array.isArray(data.contactChannels)
+        ? data.contactChannels.some((channel) => channel && channel.value && channel.value.trim())
+        : false,
     ];
-    const completed = fields.filter(field => field && field.trim()).length;
-    return Math.round((completed / fields.length) * 100);
+
+    const completed = checks.filter(Boolean).length;
+    return Math.round((completed / checks.length) * 100);
   };
 
   const progress = getCompletionPercentage();
 
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'Review'];
+  // Derive step labels from constants to avoid drift
+  const steps = (WIZARD_STEPS || []).slice(0, 4).map((s) => STEP_LABELS[s] || s);
 
   const sectionCards = [
     {
+      id: 'contacts',
+      title: 'Primary & Billing Contacts',
+      icon: <ContactPhoneOutlined />,
+      description: 'Who we reach for day-to-day decisions and invoices',
+      component: (
+        <PrimaryContactsSection
+          primary={data.primaryContact}
+          billing={data.billingContact}
+          sameAs={data.billingSameAsPrimary}
+          onChange={merge}
+          errors={errors}
+        />
+      ),
+    },
+    {
+      id: 'personnel',
+      title: 'Additional Contacts',
+      icon: <PeopleOutlined />,
+      description: 'Add teammates we might need to loop in',
+      component: <OfficePersonnelSection errors={errors} />,
+    },
+    {
       id: 'basics',
-      title: 'Company Basics',
+      title: 'Company Details',
       icon: <BusinessOutlined />,
-      description: 'Essential company information and addresses',
+      description: 'Business information and addresses callers reference',
       component: (
         <CompanyBasicsSection
           data={data}
@@ -168,66 +252,47 @@ const ClientSetUp = () => {
         />
       ),
     },
-    {
-      id: 'personnel',
-      title: 'Office Personnel',
-      icon: <PeopleOutlined />,
-      description: 'Key contacts and staff information',
-      component: <OfficePersonnelSection errors={errors} />,
-    },
-    {
-      id: 'billing',
-      title: 'Billing Contact',
-      icon: <PaymentOutlined />,
-      description: 'Billing and payment contact details',
-      component: <BillingContactSection errors={errors.billingContact || {}} />,
-    },
   ];
 
   return (
     <Box sx={sharedStyles.layout.pageWrapper}>
-      <ClientInfoNavbar />
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         {/* Header Section */}
         <Fade in timeout={600}>
           <Paper
             elevation={2}
+            role="region" aria-labelledby="clientsetup-title"
             sx={{
-              p: { xs: 3, md: 4 },
+              p: { xs: 2, md: 3 },
               mb: 4,
               background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
               border: `1px solid ${theme.palette.primary.main}20`,
             }}
           >
-            <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 3 }}>
               <Typography
-                variant="h4"
+                id="clientsetup-title"
+                component="h1"
+                variant="h5"
                 sx={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: theme.palette.primary.main,
                   mb: 1,
                 }}
               >
-                Company Information
-              </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mb: 3 }}
-              >
-                Help us get to know your business so we can provide the best service
+                Basic Info
               </Typography>
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
               >
-                The details you share here appear in your caller greetings and on AnSer invoices, so we'll make sure everything looks professional.
+                Let’s start with the basics we need.
               </Typography>
 
               {/* Progress Stepper */}
-              <Stepper activeStep={0} alternativeLabel sx={{ mb: 3 }}>
+              <Stepper activeStep={0} alternativeLabel sx={{ mb: 2 }}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
@@ -272,63 +337,47 @@ const ClientSetUp = () => {
           </Paper>
         </Fade>
 
-        {/* Section Cards */}
+        {/* Section Accordions */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {sectionCards.map((section, index) => (
             <Grid item xs={12} key={section.id}>
               <Fade in timeout={800 + index * 200}>
-                <Card
+                <Accordion
+                  defaultExpanded={false}
                   elevation={2}
                   sx={{
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: theme.shadows[6],
-                      transform: 'translateY(-2px)',
-                    },
+                    '&:before': { display: 'none' },
+                    '& .MuiAccordion-root': { boxShadow: 'none' },
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
-                    {/* Section Header */}
-                    <Box
-                      sx={{
-                        p: 3,
-                        pb: 2,
-                        background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box
-                          sx={{
-                            color: theme.palette.primary.main,
-                            '& svg': { fontSize: 28 },
-                          }}
-                        >
-                          {section.icon}
-                        </Box>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 0.5 }}
-                          >
-                            {section.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            {section.description}
-                          </Typography>
-                        </Box>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`${section.id}-content`}
+                    id={`${section.id}-header`}
+                    sx={{
+                      p: 2,
+                      background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                      <Box sx={{ color: theme.palette.primary.main, '& svg': { fontSize: 28 } }}>
+                        {section.icon}
+                      </Box>
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          {section.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {section.description}
+                        </Typography>
                       </Box>
                     </Box>
-
-                    {/* Section Content */}
-                    <Box sx={{ p: 3 }}>
-                      {section.component}
-                    </Box>
-                  </CardContent>
-                </Card>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ p: 3 }}>
+                    {section.component}
+                  </AccordionDetails>
+                </Accordion>
               </Fade>
             </Grid>
           ))}
@@ -346,10 +395,10 @@ const ClientSetUp = () => {
               background: darkMode ? theme.palette.grey[900] : theme.palette.grey[50],
             }}
           >
-            <Button
+                <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push('/ClientInfoReact')}
+              onClick={() => history.push(WIZARD_ROUTES.BASE)}
               sx={{ minWidth: 120 }}
             >
               Back
@@ -360,6 +409,8 @@ const ClientSetUp = () => {
                 variant="outlined"
                 onClick={() => setSnack(true)}
                 disabled={saving}
+                aria-label={saving ? 'Saving draft' : 'Save draft'}
+                aria-live="polite"
               >
                 {saving ? 'Saving...' : 'Save Draft'}
               </Button>
@@ -368,6 +419,9 @@ const ClientSetUp = () => {
                 endIcon={saving ? <CircularProgress size={16} /> : <NavigateNextRounded />}
                 onClick={handleSave}
                 disabled={saving}
+                aria-label={saving ? 'Processing and continuing' : 'Save & Continue'}
+                aria-busy={saving}
+                aria-live="polite"
                 sx={{
                   minWidth: 160,
                   py: 1.5,
@@ -381,7 +435,8 @@ const ClientSetUp = () => {
         </Fade>
       </Container>
 
-      <ClientInfoFooter />
+      {/* SEO meta handled in component useEffect */}
+
 
       <Snackbar
         open={snack}

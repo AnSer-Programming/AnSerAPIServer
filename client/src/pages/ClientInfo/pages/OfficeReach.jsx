@@ -1,6 +1,6 @@
 // src/pages/ClientInfo/pages/OfficeReach.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Paper, 
@@ -28,16 +28,23 @@ import {
   CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
+  PhoneInTalk,
+  Summarize,
+  FilterAlt,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
+import { WIZARD_STEPS, STEP_LABELS } from '../constants/routes';
 import OfficeHoursSection from '../sections/OfficeHoursSection';
 import WebsiteAccessSection from '../sections/WebsiteAccessSection';
 import SpecialEventsSection from '../sections/SpecialEventsSection';
+import BusinessHoursOverflowSection from '../sections/BusinessHoursOverflowSection';
+import DailyRecapSection from '../sections/DailyRecapSection';
+import CallFilteringSection from '../sections/CallFilteringSection';
 
 const OfficeReach = () => {
   const { darkMode } = useClientInfoTheme();
@@ -48,6 +55,20 @@ const OfficeReach = () => {
   const [snack, setSnack] = useState(false);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Other Info — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Configure office hours, website access, and special events for your AnSer setup.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
 
   // Keep companyInfo reference to preserve holidays/specialEvents/officeHours/websiteAccess state
   const companyInfo = formData.companyInfo || {};
@@ -81,8 +102,8 @@ const OfficeReach = () => {
     
     setSaving(false);
     
-    // Always proceed to next step
-  history.push('/ClientInfoReact/NewFormWizard/call-volume');
+    // Always proceed to next step — new order: go to Final Details
+  history.push('/ClientInfoReact/NewFormWizard/final-details');
   };
 
   // Calculate completion percentage
@@ -105,7 +126,8 @@ const OfficeReach = () => {
   };
 
   const progress = getCompletionPercentage();
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'Review'];
+  const steps = (WIZARD_STEPS || []).map((s) => STEP_LABELS[s] || s);
+  const activeStep = Math.max((WIZARD_STEPS || []).indexOf('office-reach'), 0);
 
   const sectionCards = [
     {
@@ -141,19 +163,39 @@ const OfficeReach = () => {
       description: 'Online presence and digital accessibility',
       component: <WebsiteAccessSection errors={errors.websiteAccess || {}} />,
     },
+    {
+      id: 'overflow',
+      title: 'Business Hours Overflow',
+      icon: <PhoneInTalk />,
+      description: 'What happens when all lines are busy during business hours',
+      component: <BusinessHoursOverflowSection errors={errors.businessHoursOverflow || {}} />,
+    },
+    {
+      id: 'recap',
+      title: 'Daily Recap Reports',
+      icon: <Summarize />,
+      description: 'Automated daily summaries of call activity',
+      component: <DailyRecapSection errors={errors.dailyRecap || {}} />,
+    },
+    {
+      id: 'filtering',
+      title: 'Call Filtering',
+      icon: <FilterAlt />,
+      description: 'Configure robo-call blocking, greetings, and check-in recordings',
+      component: <CallFilteringSection errors={errors.callFiltering || {}} />,
+    },
   ];
 
   return (
     <Box sx={sharedStyles.layout.pageWrapper}>
-      <ClientInfoNavbar />
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         {/* Header Section */}
         <Fade in timeout={600}>
-          <Paper
+          <Paper role="region" aria-labelledby="officereach-title"
             elevation={2}
             sx={{
-              p: { xs: 3, md: 4 },
+              p: { xs: 2, md: 3 },
               mb: 4,
               background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
               border: `1px solid ${theme.palette.primary.main}20`,
@@ -161,32 +203,34 @@ const OfficeReach = () => {
           >
             <Box sx={{ mb: 3 }}>
               <Typography
-                variant="h4"
+                id="officereach-title"
+                component="h1"
+                variant="h5"
                 sx={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   color: theme.palette.primary.main,
                   mb: 1,
                 }}
               >
-                Office Hours & Availability
+                What is it that you want from us?
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 color="text.secondary"
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
               >
-                Help us understand when your business is open and how customers can reach you
+                Outline when you need us available and where expectations change throughout the day.
               </Typography>
 
               {/* Progress Stepper */}
-              <Stepper activeStep={1} alternativeLabel sx={{ mb: 3 }}>
+              <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
                       sx={{
                         '& .MuiStepLabel-label': {
                           fontSize: '0.875rem',
-                          fontWeight: index === 1 ? 600 : 400,
+                          fontWeight: index === activeStep ? 600 : 400,
                         },
                       }}
                     >
@@ -301,7 +345,7 @@ const OfficeReach = () => {
             <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push('/ClientInfoReact/NewFormWizard/company-info')}
+              onClick={() => history.push('/ClientInfoReact/NewFormWizard/call-routing')}
               sx={{ minWidth: 120 }}
             >
               Back
@@ -312,6 +356,8 @@ const OfficeReach = () => {
                 variant="outlined"
                 onClick={() => setSnack(true)}
                 disabled={saving}
+                aria-label={saving ? 'Saving draft' : 'Save draft'}
+                aria-live="polite"
               >
                 {saving ? 'Saving...' : 'Save Draft'}
               </Button>
@@ -320,20 +366,22 @@ const OfficeReach = () => {
                 endIcon={saving ? <CircularProgress size={16} /> : <NavigateNextRounded />}
                 onClick={onNext}
                 disabled={saving}
+                aria-label={saving ? 'Processing and continuing to final details' : 'Next: Final Details'}
+                aria-busy={saving}
+                aria-live="polite"
                 sx={{
                   minWidth: 180,
                   py: 1.5,
                   fontWeight: 600,
                 }}
               >
-                {saving ? 'Processing...' : 'Next: Call Handling'}
+                {saving ? 'Processing...' : 'Next: Final Details'}
               </Button>
             </Box>
           </Paper>
         </Fade>
       </Container>
 
-      <ClientInfoFooter />
 
       <Snackbar
         open={snack}

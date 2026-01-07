@@ -18,16 +18,20 @@ const validateCallTypesObject = (callTypes) => {
     const entryErrors = {};
 
     if (entry.enabled) {
+      if (!entry.customLabel || !entry.customLabel.toString().trim()) {
+        entryErrors.customLabel = 'Add a name for this call type.';
+      }
+
+      if (!entry.reachPrimary || !entry.reachPrimary.toString().trim()) {
+        entryErrors.reachPrimary = 'Tell us who to reach first.';
+      }
+
       if (!entry.instructions || !entry.instructions.toString().trim()) {
-        entryErrors.instructions = 'Add instructions for this call type.';
+        entryErrors.instructions = 'Add quick instructions for this call type.';
       }
 
-      if (entry.differsAfterHours == null) {
-        entryErrors.differsAfterHours = 'Let us know if this changes after hours.';
-      }
-
-      if (entry.differsAfterHours === true && !entry.afterHoursInstructions?.toString().trim()) {
-        entryErrors.afterHoursInstructions = 'Share the after-hours process so we can follow it.';
+      if (!entry.notes || !entry.notes.toString().trim()) {
+        entryErrors.notes = 'Provide a detailed script for this call type.';
       }
     }
 
@@ -60,6 +64,14 @@ export const companyInfoSchema = (data = {}) => {
     errors.physicalLocation = 'Physical location is required.';
   }
 
+  if (!data.physicalCity?.trim()) {
+    errors.physicalCity = 'City is required for your physical location.';
+  }
+
+  if (!data.physicalState?.trim()) {
+    errors.physicalState = 'State or province is required for your physical location.';
+  }
+
   // ===== CONTACT NUMBERS VALIDATION =====
   if (data.contactNumbers) {
     const contactErrors = {};
@@ -74,10 +86,47 @@ export const companyInfoSchema = (data = {}) => {
     }
   }
 
+  if (Array.isArray(data.contactChannels)) {
+    const allowedTypes = new Set(['main', 'toll-free', 'fax', 'other', 'website']);
+    const channelErrors = [];
+    let hasValue = false;
+
+    data.contactChannels.forEach((channel = {}, index) => {
+      const entryErrors = {};
+      const type = channel.type;
+      const value = typeof channel.value === 'string' ? channel.value.trim() : channel.value;
+
+      if (!type || !allowedTypes.has(type)) {
+        entryErrors.type = 'Select a valid contact type.';
+      }
+
+      if (!value) {
+        entryErrors.value = 'Add a number or link for this contact method.';
+      } else {
+        hasValue = true;
+        if (type === 'website' && !/^https?:\/\//i.test(value)) {
+          entryErrors.value = 'Start website links with http:// or https://.';
+        }
+      }
+
+      if (Object.keys(entryErrors).length) {
+        channelErrors[index] = entryErrors;
+      }
+    });
+
+    if (!hasValue) {
+      channelErrors[0] = { ...(channelErrors[0] || {}), value: 'Add at least one contact method.' };
+    }
+
+    if (channelErrors.length) {
+      errors.contactChannels = channelErrors;
+    }
+  }
+
   if (Array.isArray(data.additionalLocations)) {
     const locationErrors = [];
     data.additionalLocations.forEach((location = {}, index) => {
-      const hasAnyValue = ['label', 'address', 'suite'].some((key) => {
+      const hasAnyValue = ['label', 'address', 'suite', 'city', 'state', 'postalCode'].some((key) => {
         const value = location[key];
         if (typeof value === 'string') {
           return value.trim().length > 0;
@@ -95,6 +144,9 @@ export const companyInfoSchema = (data = {}) => {
       }
       if (!location.label?.toString().trim()) {
         locErrors.label = 'Give each additional location a label (e.g., Warehouse).';
+      }
+      if (location.postalCode && !location.postalCode.toString().trim()) {
+        locErrors.postalCode = 'Postal code cannot be only whitespace.';
       }
       if (Object.keys(locErrors).length) {
         locationErrors[index] = locErrors;
@@ -169,7 +221,7 @@ export const billingContactSchema = (data = {}) => {
 };
 
 // ==============================
-//   OFFICE REACH SCHEMA
+//   OTHER INFO SCHEMA
 // ==============================
 export const officeReachSchema = (/* data = {} */) => {
   // All fields optional for now
@@ -186,6 +238,10 @@ export const officeReachSchema = (/* data = {} */) => {
 // ==============================
 export const answerCallsSchema = (data = {}) => {
   const errors = {};
+
+  if (!data.businessType || !data.businessType.toString().trim()) {
+    errors.businessType = 'Select the business type that best fits your organization.';
+  }
 
   // Validate custom phrases if they're being used
   if (data.routine && !data.routine.useStandard) {
@@ -869,6 +925,47 @@ export const fastTrackSchema = (data = {}) => {
     errors.meeting = meetingErrors;
   }
 
+  return Object.keys(errors).length ? errors : null;
+};
+
+// ------------------------------
+// On Call: Schedule Type & Fixed Order
+// ------------------------------
+export const onCallScheduleTypeSchema = (data = {}) => {
+  const errors = {};
+  
+  const scheduleType = data.scheduleType;
+  const fixedOrder = data.fixedOrder;
+  
+  // Schedule type is required
+  if (!scheduleType || !['rotating', 'fixed', 'no-schedule'].includes(scheduleType)) {
+    errors.scheduleType = 'Please select how your after-hours coverage is organized.';
+  }
+  
+  // If fixed schedule, fixedOrder array must have at least one entry
+  if (scheduleType === 'fixed') {
+    if (!Array.isArray(fixedOrder) || fixedOrder.length === 0) {
+      errors.fixedOrder = 'Add at least one person to the fixed order list.';
+    } else {
+      const orderErrors = [];
+      fixedOrder.forEach((person, idx) => {
+        const personErrors = {};
+        if (!person.name || !person.name.trim()) {
+          personErrors.name = 'Name is required.';
+        }
+        if (!person.role || !person.role.trim()) {
+          personErrors.role = 'Role/title is required.';
+        }
+        if (Object.keys(personErrors).length) {
+          orderErrors[idx] = personErrors;
+        }
+      });
+      if (orderErrors.length) {
+        errors.fixedOrderItems = orderErrors;
+      }
+    }
+  }
+  
   return Object.keys(errors).length ? errors : null;
 };
 

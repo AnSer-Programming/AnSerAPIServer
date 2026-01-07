@@ -9,7 +9,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
@@ -19,22 +19,22 @@ import AnSerLogo from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
 
 // Wizard config
 const WIZARD_BASE = '/ClientInfoReact/NewFormWizard';
-const WIZARD_STEPS = ['company-info', 'office-reach', 'call-volume', 'answer-calls', 'on-call', 'final-details', 'review'];
+// New order: Company Information → Answer Calls → On Call → Call Routing → Other Info → Final Details → Review
+const WIZARD_STEPS = ['company-info', 'answer-calls', 'on-call', 'call-routing', 'office-reach', 'final-details', 'review'];
 
 const NAV_ITEMS = [
   { label: 'HOME', to: '/ClientInfoReact' },
   { label: 'COMPANY INFORMATION', to: `${WIZARD_BASE}/company-info` },
-  { label: 'OFFICE REACH INFORMATION', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'CALL VOLUME SNAPSHOT', to: `${WIZARD_BASE}/call-volume` },
   { label: 'HOW TO ANSWER YOUR CALLS', to: `${WIZARD_BASE}/answer-calls` },
+  { label: 'OTHER INFO', to: `${WIZARD_BASE}/office-reach` },
 ];
 
 const WIZARD_LINKS = [
   { label: 'Company Information', to: `${WIZARD_BASE}/company-info` },
-  { label: 'Office Reach', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'Call Volume', to: `${WIZARD_BASE}/call-volume` },
   { label: 'Answer Calls', to: `${WIZARD_BASE}/answer-calls` },
   { label: 'On Call', to: `${WIZARD_BASE}/on-call` },
+  { label: 'Call Routing', to: `${WIZARD_BASE}/call-routing` },
+  { label: 'Other Info', to: `${WIZARD_BASE}/office-reach` },
   { label: 'Final Details', to: `${WIZARD_BASE}/final-details` },
   { label: 'Review & Submit', to: `${WIZARD_BASE}/review` },
 ];
@@ -46,7 +46,7 @@ const getSlugFromPath = (pathname) => {
 
 const computeProgress = (slug) => {
   const idx = WIZARD_STEPS.indexOf(slug);
-  return idx >= 0 ? ((idx + 1) / WIZARD_STEPS.length) * 100 : null;
+  return idx >= 0 ? Math.round(((idx + 1) / WIZARD_STEPS.length) * 100) : null;
 };
 
 const isWizardPath = (pathname) => pathname.startsWith(WIZARD_BASE);
@@ -133,7 +133,7 @@ const ClientInfoNavbar = () => {
             variant="dense"
             sx={{
               gap: 0.5,
-              minHeight: 42,
+              minHeight: 40,
               bgcolor: 'primary.dark',
               px: { xs: 1.5, md: 2 },
             }}
@@ -149,33 +149,58 @@ const ClientInfoNavbar = () => {
                   component={RouterLink}
                   to={to}
                   size="small"
+                  aria-current={active ? 'step' : undefined}
                   sx={{
                     color: '#fff',
                     fontWeight: 700,
                     textTransform: 'none',
-                    borderRadius: 0,
-                    px: 1.75,
-                    mx: 0.25,
+                    borderRadius: 1,
+                    px: 1.5,
+                    mx: 0.5,
+                    minHeight: 32,
                     borderBottom: active ? `3px solid ${theme.palette.info.main}` : '3px solid transparent',
                     '&:hover': { backgroundColor: 'primary.main' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
                   }}
                 >
-                  {visited ? '✓ ' : ''}{label}
+                  {/* Visited indicator: keep small check circle for clarity */}
+                  <Box
+                    component="span"
+                    aria-hidden
+                    sx={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: visited ? 'success.main' : 'transparent',
+                      color: visited ? '#fff' : 'inherit',
+                      fontSize: 12,
+                      border: visited ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.12)}`,
+                    }}
+                  >
+                    {visited ? '✓' : ''}
+                  </Box>
+                  <Box component="span" sx={{ lineHeight: 1 }}>{label}</Box>
                 </Button>
               );
             })}
           </Toolbar>
         )}
 
-        {/* Progress bar on wizard pages */}
+        {/* Progress bar on wizard pages: compact and accessible */}
         {onlyShowWizardBar && progress !== null && (
           <LinearProgress
             variant="determinate"
             value={progress}
+            aria-label={`Wizard progress ${progress}%`}
             sx={{
-              height: 3,
-              bgcolor: 'primary.light',
-              '& .MuiLinearProgress-bar': { bgcolor: 'info.main' },
+              height: 6,
+              bgcolor: alpha(theme.palette.common.white, 0.08),
+              '& .MuiLinearProgress-bar': { bgcolor: theme.palette.info.main },
             }}
           />
         )}

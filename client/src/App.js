@@ -71,7 +71,7 @@ const AppContent = () => {
 
   return (
     <div className="text-light bg-dark" style={{ height: '100vh' }}>
-      <Switch>
+  <Switch>
         <Route exact path="/" component={Index} />
         <Route exact path="/AgentStats" component={AgentStats} />
         <Route exact path="/BackUps" component={signedIn ? BackUps : loginButton} />

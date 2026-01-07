@@ -6,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import '@testing-library/jest-dom';
 
 // Import components to test
-import AnswerCalls from '../pages/AnswerCalls';
+import AnswerCalls from '../pages/AnswerCallsNew';
 import StartNewClient from '../pages/StartNewClient';
 import { WizardProvider } from '../context_API/WizardContext';
 import { ClientInfoThemeProvider } from '../context_API/ClientInfoThemeContext';

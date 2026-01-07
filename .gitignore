@@ -13,3 +13,23 @@ vesselJSON/
 disconnectJSON/
 SignatureImage/
 Charts/
+# Ignore Copilot instructions file
+.github/copilot-instructions.md
+# Ignore running updated file of changes
+.github/meeting-notes.md
+
+# Ignore documentation/analysis markdown files
+*.md
+!README.md
+!client/src/pages/ClientInfo/README.md
+
+# Ignore Office documents (Word, Excel, PowerPoint)
+*.docx
+*.xlsx
+*.pptx
+*.doc
+*.xls
+*.ppt
+
+# Ignore Claude Code settings
+.claude/

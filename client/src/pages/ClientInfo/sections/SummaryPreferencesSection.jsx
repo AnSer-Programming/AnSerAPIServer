@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
+import FieldRow from '../components/FieldRow';
 
 const DAYS = [
   { key: 'monday', label: 'Mon' },
@@ -294,14 +295,16 @@ function SummaryPreferencesSection({ errors = {} }) {
           />
         </Grid>
         <Grid item xs={12} md sx={{ display: (summary.emailEnabled || recapDelivery.email) ? 'block' : 'none' }}>
-          <TextField
-            value={summary.email || ''}
-            size="small"
-            placeholder="Email(s)"
-            onChange={(e) => setPrefs({ email: e.target.value })}
-            fullWidth
-            sx={{ bgcolor: (t) => bgInput(t) }}
-          />
+          <FieldRow>
+            <TextField
+              value={summary.email || ''}
+              size="small"
+              placeholder="Email(s)"
+              onChange={(e) => setPrefs({ email: e.target.value })}
+              fullWidth
+              sx={{ bgcolor: (t) => bgInput(t) }}
+            />
+          </FieldRow>
         </Grid>
 
         <Grid item xs={12} md="auto">
@@ -316,14 +319,16 @@ function SummaryPreferencesSection({ errors = {} }) {
           />
         </Grid>
         <Grid item xs={12} md sx={{ display: (summary.faxEnabled || recapDelivery.fax) ? 'block' : 'none' }}>
-          <TextField
-            value={summary.faxNumber || ''}
-            size="small"
-            placeholder="Fax Number"
-            onChange={(e) => setPrefs({ faxNumber: e.target.value.replace(/[^\d\-()+ ]/g, '').slice(0, 18) })}
-            fullWidth
-            sx={{ bgcolor: (t) => bgInput(t) }}
-          />
+          <FieldRow>
+            <TextField
+              value={summary.faxNumber || ''}
+              size="small"
+              placeholder="Fax Number"
+              onChange={(e) => setPrefs({ faxNumber: e.target.value.replace(/[^\d\-()+ ]/g, '').slice(0, 18) })}
+              fullWidth
+              sx={{ bgcolor: (t) => bgInput(t) }}
+            />
+          </FieldRow>
         </Grid>
 
         <Grid item xs={12} md="auto">
@@ -338,14 +343,16 @@ function SummaryPreferencesSection({ errors = {} }) {
           />
         </Grid>
         <Grid item xs={12} md sx={{ display: recapDelivery.other ? 'block' : 'none' }}>
-          <TextField
-            value={summary.recap?.otherNotes || ''}
-            size="small"
-            placeholder="Describe other delivery method"
-            onChange={(e) => setRecap({ otherNotes: e.target.value })}
-            fullWidth
-            sx={{ bgcolor: (t) => bgInput(t) }}
-          />
+          <FieldRow>
+            <TextField
+              value={summary.recap?.otherNotes || ''}
+              size="small"
+              placeholder="Describe other delivery method"
+              onChange={(e) => setRecap({ otherNotes: e.target.value })}
+              fullWidth
+              sx={{ bgcolor: (t) => bgInput(t) }}
+            />
+          </FieldRow>
         </Grid>
       </Grid>
 
@@ -433,15 +440,17 @@ function SummaryPreferencesSection({ errors = {} }) {
                         ))}
                       </Stack>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <TextField
-                          type="time"
-                          size="small"
-                          value={pending || DEFAULT_TIME}
-                          onChange={(e) => setPendingAdd((p) => ({ ...p, [d.key]: e.target.value }))}
-                          disabled={!cell.enabled}
-                          sx={{ width: 120, bgcolor: (t) => bgInput(t) }}
-                          inputProps={{ step: 300, style: { padding: '6px 8px' } }}
-                        />
+                        <FieldRow>
+                          <TextField
+                            type="time"
+                            size="small"
+                            value={pending || DEFAULT_TIME}
+                            onChange={(e) => setPendingAdd((p) => ({ ...p, [d.key]: e.target.value }))}
+                            disabled={!cell.enabled}
+                            sx={{ width: 120, bgcolor: (t) => bgInput(t) }}
+                            inputProps={{ step: 300, style: { padding: '6px 8px' } }}
+                          />
+                        </FieldRow>
                         <Button
                           size="small"
                           variant="contained"

@@ -1,56 +1,43 @@
-// src/pages/ClientInfo/sections/CallTypesSection.jsx
+﻿// src/pages/ClientInfo/sections/CallTypesSection.jsx
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
-  Grid,
+  Chip,
   TextField,
   Typography,
-  Checkbox,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
-  FormControl,
-  FormLabel,
-  FormHelperText,
+  Switch,
+  Button,
+  Stack,
   Divider,
   Paper,
+  useTheme,
+  alpha,
+  Select,
+  MenuItem,
 } from '@mui/material';
+import FieldRow from '../components/FieldRow';
 import { useWizard } from '../context_API/WizardContext';
 
 const CALL_TYPE_OPTIONS = [
-  {
-    key: 'newLead',
-    label: 'New customer or sales inquiry',
-    helper: 'Gather caller details and note ideal follow-up path so we can qualify the lead.',
-  },
-  {
-    key: 'existingClient',
-    label: 'Existing client needs assistance',
-    helper: 'Outline who should be notified and what information we must collect.',
-  },
-  {
-    key: 'urgentIssue',
-    label: 'Urgent or emergency issue',
-    helper: 'Define the escalation steps so we can reach your team immediately.',
-  },
-  {
-    key: 'serviceRequest',
-    label: 'Service or maintenance request',
-    helper: 'Let us know the workflow for routine requests and updates.',
-  },
-  {
-    key: 'billingQuestion',
-    label: 'Billing or account question',
-    helper: 'Share how to handle payment questions or balance disputes.',
-  },
+  { key: 'newLead', label: 'New customer or sales inquiry' },
+  { key: 'existingClient', label: 'Existing client needs assistance' },
+  { key: 'urgentIssue', label: 'Urgent or emergency issue' },
+  { key: 'serviceRequest', label: 'Service or maintenance request' },
+  { key: 'billingQuestion', label: 'Billing or account question' },
 ];
 
 const DEFAULT_CALL_TYPE_STATE = {
   enabled: false,
+  customLabel: '',
   instructions: '',
-  differsAfterHours: null,
-  afterHoursInstructions: '',
+  clarificationPrompt: '',
+  reachPrimary: '',
+  reachSecondary: '',
+  reachPrimaryMemberId: null,
+  reachSecondaryMemberId: null,
+  notes: '',
+  autoEmailOffice: false,
 };
 
 const normalizeCallTypes = (value) => {
@@ -67,16 +54,18 @@ const normalizeCallTypes = (value) => {
       if (current && typeof current === 'object') {
         normalized[key] = {
           enabled: Boolean(current.enabled),
+          customLabel: current.customLabel ?? '',
           instructions: current.instructions ?? '',
-          differsAfterHours:
-            current.differsAfterHours === true
-              ? true
-              : current.differsAfterHours === false
-                ? false
-                : null,
-          afterHoursInstructions: current.afterHoursInstructions ?? '',
+          clarificationPrompt: current.clarificationPrompt ?? '',
+            reachPrimary: current.reachPrimary ?? '',
+            reachSecondary: current.reachSecondary ?? '',
+            reachPrimaryMemberId: current.reachPrimaryMemberId ?? null,
+            reachSecondaryMemberId: current.reachSecondaryMemberId ?? null,
+          notes: current.notes ?? '',
+          autoEmailOffice: Boolean(current.autoEmailOffice),
         };
       }
+
     });
     if (typeof value.otherText === 'string') {
       otherText = value.otherText;
@@ -87,7 +76,7 @@ const normalizeCallTypes = (value) => {
     const legacyLines = value
       .map((item) => [item?.name, item?.instructions]
         .filter(Boolean)
-        .join(' — '))
+        .join('  '))
       .filter(Boolean);
     if (!otherText && legacyLines.length) {
       otherText = legacyLines.join('\n');
@@ -105,17 +94,34 @@ const deepEqual = (a, b) => {
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 };
 
+const getDisplayLabel = (key, callTypes) => {
+  const callType = callTypes[key];
+  if (callType?.customLabel) {
+    return callType.customLabel;
+  }
+  return CALL_TYPE_OPTIONS.find(o => o.key === key)?.label || key;
+};
+
+const chipStyles = (theme, isActive, isEnabled) => ({
+  cursor: 'pointer',
+  borderColor: isActive ? 'primary.main' : isEnabled ? 'success.main' : 'divider',
+  backgroundColor: isActive ? alpha(theme.palette.primary.main, 0.1) : isEnabled ? alpha(theme.palette.success.main, 0.1) : 'transparent',
+  color: isActive ? 'primary.main' : isEnabled ? 'success.main' : 'text.secondary',
+  '&:hover': {
+    backgroundColor: isActive ? alpha(theme.palette.primary.main, 0.15) : isEnabled ? alpha(theme.palette.success.main, 0.15) : alpha(theme.palette.action.hover, 0.1),
+  },
+});
+
 const CallTypesSection = ({ errors = {} }) => {
   const { formData, updateSection } = useWizard();
+  const theme = useTheme();
   const rawCallTypes = formData.answerCalls?.callTypes;
+  const [activeKey, setActiveKey] = useState(null);
+
+  // roster from onCall section (used for member selects)
+  const team = Array.isArray(formData.onCall?.team) ? formData.onCall.team : [];
 
   const callTypes = useMemo(() => normalizeCallTypes(rawCallTypes), [rawCallTypes]);
-
-  useEffect(() => {
-    if (!deepEqual(rawCallTypes, callTypes)) {
-      updateSection('answerCalls', { callTypes });
-    }
-  }, [rawCallTypes, callTypes, updateSection]);
 
   const setCallTypes = (next) => {
     updateSection('answerCalls', { callTypes: next });
@@ -132,126 +138,114 @@ const CallTypesSection = ({ errors = {} }) => {
     setCallTypes(next);
   };
 
-  const handleToggle = (key) => (event) => {
-    const enabled = event.target.checked;
-    updateType(key, enabled ? { enabled } : { ...DEFAULT_CALL_TYPE_STATE });
-  };
-
-  const handleDiffersChange = (key) => (event) => {
-    const value = event.target.value;
-    if (value === 'yes') {
-      updateType(key, { differsAfterHours: true });
-    } else if (value === 'no') {
-      updateType(key, { differsAfterHours: false, afterHoursInstructions: '' });
-    } else {
-      updateType(key, { differsAfterHours: null, afterHoursInstructions: '' });
-    }
-  };
-
-  const handleOtherChange = (event) => {
-    setCallTypes({
-      ...callTypes,
-      otherText: event.target.value,
-    });
-  };
-
   return (
-    <Box sx={{ display: 'grid', gap: 3 }}>
-      <Typography variant="body2" color="text.secondary">
-        Pick the call types your team wants us to recognize. Enable each scenario, tell us what to do, and let us know if the process changes after hours. Use “Other call types” for anything unique.
-      </Typography>
-
-      <Box sx={{ display: 'grid', gap: 2 }}>
-        {CALL_TYPE_OPTIONS.map(({ key, label, helper }) => {
-          const state = callTypes[key];
-          const fieldErrors = errors[key] || {};
-          return (
-            <Paper
+    <Paper variant="outlined" sx={{ p: 3 }}>
+      <Stack spacing={3}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+            Call Types
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Select the call types your team recognizes and describe how to handle each one.
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+          {CALL_TYPE_OPTIONS.map(({ key, label }) => (
+            <Chip
               key={key}
-              variant="outlined"
-              sx={{ p: 2.5, borderRadius: 2, borderColor: state.enabled ? 'primary.main' : 'divider' }}
-            >
-              <FormControlLabel
-                control={<Checkbox checked={!!state.enabled} onChange={handleToggle(key)} />}
-                label={
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {label}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {helper}
-                    </Typography>
-                  </Box>
-                }
-                sx={{ alignItems: 'flex-start', mb: state.enabled ? 2 : 0 }}
+              label={label}
+              onClick={() => setActiveKey(activeKey === key ? null : key)}
+              sx={chipStyles(theme, activeKey === key, callTypes[key]?.enabled)}
+            />
+          ))}
+        </Stack>
+        {activeKey && (
+          <Box sx={{ mt: 2 }}>
+            <FieldRow helperText={errors[activeKey]?.customLabel || 'Optional custom name for this call type.'}>
+              <TextField
+                label="Call type label"
+                placeholder={CALL_TYPE_OPTIONS.find(o => o.key === activeKey)?.label}
+                value={callTypes[activeKey]?.customLabel || ''}
+                onChange={(e) => updateType(activeKey, { customLabel: e.target.value })}
+                error={Boolean(errors[activeKey]?.customLabel)}
+                size="small"
+                fullWidth
               />
-
-              {state.enabled && (
-                <Box sx={{ display: 'grid', gap: 2 }}>
+            </FieldRow>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Enable
+              </Typography>
+              <Switch
+                checked={!!callTypes[activeKey]?.enabled}
+                onChange={(e) => updateType(activeKey, { enabled: e.target.checked })}
+                size="small"
+              />
+            </Stack>
+            {callTypes[activeKey]?.enabled && (
+              <Stack spacing={2} sx={{ mt: 2 }}>
+                <FieldRow helperText={errors[activeKey]?.instructions}>
                   <TextField
-                    label="What should we do?"
-                    value={state.instructions}
-                    onChange={(e) => updateType(key, { instructions: e.target.value })}
-                    error={Boolean(fieldErrors.instructions)}
-                    helperText={fieldErrors.instructions || 'Include callers to notify, forms to capture, or systems to update.'}
+                    label="Quick instruction"
+                    placeholder="e.g., 'Transfer to extension 5 or take message'"
+                    value={callTypes[activeKey]?.instructions || ''}
+                    onChange={(e) => updateType(activeKey, { instructions: e.target.value })}
+                    error={Boolean(errors[activeKey]?.instructions)}
+                    fullWidth
+                    size="small"
                     multiline
                     minRows={2}
-                    fullWidth
                   />
-
-                  <FormControl component="fieldset" error={Boolean(fieldErrors.differsAfterHours)}>
-                    <FormLabel component="legend">Does this differ during office hours?</FormLabel>
-                    <RadioGroup
-                      row
-                      value={state.differsAfterHours === true ? 'yes' : state.differsAfterHours === false ? 'no' : ''}
-                      onChange={handleDiffersChange(key)}
-                    >
-                      <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                      <FormControlLabel value="no" control={<Radio />} label="No" />
-                    </RadioGroup>
-                    {fieldErrors.differsAfterHours && (
-                      <FormHelperText>{fieldErrors.differsAfterHours}</FormHelperText>
-                    )}
-                  </FormControl>
-
-                  {state.differsAfterHours === true && (
-                    <TextField
-                      label="After-hours instructions"
-                      value={state.afterHoursInstructions}
-                      onChange={(e) => updateType(key, { afterHoursInstructions: e.target.value })}
-                      error={Boolean(fieldErrors.afterHoursInstructions)}
-                      helperText={fieldErrors.afterHoursInstructions || 'Tell us exactly what changes when the office is closed.'}
-                      multiline
-                      minRows={2}
-                      fullWidth
-                    />
-                  )}
-                </Box>
-              )}
-            </Paper>
-          );
-        })}
-      </Box>
-
-      <Divider />
-
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-          Other call types or special instructions
-        </Typography>
-        <TextField
-          placeholder="List additional scenarios, seasonal changes, or anything else we should be ready for."
-          value={callTypes.otherText}
-          onChange={handleOtherChange}
-          error={Boolean(errors.otherText)}
-          helperText={errors.otherText || 'We’ll review these notes with you to make sure nothing is missed.'}
-          multiline
-          minRows={3}
-          fullWidth
-        />
-      </Box>
-    </Box>
+                </FieldRow>
+                <FieldRow helperText={errors[activeKey]?.clarificationPrompt || 'Add the clarifying question or keywords you rely on.'}>
+                  <TextField
+                    label="How do you recognize this call type?"
+                    placeholder="What do you ask the caller so you know it fits this category?"
+                    value={callTypes[activeKey]?.clarificationPrompt || ''}
+                    onChange={(e) => updateType(activeKey, { clarificationPrompt: e.target.value })}
+                    error={Boolean(errors[activeKey]?.clarificationPrompt)}
+                    fullWidth
+                    size="small"
+                    multiline
+                    minRows={2}
+                  />
+                </FieldRow>
+                <FieldRow helperText={errors[activeKey]?.notes || 'We will use these instructions when this call type arrives.'}>
+                  <TextField
+                    label="Detailed script/notes"
+                    placeholder="Exact words to say or detailed handling instructions..."
+                    value={callTypes[activeKey]?.notes || ''}
+                    onChange={(e) => updateType(activeKey, { notes: e.target.value })}
+                    error={Boolean(errors[activeKey]?.notes)}
+                    fullWidth
+                    size="small"
+                    multiline
+                    minRows={3}
+                  />
+                </FieldRow>
+              </Stack>
+            )}
+          </Box>
+        )}
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Everything Else
+          </Typography>
+          <FieldRow helperText={errors.otherText || 'We will review these notes to ensure nothing is missed.'}>
+            <TextField
+              placeholder="List other call types, special routing instructions, seasonal changes, or anything else we should know..."
+              value={callTypes.otherText || ''}
+              onChange={(e) => setCallTypes({ ...callTypes, otherText: e.target.value })}
+              error={Boolean(errors.otherText)}
+              fullWidth
+              size="small"
+              multiline
+              minRows={3}
+            />
+          </FieldRow>
+        </Box>
+      </Stack>
+    </Paper>
   );
-};
-
+}
 export default CallTypesSection;

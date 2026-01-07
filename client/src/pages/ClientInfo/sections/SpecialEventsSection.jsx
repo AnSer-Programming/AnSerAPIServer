@@ -3,6 +3,7 @@
 import React from 'react';
 import { Typography, Divider, Paper, TextField, Button, Box } from '@mui/material';
 import TimeRangePicker from '../components/TimeRangePicker';
+import FieldRow from '../components/FieldRow';
 
 const SpecialEventsSection = ({ events = [], onChange, errors = [] }) => (
   <>
@@ -15,30 +16,32 @@ const SpecialEventsSection = ({ events = [], onChange, errors = [] }) => (
     {events.map((ev, i) => (
       <Paper key={ev.id || i} variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField
-            label="Event Name"
-            value={ev.name || ''}
-            onChange={(e) => {
-              const copy = [...events];
-              copy[i] = { ...copy[i], name: e.target.value };
-              onChange(copy);
-            }}
-            error={!!errors[i]?.name}
-            helperText={errors[i]?.name || 'Example: Summer maintenance shutdown'}
-          />
-          <TextField
-            label="Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={ev.date || ''}
-            onChange={(e) => {
-              const copy = [...events];
-              copy[i] = { ...copy[i], date: e.target.value };
-              onChange(copy);
-            }}
-            error={!!errors[i]?.date}
-            helperText={errors[i]?.date || 'Pick the first day this schedule change begins'}
-          />
+          <FieldRow helperText={errors[i]?.name || 'Example: Summer maintenance shutdown'}>
+            <TextField
+              label="Event Name"
+              value={ev.name || ''}
+              onChange={(e) => {
+                const copy = [...events];
+                copy[i] = { ...copy[i], name: e.target.value };
+                onChange(copy);
+              }}
+              error={!!errors[i]?.name}
+            />
+          </FieldRow>
+          <FieldRow helperText={errors[i]?.date || 'Pick the first day this schedule change begins'}>
+            <TextField
+              label="Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={ev.date || ''}
+              onChange={(e) => {
+                const copy = [...events];
+                copy[i] = { ...copy[i], date: e.target.value };
+                onChange(copy);
+              }}
+              error={!!errors[i]?.date}
+            />
+          </FieldRow>
         </Box>
 
         <TimeRangePicker

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -7,15 +7,6 @@ import {
   Alert,
   Button,
   Typography,
-  TextField,
-  Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  FormHelperText,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
   Stepper,
   Step,
   StepLabel,
@@ -25,25 +16,28 @@ import {
   CardContent,
   Chip,
   Stack,
+  Grid,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   NavigateNextRounded,
   NavigateBeforeRounded,
-  Schedule,
-  AccessTime,
   SettingsApplications,
   ExpandMoreRounded,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useHistory } from 'react-router-dom';
 
-import ClientInfoNavbar from '../shared_layout_routing/ClientInfoNavbar';
-import ClientInfoFooter from '../shared_layout_routing/ClientInfoFooter';
+// Navbar handled globally by WizardLayout
+// Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
+import { WIZARD_ROUTES } from '../constants/routes';
 
 import EnhancedOnCallTeamSection from '../sections/EnhancedOnCallTeamSection';
 import OnCallRotationSection from '../sections/OnCallRotationSection';
@@ -51,7 +45,7 @@ import OnCallContactRulesSection from '../sections/OnCallContactRulesSection';
 import OnCallProceduresSection from '../sections/OnCallProceduresSection';
 import EscalationMatrixSection from '../sections/EscalationMatrixSection';
 import OnCallDepartmentsSection from '../sections/OnCallDepartmentsSection';
-import NotificationRulesSection from '../sections/NotificationRulesSection';
+import OnCallScheduleSection from '../sections/OnCallScheduleSection';
 
 const createEscalationStep = (overrides = {}) => ({
   id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -95,6 +89,8 @@ const DEFAULT_ONCALL = {
     smsOk: false,
     emailOk: false,
   },
+  scheduleType: 'no-schedule',
+  fixedOrder: [],
   schedules: [],
   team: [], // [{ name,title,email,cell,home,other }]
   departments: [],
@@ -152,19 +148,25 @@ const OnCall = () => {
   }, [escalationPlan.length, legacyEscalationMatrix, onCall, updateSection]);
 
   const [snack, setSnack] = React.useState({ open: false, msg: '', severity: 'success' });
-  const [expanded, setExpanded] = React.useState('coverage');
+  const [expanded, setExpanded] = React.useState({
+    team: true,
+    coverage: false,
+    procedures: false,
+  });
+  const [activeTeamTab, setActiveTeamTab] = React.useState(0);
   const [errors, setErrors] = React.useState({});
 
+  // Define functions before useEffect hooks that reference them
   const handleAccordionChange = (panel) => (_, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
+    setExpanded((prev) => ({ ...prev, [panel]: isExpanded }));
   };
 
-  const onSave = () => {
+  const onSave = React.useCallback(() => {
     markStepVisited('on-call');
     setSnack({ open: true, msg: 'On-call information saved!', severity: 'success' });
-  };
+  }, [markStepVisited]);
 
-  const onNext = () => {
+  const onNext = React.useCallback(() => {
     markStepVisited('on-call');
     const collectedErrors = {};
 
@@ -178,27 +180,65 @@ const OnCall = () => {
       collectedErrors.departments = departmentErrors;
     }
 
-    const notificationRuleErrors = validateSection?.('onCall.notificationRules', onCall.notificationRules || {});
-    if (notificationRuleErrors) {
-      collectedErrors.notificationRules = notificationRuleErrors;
-    }
-
     if (Object.keys(collectedErrors).length) {
       setErrors(collectedErrors);
-      setSnack({ open: true, msg: 'Please review the highlighted on-call fields.', severity: 'error' });
+      setSnack({ open: true, msg: 'Some fields need attention. You can continue and fix them later.', severity: 'warning' });
     } else {
       setErrors({});
       setSnack({ open: true, msg: 'On-call details look good. Moving on!', severity: 'success' });
     }
 
-    // Always proceed to next step
-    history.push('/ClientInfoReact/NewFormWizard/final-details');
-  };
+    // Always proceed to next step — new order: go to Call Routing
+    history.push('/ClientInfoReact/NewFormWizard/call-routing');
+  }, [markStepVisited, validateSection, onCall, history]);
+
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'On-call setup — AnSer Communications';
+    let meta = document.querySelector('meta[name="description"]');
+    let created = false;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
+    meta.content = 'Configure on-call rotations, escalation rules, and notifications for your team.';
+    if (created) document.head.appendChild(meta);
+    return () => {
+      document.title = prevTitle;
+      if (created && meta && meta.parentNode) meta.parentNode.removeChild(meta);
+    };
+  }, []);
+
+  // Keyboard shortcuts for navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Alt + Right Arrow = Next step
+      if (e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        onSave();
+        onNext();
+      }
+      // Alt + Left Arrow = Previous step
+      if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        history.push('/ClientInfoReact/NewFormWizard/answer-calls');
+      }
+      // Ctrl + S or Cmd + S = Save draft
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        onSave();
+        setSnack({ open: true, msg: '💾 Progress saved!', severity: 'success' });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history, onSave, onNext]);
 
   // Calculate completion percentage across three key steps
   const getCompletionPercentage = () => {
-    const hasCoverage = Boolean(
-      (onCall.schedules && onCall.schedules.length > 0) ||
+    const hasFixedOrder = Array.isArray(onCall.fixedOrder) && onCall.fixedOrder.length > 0;
+    const hasScheduleSelection = Boolean(
+      onCall.scheduleType && onCall.scheduleType !== 'no-schedule'
+    );
+    const hasRotationDetails = Boolean(
       onCall.rotation?.doesNotChange ||
       onCall.rotation?.whenChanges?.trim() ||
       onCall.rotation?.frequency ||
@@ -206,6 +246,8 @@ const OnCall = () => {
       onCall.rotation?.dayOrDate?.trim() ||
       onCall.rotation?.otherExplain?.trim()
     );
+
+    const hasCoverage = hasFixedOrder || hasScheduleSelection || hasRotationDetails;
 
     const hasProcedures = Boolean(
       onCall.contactRules?.notes?.trim() ||
@@ -218,48 +260,39 @@ const OnCall = () => {
       onCall.procedures?.businessHoursNotification?.trim()
     );
 
-  const hasEscalationPlan = escalationPlan.length > 0;
+    const hasEscalationPlan = escalationPlan.length > 0;
     const hasDepartments = Array.isArray(onCall.departments) && onCall.departments.length > 0;
-    const notificationPrefs = onCall.notificationRules || {};
-    const hasNotificationRules = Boolean(
-      (typeof notificationPrefs.callTypes === 'string' && notificationPrefs.callTypes.trim()) ||
-      Object.entries(notificationPrefs).some(([key, value]) => key !== 'callTypes' && !!value)
-    );
 
     const fields = [
       hasCoverage,
       onCall.team?.length > 0,
-  hasEscalationPlan || hasDepartments,
-      hasProcedures || hasNotificationRules,
+      hasEscalationPlan || hasDepartments,
+      hasProcedures,
     ];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   };
 
   const progress = getCompletionPercentage();
-  const steps = ['Company Info', 'Office Hours', 'Call Handling', 'On-Call Setup', 'Review'];
+  const steps = ['Basic Info', 'What You Need', 'Call Handling', 'On-Call Setup', 'Review'];
+
+  // Calculate completion status for each accordion section
+  const teamSectionComplete = onCall.team?.length > 0;
+  const scheduleSectionComplete = Boolean(
+    onCall.scheduleType &&
+    (onCall.scheduleType === 'no-schedule' ||
+     onCall.scheduleType === 'rotating' ||
+     (onCall.scheduleType === 'fixed' && onCall.fixedOrder?.length > 0))
+  );
+  const proceduresSectionComplete = Boolean(
+    (onCall.contactRules?.allCalls ||
+     onCall.contactRules?.emergencyOnly ||
+     onCall.contactRules?.callerCannotWait) &&
+    onCall.procedures?.attempts
+  );
 
   const softBg = (c) =>
     darkMode ? alpha(theme.palette[c].main, 0.12) : alpha(theme.palette[c].main, 0.06);
-  const inputBg = darkMode ? alpha('#fff', 0.06) : theme.palette.common.white;
-  
-  const card = (c = 'primary') => ({
-    p: 3,
-    borderRadius: 2,
-    border: `1px solid ${alpha(theme.palette[c].main, 0.25)}`,
-    bgcolor: softBg(c),
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 4,
-      background: `linear-gradient(90deg, ${theme.palette[c].main}, ${alpha(theme.palette[c].main, 0.7)})`,
-    }
-  });
 
   const accordionStyle = (color = 'primary') => ({
     borderRadius: 2,
@@ -273,9 +306,9 @@ const OnCall = () => {
   const accordionSummarySx = {
     px: { xs: 2, md: 3 },
     py: 2,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 0.5,
+    flexDirection: { xs: 'column', sm: 'row' },
+    alignItems: { xs: 'flex-start', sm: 'center' },
+    gap: { xs: 1, sm: 0.5 },
   };
 
   const accordionDetailsSx = {
@@ -284,384 +317,89 @@ const OnCall = () => {
     pt: 0,
   };
 
-  // === Enhanced On-Call Schedule Section ===
-  const OnCallScheduleSection = ({ errors: scheduleErrorList = [] }) => {
-    const schedules = onCall.schedules || [];
-    const errorsArray = Array.isArray(scheduleErrorList) ? scheduleErrorList : [];
-
-    const addSchedule = () => {
-      const newSchedule = {
-        id: Date.now(),
-        startTime: '12:00:00 AM',
-        endTime: '12:00:00 AM',
-        recurrence: 'On Date',
-        specificDate: new Date().toISOString().split('T')[0],
-        recurrencePattern: 'Every Week',
-        selectedDays: [],
-        monthDay: 1,
-        active: true
-      };
-      const newSchedules = [...schedules, newSchedule];
-      setOnCall({ schedules: newSchedules });
-    };
-
-    const updateSchedule = (id, updates) => {
-      const newSchedules = schedules.map(schedule => 
-        schedule.id === id ? { ...schedule, ...updates } : schedule
-      );
-      setOnCall({ schedules: newSchedules });
-    };
-
-    const removeSchedule = (id) => {
-      const newSchedules = schedules.filter(schedule => schedule.id !== id);
-      setOnCall({ schedules: newSchedules });
-    };
-
-    const formatTime = (time24) => {
-      if (!time24) return '12:00:00 AM';
-      const [hours, minutes] = time24.split(':');
-      const hour = parseInt(hours);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 || 12;
-      return `${displayHour}:${minutes}:00 ${ampm}`;
-    };
-
-    const parseTime = (time12) => {
-      if (!time12) return '00:00';
-      const [time, ampm] = time12.split(' ');
-      const [hours, minutes] = time.split(':');
-      let hour = parseInt(hours);
-      if (ampm === 'PM' && hour !== 12) hour += 12;
-      if (ampm === 'AM' && hour === 12) hour = 0;
-      return `${hour.toString().padStart(2, '0')}:${minutes}`;
-    };
-
-    return (
-      <Paper sx={{ ...card('warning'), mb: 3 }}>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-          <Box sx={{ 
-            p: 1.5, 
-            borderRadius: 2, 
-            bgcolor: alpha(theme.palette.warning.main, 0.15),
-            color: theme.palette.warning.main 
-          }}>
-            <Schedule fontSize="medium" />
-          </Box>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
-              On-Call Personnel Schedule
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Configure when your on-call personnel are available for urgent calls
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Box sx={{ mb: 3 }}>
-          <Button
-            variant="contained"
-            startIcon={<Schedule />}
-            onClick={addSchedule}
-            sx={{ 
-              mb: 2,
-              background: `linear-gradient(135deg, ${theme.palette.warning.main}, ${alpha(theme.palette.warning.main, 0.8)})`,
-              '&:hover': {
-                background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.9)}, ${alpha(theme.palette.warning.main, 0.7)})`,
-              }
-            }}
-          >
-            Add New Schedule
-          </Button>
-        </Box>
-
-        {schedules.map((schedule, index) => {
-          const scheduleError = errorsArray[index] || {};
-          const hasScheduleError = Object.keys(scheduleError).length > 0;
-          return (
-            <Card 
-              key={schedule.id} 
-              sx={{ 
-                mb: 2,
-                border: `1px solid ${hasScheduleError ? alpha(theme.palette.error.main, 0.6) : alpha(theme.palette.warning.main, 0.3)}`,
-                bgcolor: hasScheduleError ? alpha(theme.palette.error.main, 0.05) : alpha(theme.palette.warning.main, 0.05),
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 3,
-                  background: hasScheduleError
-                    ? `linear-gradient(90deg, ${theme.palette.error.main}, ${alpha(theme.palette.error.main, 0.6)})`
-                    : `linear-gradient(90deg, ${theme.palette.warning.main}, ${alpha(theme.palette.warning.main, 0.6)})`,
-                }
-              }}
-            >
-            <CardContent sx={{ pt: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <AccessTime color={hasScheduleError ? 'error' : 'warning'} fontSize="small" />
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: hasScheduleError ? theme.palette.error.main : 'inherit' }}>
-                    Schedule {index + 1}
-                  </Typography>
-                </Stack>
-                <Button
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                  onClick={() => removeSchedule(schedule.id)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  Remove
-                </Button>
-              </Box>
-
-              {scheduleError.preview && (
-                <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                  {scheduleError.preview}
-                </Typography>
-              )}
-
-              <Grid container spacing={2}>
-              {/* Time Range */}
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                  Time Range
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <TextField
-                    label="Start Time"
-                    type="time"
-                    value={parseTime(schedule.startTime)}
-                    onChange={(e) => updateSchedule(schedule.id, { startTime: formatTime(e.target.value) })}
-                    size="small"
-                    sx={{ flex: 1, bgcolor: inputBg }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    error={Boolean(scheduleError.startTime)}
-                    helperText={scheduleError.startTime || ''}
-                  />
-                  <Typography>to</Typography>
-                  <TextField
-                    label="End Time"
-                    type="time"
-                    value={parseTime(schedule.endTime)}
-                    onChange={(e) => updateSchedule(schedule.id, { endTime: formatTime(e.target.value) })}
-                    size="small"
-                    sx={{ flex: 1, bgcolor: inputBg }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    error={Boolean(scheduleError.endTime)}
-                    helperText={scheduleError.endTime || ''}
-                  />
-                </Box>
-              </Grid>
-
-              {/* Occurrence Pattern */}
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                  Occurs
-                </Typography>
-                <FormControl fullWidth size="small" error={Boolean(scheduleError.recurrence)}>
-                  <Select
-                    value={schedule.recurrence}
-                    onChange={(e) => updateSchedule(schedule.id, { recurrence: e.target.value })}
-                    sx={{ bgcolor: inputBg }}
-                  >
-                    <MenuItem value="On Date">On Date</MenuItem>
-                    <MenuItem value="Every Week">Every Week</MenuItem>
-                    <MenuItem value="1st Week">1st Week</MenuItem>
-                    <MenuItem value="2nd Week">2nd Week</MenuItem>
-                    <MenuItem value="3rd Week">3rd Week</MenuItem>
-                    <MenuItem value="4th Week">4th Week</MenuItem>
-                    <MenuItem value="Last Week">Last Week</MenuItem>
-                    <MenuItem value="Every Month">Every Month</MenuItem>
-                  </Select>
-                  {scheduleError.recurrence && (
-                    <FormHelperText>{scheduleError.recurrence}</FormHelperText>
-                  )}
-                </FormControl>
-              </Grid>
-
-              {/* Specific Date (if On Date is selected) */}
-              {schedule.recurrence === 'On Date' && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Date
-                  </Typography>
-                  <TextField
-                    type="date"
-                    value={schedule.specificDate}
-                    onChange={(e) => updateSchedule(schedule.id, { specificDate: e.target.value })}
-                    fullWidth
-                    size="small"
-                    sx={{ bgcolor: inputBg }}
-                    error={Boolean(scheduleError.specificDate)}
-                    helperText={scheduleError.specificDate || ''}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                </Grid>
-              )}
-
-              {/* Day of Week Selection (for weekly patterns) */}
-              {schedule.recurrence.includes('Week') && schedule.recurrence !== 'On Date' && (
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Day of Week
-                  </Typography>
-                  <FormGroup row>
-                    {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
-                      <FormControlLabel
-                        key={day}
-                        control={
-                          <Checkbox
-                            checked={schedule.selectedDays?.includes(day) || false}
-                            onChange={(e) => {
-                              const selectedDays = schedule.selectedDays || [];
-                              const newDays = e.target.checked
-                                ? [...selectedDays, day]
-                                : selectedDays.filter(d => d !== day);
-                              updateSchedule(schedule.id, { selectedDays: newDays });
-                            }}
-                            size="small"
-                          />
-                        }
-                        label={day.slice(0, 3)}
-                      />
-                    ))}
-                  </FormGroup>
-                  {scheduleError.selectedDays && (
-                    <Typography variant="caption" color="error">
-                      {scheduleError.selectedDays}
-                    </Typography>
-                  )}
-                </Grid>
-              )}
-
-              {/* Day of Month (for monthly pattern) */}
-              {schedule.recurrence === 'Every Month' && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                    Day of Month
-                  </Typography>
-                  <FormControl fullWidth size="small" error={Boolean(scheduleError.monthDay)}>
-                    <Select
-                      value={schedule.monthDay || 1}
-                      onChange={(e) => updateSchedule(schedule.id, { monthDay: e.target.value })}
-                      sx={{ bgcolor: inputBg }}
-                    >
-                      {Array.from({ length: 31 }, (_, i) => (
-                        <MenuItem key={i + 1} value={i + 1}>{i + 1}</MenuItem>
-                      ))}
-                    </Select>
-                    {scheduleError.monthDay && (
-                      <FormHelperText>{scheduleError.monthDay}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-              )}
-            </Grid>
-
-            {/* Preview */}
-            <Box sx={{ mt: 2, p: 1, bgcolor: alpha(theme.palette.info.main, 0.1), borderRadius: 1 }}>
-              <Typography variant="caption" color="text.secondary">
-                <strong>Schedule Preview:</strong> {schedule.startTime} - {schedule.endTime}
-                {schedule.recurrence === 'On Date' && ` on ${schedule.specificDate}`}
-                {schedule.recurrence.includes('Week') && schedule.selectedDays?.length > 0 && 
-                  ` every ${schedule.recurrence.toLowerCase()} on ${schedule.selectedDays.join(', ')}`}
-                {schedule.recurrence === 'Every Month' && ` on day ${schedule.monthDay} of each month`}
-              </Typography>
-              {scheduleError.preview && (
-                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
-                  {scheduleError.preview}
-                </Typography>
-              )}
-            </Box>
-            </CardContent>
-          </Card>
-          );
-        })}
-
-        {schedules.length === 0 && (
-          <Card sx={{ p: 3, textAlign: 'center', bgcolor: alpha(theme.palette.grey[500], 0.1) }}>
-            <CardContent>
-              <Stack direction="row" alignItems="center" justifyContent="center" spacing={2} sx={{ mb: 2 }}>
-                <Schedule color="disabled" fontSize="large" />
-                <Typography variant="h6" color="text.secondary">
-                  No Schedules Configured
-                </Typography>
-              </Stack>
-              <Typography variant="body2" color="text.secondary">
-                Click "Add New Schedule" to set up when your personnel are available for urgent calls.
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
-      </Paper>
-    );
-  };
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: darkMode ? 'background.default' : '#f8fafc' }}>
-      <ClientInfoNavbar />
-      <Container maxWidth="lg" sx={{ py: 3 }}>
+  <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         {/* Enhanced Header */}
         <Fade in timeout={800}>
-          <Paper
+          <Paper role="region" aria-labelledby="oncall-title"
             elevation={2}
             sx={{
-              p: 3,
-              mb: 3,
+              p: { xs: 2, md: 3 },
+              mb: 2,
               background: darkMode 
                 ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`
                 : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
               borderRadius: 2,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
-                On-Call Setup
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Step 4 of 5
-              </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Box>
+                <Typography id="oncall-title" component="h1" variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                  On-Call Setup
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  Configure when your on-call personnel are available and how they should be contacted for urgent matters.
+                </Typography>
+              </Box>
+              <Stack alignItems="flex-end" spacing={0.5}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 13 }}>
+                  Step 4 of 8
+                </Typography>
+                <Chip
+                  label="⏱️ 10-15 min"
+                  size="small"
+                  variant="outlined"
+                  sx={{ fontSize: 11, height: 22 }}
+                />
+              </Stack>
             </Box>
-            
-            <Stepper activeStep={3} sx={{ mb: 2 }}>
-              {steps.map((label) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-            
+
+            {/* Compact progress (single concise indicator) */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <LinearProgress 
-                variant="determinate" 
-                value={progress} 
-                sx={{ 
-                  flex: 1, 
-                  height: 8, 
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                aria-label={`On-call completion ${progress} percent`}
+                sx={{
+                  flex: 1,
+                  height: 8,
                   borderRadius: 4,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  '& .MuiLinearProgress-bar': {
-                    borderRadius: 4,
-                  }
-                }} 
+                  backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                  '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: progress === 100 ? theme.palette.success.main : theme.palette.info.main },
+                }}
               />
               <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                 {progress}%
               </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary">
-              Configure when your on-call personnel are available and how they should be contacted for urgent matters.
-            </Typography>
           </Paper>
+        </Fade>
+
+        {/* Overall Progress Summary */}
+        <Fade in timeout={900}>
+          <Alert
+            severity="info"
+            sx={{
+              mb: 2,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+              bgcolor: alpha(theme.palette.info.main, 0.05)
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Wizard Progress: {Math.round((4 / 8) * 100)}% complete
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={Math.round((4 / 8) * 100)}
+                sx={{ flex: 1, height: 6, borderRadius: 3 }}
+              />
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              ✓ Step 4 of 8 • Company Setup, Answer Calls, and Call Routing steps remain
+            </Typography>
+          </Alert>
         </Fade>
 
         {/* Content */}
@@ -669,144 +407,239 @@ const OnCall = () => {
           <Stack spacing={3}>
             <Card
               sx={{
-                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                background: `linear-gradient(120deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.info.main, 0.08)})`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                overflow: 'hidden',
               }}
             >
-              <CardContent>
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha(theme.palette.primary.main, 0.15),
-                      color: theme.palette.primary.main,
-                      display: 'inline-flex',
-                    }}
-                  >
-                    <SettingsApplications fontSize="large" />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 0.5 }}>
-                      Configure your on-call experience
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      Work through each step to define coverage, contacts, and notification rules.
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={`${progress}% Complete`}
-                    color={progress === 100 ? 'success' : progress >= 50 ? 'warning' : 'default'}
-                    sx={{ fontWeight: 600 }}
-                  />
-                </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={progress}
-                  sx={{
-                    mt: 3,
-                    height: 8,
-                    borderRadius: 4,
-                    bgcolor: alpha(theme.palette.grey[500], 0.2),
-                    '& .MuiLinearProgress-bar': {
-                      borderRadius: 4,
-                      background: progress === 100
-                        ? `linear-gradient(90deg, ${theme.palette.success.main}, ${alpha(theme.palette.success.main, 0.8)})`
-                        : `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                    },
-                  }}
-                />
+              <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
+                <Grid container spacing={3} alignItems="center">
+                  <Grid item xs={12} md={6}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: alpha(theme.palette.primary.main, 0.18),
+                          color: theme.palette.primary.main,
+                          display: 'inline-flex',
+                        }}
+                      >
+                        <SettingsApplications fontSize="large" />
+                      </Box>
+                      <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                          Shape your after-hours playbook
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          Follow the guided steps below to introduce your team, explain how coverage rotates, and spell out the rules for contacting them.
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <Stack direction="row" spacing={1} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
+                        <Chip
+                          label={`${progress}%`}
+                          color={progress === 100 ? 'success' : progress >= 50 ? 'warning' : 'default'}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          Coverage, contacts, and notification steps
+                        </Typography>
+                      </Stack>
+                      {/* Compact in-card progress to visually align with header */}
+                      <LinearProgress
+                        variant="determinate"
+                        value={progress}
+                        aria-label={`On-call card progress ${progress} percent`}
+                        sx={{
+                          height: 8,
+                          borderRadius: 4,
+                          bgcolor: alpha(theme.palette.grey[500], 0.12),
+                          '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: progress === 100 ? theme.palette.success.main : theme.palette.primary.main },
+                        }}
+                      />
+                    </Stack>
+                  </Grid>
+                </Grid>
               </CardContent>
             </Card>
 
             <Accordion
-              expanded={expanded === 'coverage'}
+              expanded={Boolean(expanded.team)}
+              onChange={handleAccordionChange('team')}
+              disableGutters
+              sx={accordionStyle('primary')}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={accordionSummarySx}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', width: '100%', pr: 2, gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                      Step 1 · People & Escalation
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Introduce the on-call crew, define escalation timing, and note any specialty departments we should know.
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={teamSectionComplete ? "✓ Complete" : `${onCall.team?.length || 0} members`}
+                    color={teamSectionComplete ? "success" : "default"}
+                    size="small"
+                    sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+                  />
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails sx={accordionDetailsSx}>
+                <Stack spacing={3}>
+                  <Paper variant="outlined" sx={{ borderRadius: 2 }}>
+                    <Tabs
+                      value={activeTeamTab}
+                      onChange={(_, value) => setActiveTeamTab(value)}
+                      variant="scrollable"
+                      scrollButtons="auto"
+                      sx={{ borderBottom: 1, borderColor: 'divider' }}
+                    >
+                      <Tab label="Team Members" value={0} sx={{ textTransform: 'none', fontWeight: 600 }} />
+                      <Tab label="Teams" value={1} sx={{ textTransform: 'none', fontWeight: 600 }} />
+                      <Tab label="Escalation Plan" value={2} sx={{ textTransform: 'none', fontWeight: 600 }} />
+                    </Tabs>
+                    <Box sx={{ p: { xs: 2, md: 3 } }}>
+                      {activeTeamTab === 0 && (
+                        <Box>
+                          <EnhancedOnCallTeamSection
+                            onCall={onCall}
+                            setOnCall={setOnCall}
+                            errors={errors.team || []}
+                          />
+                        </Box>
+                      )}
+
+                      {activeTeamTab === 1 && (
+                        <Box>
+                          <OnCallDepartmentsSection errors={errors.departments || []} onCall={onCall} setOnCall={setOnCall} />
+                        </Box>
+                      )}
+
+                      {activeTeamTab === 2 && (
+                        <Box>
+                          <EscalationMatrixSection
+                            steps={escalationPlan}
+                            onChange={(next) => setOnCall({ escalation: next })}
+                            errors={errors.escalation || []}
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                  </Paper>
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion
+              expanded={Boolean(expanded.coverage)}
               onChange={handleAccordionChange('coverage')}
               disableGutters
               sx={accordionStyle('warning')}
             >
               <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={accordionSummarySx}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
-                  Step 1 · Coverage & Rotation
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Describe when your on-call coverage changes and add specific schedule blocks.
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={accordionDetailsSx}>
-                <Stack spacing={3}>
-                  <OnCallRotationSection
-                    data={onCall.rotation || {}}
-                    onChange={(next) => setOnCall({ rotation: next })}
-                    errors={errors.rotation || {}}
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', width: '100%', pr: 2, gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
+                      Step 2 · Coverage & Schedule
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Explain when coverage switches hands and choose the schedule option that matches how your team rotates.
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={scheduleSectionComplete ? "✓ Complete" : "Action Required"}
+                    color={scheduleSectionComplete ? "success" : "warning"}
+                    size="small"
+                    sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
                   />
-                  <OnCallScheduleSection errors={errors.schedules || []} />
-                </Stack>
-              </AccordionDetails>
-            </Accordion>
-
-            <Accordion
-              expanded={expanded === 'team'}
-              onChange={handleAccordionChange('team')}
-              disableGutters
-              sx={accordionStyle('error')}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={accordionSummarySx}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.error.main }}>
-                  Step 2 · Team & Escalation Plan
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Capture your on-call team and define how escalation should flow when urgent help is needed.
-                </Typography>
+                </Box>
               </AccordionSummary>
               <AccordionDetails sx={accordionDetailsSx}>
                 <Stack spacing={3}>
-                  <EnhancedOnCallTeamSection
+                  <OnCallScheduleSection
                     onCall={onCall}
                     setOnCall={setOnCall}
-                    errors={errors.team || []}
+                    errors={errors.scheduleType || {}}
                   />
-                  <EscalationMatrixSection
-                    steps={escalationPlan}
-                    onChange={(next) => setOnCall({ escalation: next })}
-                    errors={errors.escalation || []}
-                  />
-                  <OnCallDepartmentsSection errors={errors.departments || []} />
+
+                  <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                      Rotation Details
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Tell us how often coverage changes, what triggers it, and when the rotation switches.
+                    </Typography>
+                    <OnCallRotationSection
+                      data={onCall.rotation || {}}
+                      onChange={(next) => setOnCall({ rotation: next })}
+                      errors={errors.rotation || {}}
+                    />
+                  </Paper>
                 </Stack>
               </AccordionDetails>
             </Accordion>
 
             <Accordion
-              expanded={expanded === 'rules'}
-              onChange={handleAccordionChange('rules')}
+              expanded={Boolean(expanded.procedures)}
+              onChange={handleAccordionChange('procedures')}
               disableGutters
-              sx={accordionStyle('primary')}
+              sx={accordionStyle('success')}
             >
               <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={accordionSummarySx}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
-                  Step 3 · Contact Rules & Notifications
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Tell us when to reach out and how to handle follow-ups during and after hours.
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', width: '100%', pr: 2, gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
+                      Step 3 · Contact Rules & Procedures
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Clarify when we should contact on-call staff, how many attempts to make, and communication preferences.
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={proceduresSectionComplete ? "✓ Complete" : "Optional"}
+                    color={proceduresSectionComplete ? "success" : "default"}
+                    size="small"
+                    sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+                  />
+                </Box>
               </AccordionSummary>
               <AccordionDetails sx={accordionDetailsSx}>
                 <Stack spacing={3}>
-                  <OnCallContactRulesSection
-                    data={onCall.contactRules || {}}
-                    onChange={(next) => setOnCall({ contactRules: next })}
-                    errors={errors.contactRules || {}}
-                  />
-                  <NotificationRulesSection
-                    data={onCall.notificationRules || {}}
-                    onChange={(next) => setOnCall({ notificationRules: next })}
-                    errors={errors.notificationRules || {}}
-                  />
-                  <OnCallProceduresSection
-                    data={onCall.procedures || {}}
-                    onChange={(next) => setOnCall({ procedures: next })}
-                    errors={errors.procedures || {}}
-                  />
+                  <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                      When to Contact On-Call
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Define which situations warrant contacting your on-call personnel.
+                    </Typography>
+                    <OnCallContactRulesSection
+                      data={onCall.contactRules || {}}
+                      onChange={(next) => setOnCall({ contactRules: next })}
+                      errors={errors.contactRules || {}}
+                    />
+                  </Paper>
+
+                  <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                      Contact Procedures
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Specify how many contact attempts, escalation timing, and communication methods (voicemail, SMS, email).
+                    </Typography>
+                    <OnCallProceduresSection
+                      data={onCall.procedures || {}}
+                      onChange={(next) => setOnCall({ procedures: next })}
+                      errors={errors.procedures || {}}
+                    />
+                  </Paper>
                 </Stack>
               </AccordionDetails>
             </Accordion>
@@ -818,11 +651,13 @@ const OnCall = () => {
           <Paper
             elevation={2}
             sx={{
-              p: 3,
+              p: { xs: 2, md: 3 },
               mt: 3,
               display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: { xs: 2, sm: 0 },
               background: darkMode ? theme.palette.grey[900] : theme.palette.grey[50],
             }}
           >
@@ -830,35 +665,51 @@ const OnCall = () => {
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
               onClick={() => history.push('/ClientInfoReact/NewFormWizard/answer-calls')}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: { xs: '100%', sm: 120 }, order: { xs: 3, sm: 1 } }}
             >
               Back
             </Button>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ order: { xs: 1, sm: 2 }, width: { xs: '100%', sm: 'auto' } }}>
               <Button
                 variant="outlined"
-                onClick={onSave}
+                onClick={() => {
+                  onSave();
+                  setSnack({ open: true, msg: '💾 Progress saved! You can return anytime.', severity: 'success' });
+                  setTimeout(() => {
+                    history.push('/ClientInfoReact');
+                  }, 1500);
+                }}
+                sx={{ fontWeight: 600, flex: { xs: 1, sm: 'initial' } }}
               >
-                Save Draft
+                💾 Save & Exit
               </Button>
               <Button
                 variant="contained"
                 endIcon={<NavigateNextRounded />}
-                onClick={onNext}
+                onClick={() => { onSave(); onNext(); }}
+                aria-label="Next: Call Routing"
+                aria-live="polite"
                 sx={{
-                  minWidth: 160,
+                  minWidth: { xs: '100%', sm: 160 },
                   py: 1.5,
                   fontWeight: 600,
+                  flex: { xs: 1, sm: 'initial' },
                 }}
               >
-                Next: Final Details
+                Next: Call Routing
               </Button>
-            </Box>
+            </Stack>
           </Paper>
         </Fade>
+
+        {/* Keyboard Shortcuts Hint */}
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+            💡 Tip: Use <kbd>Alt + →</kbd> for Next, <kbd>Alt + ←</kbd> for Back, <kbd>Ctrl + S</kbd> to Save
+          </Typography>
+        </Box>
       </Container>
-      <ClientInfoFooter />
       <Snackbar
         open={snack.open}
         autoHideDuration={2500}

@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   TextField,
@@ -10,7 +11,17 @@ import {
   Divider,
   Alert,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Checkbox,
+  FormControlLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
+import { useWizard } from '../context_API/WizardContext';
+import FieldRow from '../components/FieldRow';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -47,6 +58,11 @@ const normalizeStep = (step = {}) => {
 const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] }) => {
   const theme = useTheme();
   const { darkMode } = useClientInfoTheme();
+  const { formData } = useWizard();
+  const team = Array.isArray(formData.onCall?.team) ? formData.onCall.team : [];
+  const departments = Array.isArray(formData.onCall?.departments) ? formData.onCall.departments : [];
+  const [openApplyDialog, setOpenApplyDialog] = useState(false);
+  const [selectedStepsToApply, setSelectedStepsToApply] = useState(new Set());
 
   const normalizedSteps = useMemo(() => {
     if (Array.isArray(steps) && steps.length) {
@@ -88,6 +104,35 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
     const [item] = next.splice(index, 1);
     next.splice(target, 0, item);
     onChange(next);
+  };
+
+  const handleOpenApplyDialog = () => {
+    setSelectedStepsToApply(new Set(normalizedSteps.map((_, idx) => idx)));
+    setOpenApplyDialog(true);
+  };
+
+  const handleApplyToAll = () => {
+    // Apply all steps to selected indices
+    // For now, just copy steps 0 to all selected
+    if (selectedStepsToApply.size === 0) {
+      setOpenApplyDialog(false);
+      return;
+    }
+
+    const templateSteps = normalizedSteps.slice(0, 1); // Use first step as template
+    // This would be connected to team members in the parent component
+    // For now, just close the dialog
+    setOpenApplyDialog(false);
+  };
+
+  const handleToggleStepSelection = (index) => {
+    const next = new Set(selectedStepsToApply);
+    if (next.has(index)) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+    setSelectedStepsToApply(next);
   };
 
   const cardBg = alpha(theme.palette.info.main, darkMode ? 0.08 : 0.04);
@@ -177,43 +222,122 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
               <Divider sx={{ mb: 2 }} />
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                <TextField
-                  label="Contact Name"
-                  value={step.name}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
-                  error={Boolean(rowErrors.name)}
-                  helperText={rowErrors.name || ''}
-                />
-                <TextField
-                  label="Role / Responsibility"
-                  value={step.role}
-                  onChange={(e) => handleChange(index, 'role', e.target.value)}
-                  helperText={rowErrors.role || ''}
-                />
-                <TextField
-                  label="Best Contact Details"
-                  value={step.contact}
-                  onChange={(e) => handleChange(index, 'contact', e.target.value)}
-                  error={Boolean(rowErrors.contact)}
-                  helperText={rowErrors.contact || ''}
-                />
-                <TextField
-                  label="Availability Window / Timing"
-                  value={step.window}
-                  onChange={(e) => handleChange(index, 'window', e.target.value)}
-                  helperText={rowErrors.window || ''}
-                />
+                <FieldRow helperText={rowErrors.name || ''}>
+                  <TextField
+                    label="Contact Name"
+                    value={step.name}
+                    onChange={(e) => handleChange(index, 'name', e.target.value)}
+                    error={Boolean(rowErrors.name)}
+                  />
+                </FieldRow>
+                <FieldRow helperText={rowErrors.role || ''}>
+                  <TextField
+                    label="Role / Responsibility"
+                    value={step.role}
+                    onChange={(e) => handleChange(index, 'role', e.target.value)}
+                  />
+                </FieldRow>
+                {/* Department select */}
+                <Select
+                  value={step.departmentId || ''}
+                  onChange={(e) => handleChange(index, 'departmentId', e.target.value || null)}
+                  displayEmpty
+                  fullWidth
+                >
+                  <MenuItem value="">No department</MenuItem>
+                  {departments.map((d) => (
+                    <MenuItem key={d.id || d.department} value={d.id || d.department}>{d.department || d.name}</MenuItem>
+                  ))}
+                </Select>
+                {/* Member select filtered by department membership if department chosen */}
+                <Box>
+                  <Select
+                    value={step.contactMemberId || ''}
+                    onChange={(e) => {
+                      const memberId = e.target.value || null;
+                      if (memberId) {
+                        const member = team.find((m) => m.id === memberId);
+                        const primary = (member?.cellPhone && member.cellPhone[0]) || (member?.email && member.email[0]) || '';
+                        handleChange(index, 'contactMemberId', memberId);
+                        handleChange(index, 'contact', member?.name || primary || '');
+                      } else {
+                        handleChange(index, 'contactMemberId', null);
+                      }
+                    }}
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Custom contact (enter below)</MenuItem>
+                    {(step.departmentId
+                      ? (departments.find((d) => (d.id || d.department) === step.departmentId)?.members || [])
+                      : team.map((m) => m.id)
+                    ).map((memberId) => {
+                      const member = team.find((m) => m.id === memberId) || {};
+                      return (
+                        <MenuItem key={memberId} value={memberId}>
+                          {member.name || member.id} {member.cellPhone?.[0] ? `\u2014 ${member.cellPhone[0]}` : member.email?.[0] ? `\u2014 ${member.email[0]}` : ''}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </Box>
+                {/* Choose roster member or enter custom contact */}
+                <Box>
+                  <Select
+                    value={step.contactMemberId || ''}
+                    onChange={(e) => {
+                      const memberId = e.target.value || null;
+                      if (memberId) {
+                        const member = team.find((m) => m.id === memberId);
+                        const primary = (member?.cellPhone && member.cellPhone[0]) || (member?.email && member.email[0]) || '';
+                        // update both member id and contact display
+                        handleChange(index, 'contactMemberId', memberId);
+                        handleChange(index, 'contact', member?.name || primary || '');
+                      } else {
+                        handleChange(index, 'contactMemberId', null);
+                      }
+                    }}
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">Custom contact (enter below)</MenuItem>
+                    {team.map((member) => (
+                      <MenuItem key={member.id} value={member.id}>
+                        {member.name || member.id} {member.cellPhone?.[0] ? `— ${member.cellPhone[0]}` : member.email?.[0] ? `— ${member.email[0]}` : ''}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {!step.contactMemberId && (
+                    <FieldRow helperText={rowErrors.contact || ''}>
+                      <TextField
+                        label="Best Contact Details"
+                        value={step.contact}
+                        onChange={(e) => handleChange(index, 'contact', e.target.value)}
+                        error={Boolean(rowErrors.contact)}
+                        sx={{ mt: 1 }}
+                      />
+                    </FieldRow>
+                  )}
+                </Box>
+                <FieldRow helperText={rowErrors.window || ''}>
+                  <TextField
+                    label="Availability Window / Timing"
+                    value={step.window}
+                    onChange={(e) => handleChange(index, 'window', e.target.value)}
+                  />
+                </FieldRow>
               </Box>
 
-              <TextField
-                label="Additional Notes"
-                value={step.notes}
-                onChange={(e) => handleChange(index, 'notes', e.target.value)}
-                multiline
-                minRows={2}
-                sx={{ mt: 2 }}
-                helperText={rowErrors.notes || ''}
-              />
+              <FieldRow helperText={rowErrors.notes || ''}>
+                <TextField
+                  label="Additional Notes"
+                  value={step.notes}
+                  onChange={(e) => handleChange(index, 'notes', e.target.value)}
+                  multiline
+                  minRows={2}
+                  sx={{ mt: 2 }}
+                />
+              </FieldRow>
             </Paper>
           );
         })}
@@ -223,12 +347,66 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
         variant="outlined"
         startIcon={<AddIcon />}
         onClick={handleAdd}
-        sx={{ mt: 3, textTransform: 'none', borderRadius: 2 }}
+        sx={{ mt: 3, textTransform: 'none', borderRadius: 2, mr: 2 }}
       >
         Add Another Contact
       </Button>
+
+      <Button
+        variant="outlined"
+        color="success"
+        onClick={handleOpenApplyDialog}
+        sx={{ mt: 3, textTransform: 'none', borderRadius: 2 }}
+      >
+        Apply these steps to multiple team members
+      </Button>
+
+      <Dialog open={openApplyDialog} onClose={() => setOpenApplyDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Apply default steps</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Apply these steps as the default for all selected team members? This will overwrite their existing steps.
+          </Typography>
+          <Box sx={{ maxHeight: 300, overflow: 'auto', border: '1px solid', borderColor: 'divider', p: 1, borderRadius: 1 }}>
+            {normalizedSteps.map((step, index) => (
+              <FormControlLabel
+                key={step.id}
+                control={
+                  <Checkbox
+                    checked={selectedStepsToApply.has(index)}
+                    onChange={() => handleToggleStepSelection(index)}
+                  />
+                }
+                label={`${index + 1}. ${step.name || step.role || 'Step ' + (index + 1)}`}
+                sx={{ display: 'block', mb: 1 }}
+              />
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenApplyDialog(false)}>Cancel</Button>
+          <Button onClick={handleApplyToAll} variant="contained" color="success">
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
+};
+
+EscalationMatrixSection.propTypes = {
+  steps: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      role: PropTypes.string,
+      contact: PropTypes.string,
+      window: PropTypes.string,
+      notes: PropTypes.string,
+    })
+  ),
+  onChange: PropTypes.func.isRequired,
+  errors: PropTypes.arrayOf(PropTypes.any),
 };
 
 export default EscalationMatrixSection;
