@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
 	Alert,
 	Grid,
@@ -136,6 +137,17 @@ const CallVolumeSection = ({ value = {}, onChange = () => {}, errors = {} }) => 
 			</Grid>
 		</Paper>
 	);
+};
+
+CallVolumeSection.propTypes = {
+	value: PropTypes.shape({
+		avgDaily: PropTypes.string,
+		peakWindow: PropTypes.string,
+		overnightPct: PropTypes.string,
+		notes: PropTypes.string,
+	}),
+	onChange: PropTypes.func,
+	errors: PropTypes.object,
 };
 
 export default CallVolumeSection;

@@ -38,6 +38,7 @@ import { useHistory } from 'react-router-dom';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
 
 const CARD_BRANDS = ['Visa', 'Mastercard', 'American Express', 'Discover', 'Other'];
 const MEETING_PLATFORMS = [
@@ -71,7 +72,21 @@ const FastTrack = () => {
   const highCallVolumeExpected = Boolean(fastTrack.highCallVolumeExpected);
 
   const [errors, setErrors] = useState({});
+  const [emailErrors, setEmailErrors] = useState({});
   const [snackState, setSnackState] = useState({ open: false, message: '', severity: 'error' });
+
+  const validateEmailAtIndex = (index, email) => {
+    const error = getEmailError(email);
+    setEmailErrors(prev => {
+      if (error) {
+        return { ...prev, [index]: error };
+      } else {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      }
+    });
+  };
 
   const setFastTrack = (patch) => updateSection('fastTrack', patch);
 
@@ -505,10 +520,17 @@ const FastTrack = () => {
                       <TextField
                         label="Email"
                         fullWidth
+                        type="email"
                         value={contact.email || ''}
-                        onChange={handleContactChange(index, 'email')}
-                        error={Boolean(contactErrors.rows?.[index]?.email)}
-                        helperText={contactErrors.rows?.[index]?.email}
+                        onChange={(e) => {
+                          handleContactChange(index, 'email')(e);
+                          if (emailErrors[index] && isValidEmail(e.target.value)) {
+                            validateEmailAtIndex(index, e.target.value);
+                          }
+                        }}
+                        onBlur={(e) => validateEmailAtIndex(index, e.target.value)}
+                        error={Boolean(emailErrors[index] || contactErrors.rows?.[index]?.email)}
+                        helperText={emailErrors[index] || contactErrors.rows?.[index]?.email}
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>

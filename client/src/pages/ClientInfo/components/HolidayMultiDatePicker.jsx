@@ -1,6 +1,7 @@
 // src/pages/ClientInfo/components/HolidayMultiDatePicker.jsx
 
 import React, { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Box, Button, Chip, Stack, TextField, Typography } from '@mui/material';
 
 const formatDate = (value) => {
@@ -126,6 +127,14 @@ const HolidayMultiDatePicker = ({
       </Stack>
     </Box>
   );
+};
+
+HolidayMultiDatePicker.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.arrayOf(PropTypes.string),
+  onChange: PropTypes.func,
+  disabled: PropTypes.bool,
+  helperText: PropTypes.string,
 };
 
 export default HolidayMultiDatePicker;

@@ -1,5 +1,7 @@
 // src/pages/ClientInfo/ClientWizardAPI.js
 
+import logger from '../utils/logger';
+
 export const submitClientWizardData = async (data) => {
   try {
     const response = await fetch('/api/ClientWizard/Submit', {
@@ -12,12 +14,12 @@ export const submitClientWizardData = async (data) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Submission failed:', response.status, errorText);
+      logger.error('Submission failed:', response.status, errorText);
     }
 
     return response;
   } catch (err) {
-    console.error('Network error while submitting client wizard data:', err);
+    logger.error('Network error while submitting client wizard data:', err);
     throw err;
   }
 };
@@ -34,12 +36,12 @@ export const sendSummaryEmail = async (payload) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Summary email failed:', response.status, errorText);
+      logger.error('Summary email failed:', response.status, errorText);
     }
 
     return response;
   } catch (err) {
-    console.error('Network error while sending summary email:', err);
+    logger.error('Network error while sending summary email:', err);
     throw err;
   }
 };

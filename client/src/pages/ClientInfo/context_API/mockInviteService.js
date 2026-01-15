@@ -43,9 +43,24 @@ export function listMockInvites() {
   return { ...MOCK_INVITES };
 }
 
-export async function getInviteByToken(token) {
-  // Simulate server latency
-  await new Promise((r) => setTimeout(r, 350));
+export async function getInviteByToken(token, options = {}) {
+  const { signal } = options;
+  
+  // Simulate server latency with abort support
+  await new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(resolve, 350);
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        clearTimeout(timeoutId);
+        reject(new DOMException('Aborted', 'AbortError'));
+      });
+    }
+  });
+
+  // Check if aborted after delay
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
 
   // Return mock invite if exists
   if (MOCK_INVITES[token]) {
@@ -55,7 +70,7 @@ export async function getInviteByToken(token) {
 
   // Example real fetch (commented):
   /*
-  const res = await fetch(`/api/wizard/invite/${token}`);
+  const res = await fetch(`/api/wizard/invite/${token}`, { signal });
   if (!res.ok) return { ok: false, status: res.status, error: await res.text() };
   const data = await res.json();
   return { ok: true, data };

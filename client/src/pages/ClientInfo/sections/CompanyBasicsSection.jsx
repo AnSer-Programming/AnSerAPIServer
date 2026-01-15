@@ -16,9 +16,13 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  ListSubheader,
 } from '@mui/material';
 import FieldRow from '../components/FieldRow';
+import PhoneMaskInput from '../components/PhoneMaskInput';
 import { AddCircleOutline, DeleteOutline } from '@mui/icons-material';
+import { US_STATES, CANADIAN_PROVINCES } from '../constants/statesProvinces';
+import { isValidPostalCode, getPostalCodeError, formatPostalCode } from '../utils/phonePostalValidation';
 
 const cleanPhone = (v = '') => v.replace(/[^\d\-()+ ]/g, '').slice(0, 30);
 
@@ -113,6 +117,51 @@ const CompanyBasicsSection = ({
   const [channelNotes, setChannelNotes] = useState({});
   // track which channel input is currently focused to avoid overwriting while editing
   const [focusedChannelId, setFocusedChannelId] = useState(null);
+  // Postal code validation errors
+  const [postalErrors, setPostalErrors] = useState({
+    physical: '',
+    mailing: '',
+  });
+  // Additional locations postal errors (keyed by index)
+  const [additionalPostalErrors, setAdditionalPostalErrors] = useState({});
+
+  // Validate postal code on blur
+  const validatePostalCode = (field, value) => {
+    const error = getPostalCodeError(value);
+    setPostalErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Validate additional location postal code
+  const validateAdditionalPostal = (index, value) => {
+    const error = getPostalCodeError(value);
+    setAdditionalPostalErrors(prev => {
+      if (error) {
+        return { ...prev, [index]: error };
+      } else {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      }
+    });
+  };
+
+  // Handle postal code change with formatting
+  const handlePostalCodeChange = (field, mailingField = null) => (event) => {
+    const raw = event.target.value;
+    const formatted = formatPostalCode(raw);
+    
+    const patch = { [field]: formatted };
+    if (mailingSameAsPhysical && mailingField) {
+      patch[mailingField] = formatted;
+    }
+    emit(patch);
+    
+    // Clear error if now valid
+    const fieldKey = field.includes('mailing') ? 'mailing' : 'physical';
+    if (postalErrors[fieldKey] && isValidPostalCode(formatted)) {
+      setPostalErrors(prev => ({ ...prev, [fieldKey]: '' }));
+    }
+  };
 
   useEffect(() => {
     // Only update local channels state when the hydrated result differs from
@@ -393,23 +442,51 @@ const CompanyBasicsSection = ({
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              label="State / Province"
-              fullWidth
-              value={data.physicalState || ''}
-              onChange={handlePhysicalField('physicalState')}
-              error={Boolean(errors.physicalState)}
-              helperText={errors.physicalState}
-            />
+            <FormControl fullWidth error={Boolean(errors.physicalState)}>
+              <InputLabel id="physical-state-label">State / Province</InputLabel>
+              <Select
+                labelId="physical-state-label"
+                label="State / Province"
+                value={data.physicalState || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const patch = { physicalState: value };
+                  if (mailingSameAsPhysical) {
+                    patch.mailingState = value;
+                  }
+                  emit(patch);
+                }}
+              >
+                <ListSubheader>United States</ListSubheader>
+                {US_STATES.map((state) => (
+                  <MenuItem key={state.code} value={state.code}>
+                    {state.name}
+                  </MenuItem>
+                ))}
+                <ListSubheader>Canada</ListSubheader>
+                {CANADIAN_PROVINCES.map((prov) => (
+                  <MenuItem key={prov.code} value={prov.code}>
+                    {prov.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.physicalState && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                  {errors.physicalState}
+                </Typography>
+              )}
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
               label="Zip / Postal Code"
               fullWidth
               value={data.physicalPostalCode || ''}
-              onChange={handlePhysicalField('physicalPostalCode')}
-              error={Boolean(errors.physicalPostalCode)}
-              helperText={errors.physicalPostalCode}
+              onChange={handlePostalCodeChange('physicalPostalCode', 'mailingPostalCode')}
+              onBlur={(e) => validatePostalCode('physical', e.target.value)}
+              error={Boolean(postalErrors.physical || errors.physicalPostalCode)}
+              helperText={postalErrors.physical || errors.physicalPostalCode}
+              inputProps={{ maxLength: 10 }}
             />
           </Grid>
         </Grid>
@@ -423,7 +500,7 @@ const CompanyBasicsSection = ({
                   onChange={(e) => handleMailingToggle(e.target.checked)}
                 />
               }
-              label="Mailing address is the same as physical location"
+              label="Same as physical address"
             />
           </FieldRow>
         </Box>
@@ -464,25 +541,51 @@ const CompanyBasicsSection = ({
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              label="State / Province"
-              fullWidth
-              value={mailingSameAsPhysical ? (data.physicalState || '') : (data.mailingState || '')}
-              onChange={mailingField('mailingState')}
-              disabled={mailingSameAsPhysical}
-              error={Boolean(errors.mailingState)}
-              helperText={errors.mailingState}
-            />
+            <FormControl fullWidth error={Boolean(errors.mailingState)} disabled={mailingSameAsPhysical}>
+              <InputLabel id="mailing-state-label">State / Province</InputLabel>
+              <Select
+                labelId="mailing-state-label"
+                label="State / Province"
+                value={mailingSameAsPhysical ? (data.physicalState || '') : (data.mailingState || '')}
+                onChange={(e) => emit({ mailingState: e.target.value })}
+              >
+                <ListSubheader>United States</ListSubheader>
+                {US_STATES.map((state) => (
+                  <MenuItem key={state.code} value={state.code}>
+                    {state.name}
+                  </MenuItem>
+                ))}
+                <ListSubheader>Canada</ListSubheader>
+                {CANADIAN_PROVINCES.map((prov) => (
+                  <MenuItem key={prov.code} value={prov.code}>
+                    {prov.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.mailingState && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                  {errors.mailingState}
+                </Typography>
+              )}
+            </FormControl>
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
               label="Zip / Postal Code"
               fullWidth
               value={mailingSameAsPhysical ? (data.physicalPostalCode || '') : (data.mailingPostalCode || '')}
-              onChange={mailingField('mailingPostalCode')}
+              onChange={(e) => {
+                const formatted = formatPostalCode(e.target.value);
+                emit({ mailingPostalCode: formatted });
+                if (postalErrors.mailing && isValidPostalCode(formatted)) {
+                  setPostalErrors(prev => ({ ...prev, mailing: '' }));
+                }
+              }}
+              onBlur={(e) => validatePostalCode('mailing', e.target.value)}
               disabled={mailingSameAsPhysical}
-              error={Boolean(errors.mailingPostalCode)}
-              helperText={errors.mailingPostalCode}
+              error={Boolean(postalErrors.mailing || errors.mailingPostalCode)}
+              helperText={postalErrors.mailing || errors.mailingPostalCode}
+              inputProps={{ maxLength: 10 }}
             />
           </Grid>
         </Grid>
@@ -537,14 +640,34 @@ const CompanyBasicsSection = ({
                     />
                   </Grid>
                   <Grid item xs={12} md={2}>
-                    <TextField
-                      label="State"
-                      fullWidth
-                      value={location.state || ''}
-                      onChange={(e) => updateLocation(index, { state: e.target.value })}
-                      error={Boolean(fieldErrors.state)}
-                      helperText={fieldErrors.state}
-                    />
+                    <FormControl fullWidth error={Boolean(fieldErrors.state)}>
+                      <InputLabel id={`location-${index}-state-label`}>State</InputLabel>
+                      <Select
+                        labelId={`location-${index}-state-label`}
+                        value={location.state || ''}
+                        onChange={(e) => updateLocation(index, { state: e.target.value })}
+                        label="State"
+                      >
+                        <MenuItem value="">
+                          <em>Select...</em>
+                        </MenuItem>
+                        <ListSubheader>United States</ListSubheader>
+                        {US_STATES.map((state) => (
+                          <MenuItem key={state.code} value={state.code}>
+                            {state.name}
+                          </MenuItem>
+                        ))}
+                        <ListSubheader>Canada</ListSubheader>
+                        {CANADIAN_PROVINCES.map((province) => (
+                          <MenuItem key={province.code} value={province.code}>
+                            {province.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {fieldErrors.state && (
+                        <FormHelperText>{fieldErrors.state}</FormHelperText>
+                      )}
+                    </FormControl>
                   </Grid>
                   <Grid item xs={12} md={1}>
                     <IconButton
@@ -560,9 +683,21 @@ const CompanyBasicsSection = ({
                       label="Zip / Postal Code"
                       fullWidth
                       value={location.postalCode || ''}
-                      onChange={(e) => updateLocation(index, { postalCode: e.target.value })}
-                      error={Boolean(fieldErrors.postalCode)}
-                      helperText={fieldErrors.postalCode}
+                      onChange={(e) => {
+                        const formatted = formatPostalCode(e.target.value);
+                        updateLocation(index, { postalCode: formatted });
+                        // Clear error as user types if now valid
+                        if (additionalPostalErrors[index] && isValidPostalCode(formatted)) {
+                          setAdditionalPostalErrors(prev => {
+                            const next = { ...prev };
+                            delete next[index];
+                            return next;
+                          });
+                        }
+                      }}
+                      onBlur={() => validateAdditionalPostal(index, location.postalCode)}
+                      error={Boolean(fieldErrors.postalCode || additionalPostalErrors[index])}
+                      helperText={fieldErrors.postalCode || additionalPostalErrors[index]}
                     />
                   </Grid>
                   <Grid item xs={12} md={3}>
@@ -654,6 +789,24 @@ const CompanyBasicsSection = ({
                     inputMode={isWebsite ? 'url' : 'text'}
                     error={Boolean(channelError.value)}
                     helperText={channelNotes[channel.id] || channelError.value}
+                    InputProps={
+                      ['phone', 'toll-free', 'fax'].includes(channel.type)
+                        ? {
+                            inputComponent: PhoneMaskInput,
+                            inputProps: { type: 'phone' },
+                          }
+                        : ['whatsapp'].includes(channel.type)
+                        ? {
+                            inputComponent: PhoneMaskInput,
+                            inputProps: { type: 'whatsapp' },
+                          }
+                        : ['x-twitter', 'facebook', 'instagram', 'linkedin'].includes(channel.type)
+                        ? {
+                            inputComponent: PhoneMaskInput,
+                            inputProps: { type: channel.type.replace('x-twitter', 'xTwitter') },
+                          }
+                        : undefined
+                    }
                   />
                 </Grid>
                 <Grid item xs={12} md={1}>

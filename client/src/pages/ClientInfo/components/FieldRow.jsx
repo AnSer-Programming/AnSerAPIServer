@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 
 // Simple wrapper to enforce consistent spacing between form rows and helper text
@@ -12,5 +13,11 @@ const FieldRow = ({ children, helperText, sx = {} }) => (
     ) : null}
   </Box>
 );
+
+FieldRow.propTypes = {
+  children: PropTypes.node,
+  helperText: PropTypes.string,
+  sx: PropTypes.object,
+};
 
 export default FieldRow;

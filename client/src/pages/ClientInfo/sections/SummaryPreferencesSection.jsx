@@ -20,6 +20,7 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
 import FieldRow from '../components/FieldRow';
+import { EMAIL_REGEX } from '../utils/emailValidation';
 
 const DAYS = [
   { key: 'monday', label: 'Mon' },
@@ -63,10 +64,26 @@ function SummaryPreferencesSection({ errors = {} }) {
   const recapDelivery = summary.recap?.delivery || { email: false, fax: false, other: false };
   const recapSchedule = summary.recapSchedule || {};
   const [pendingAdd, setPendingAdd] = useState({}); // per-day temp time input
+  const [summaryEmailError, setSummaryEmailError] = useState('');
   const realTimeChannels = Array.isArray(summary.realTimeChannels) ? summary.realTimeChannels : [];
   const recapErrors = errors || {};
   const dailyRecapError = recapErrors.dailyRecapEnabled;
   const realTimeError = recapErrors.realTimeChannels;
+
+  // Validate comma/semicolon separated email list
+  const validateEmailList = (emailString) => {
+    if (!emailString || !emailString.trim()) {
+      setSummaryEmailError('');
+      return;
+    }
+    const emails = emailString.split(/[,;]/).map(e => e.trim()).filter(e => e);
+    const invalidEmails = emails.filter(e => !EMAIL_REGEX.test(e));
+    if (invalidEmails.length > 0) {
+      setSummaryEmailError(`Invalid email(s): ${invalidEmails.join(', ')}`);
+    } else {
+      setSummaryEmailError('');
+    }
+  };
 
   const setPrefs = (patch) =>
     updateSection('companyInfo', { summaryPreferences: { ...summary, ...patch } });
@@ -295,13 +312,20 @@ function SummaryPreferencesSection({ errors = {} }) {
           />
         </Grid>
         <Grid item xs={12} md sx={{ display: (summary.emailEnabled || recapDelivery.email) ? 'block' : 'none' }}>
-          <FieldRow>
+          <FieldRow helperText={summaryEmailError}>
             <TextField
               value={summary.email || ''}
               size="small"
-              placeholder="Email(s)"
-              onChange={(e) => setPrefs({ email: e.target.value })}
+              placeholder="Email(s) - separate multiple with commas"
+              onChange={(e) => {
+                setPrefs({ email: e.target.value });
+                if (summaryEmailError) {
+                  validateEmailList(e.target.value);
+                }
+              }}
+              onBlur={(e) => validateEmailList(e.target.value)}
               fullWidth
+              error={!!summaryEmailError}
               sx={{ bgcolor: (t) => bgInput(t) }}
             />
           </FieldRow>

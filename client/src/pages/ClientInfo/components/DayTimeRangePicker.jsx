@@ -1,9 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Grid, Select, MenuItem, Typography, FormControl } from '@mui/material';
-
-const hours = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
-const minutes = ['00', '15', '30', '45'];
-const meridiems = ['AM', 'PM'];
+import { HOURS_12, MINUTE_INTERVALS, MERIDIEMS } from '../constants/config';
 
 const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
   const handleChange = (field, value) => {
@@ -54,7 +52,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.startHour || ''}
                   onChange={(e) => handleChange('startHour', e.target.value)}
                 >
-                  {hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+                  {HOURS_12.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -64,7 +62,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.startMinute || ''}
                   onChange={(e) => handleChange('startMinute', e.target.value)}
                 >
-                  {minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                  {MINUTE_INTERVALS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -74,7 +72,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.startMeridiem || ''}
                   onChange={(e) => handleChange('startMeridiem', e.target.value)}
                 >
-                  {meridiems.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                  {MERIDIEMS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -90,7 +88,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.endHour || ''}
                   onChange={(e) => handleChange('endHour', e.target.value)}
                 >
-                  {hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+                  {HOURS_12.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -100,7 +98,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.endMinute || ''}
                   onChange={(e) => handleChange('endMinute', e.target.value)}
                 >
-                  {minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                  {MINUTE_INTERVALS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -110,7 +108,7 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
                   value={values.endMeridiem || ''}
                   onChange={(e) => handleChange('endMeridiem', e.target.value)}
                 >
-                  {meridiems.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                  {MERIDIEMS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
@@ -119,6 +117,21 @@ const DayTimeRangePicker = ({ day, type, values, onChange, showHeader }) => {
       </Grid>
     </>
   );
+};
+
+DayTimeRangePicker.propTypes = {
+  day: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
+  values: PropTypes.shape({
+    startHour: PropTypes.string,
+    startMinute: PropTypes.string,
+    startMeridiem: PropTypes.string,
+    endHour: PropTypes.string,
+    endMinute: PropTypes.string,
+    endMeridiem: PropTypes.string,
+  }),
+  onChange: PropTypes.func.isRequired,
+  showHeader: PropTypes.bool,
 };
 
 export default DayTimeRangePicker;

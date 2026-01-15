@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Checkbox,
@@ -10,6 +10,9 @@ import {
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import FieldRow from '../components/FieldRow';
+import PhoneMaskInput from '../components/PhoneMaskInput';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 const SYNC_FIELDS = ['name', 'title', 'phone', 'email'];
 
@@ -25,6 +28,30 @@ const PrimaryContactsSection = ({
   const billingContact = ensureObject(billing);
   const primaryErrors = ensureObject(errors.primaryContact);
   const billingErrors = ensureObject(errors.billingContact);
+
+  // Local email validation state
+  const [primaryEmailError, setPrimaryEmailError] = useState('');
+  const [billingEmailError, setBillingEmailError] = useState('');
+
+  // Local phone validation state
+  const [primaryPhoneError, setPrimaryPhoneError] = useState('');
+  const [billingPhoneError, setBillingPhoneError] = useState('');
+
+  const validatePrimaryEmail = useCallback((email) => {
+    setPrimaryEmailError(getEmailError(email));
+  }, []);
+
+  const validateBillingEmail = useCallback((email) => {
+    setBillingEmailError(getEmailError(email));
+  }, []);
+
+  const validatePrimaryPhone = useCallback((phone) => {
+    setPrimaryPhoneError(getPhoneError(phone));
+  }, []);
+
+  const validateBillingPhone = useCallback((phone) => {
+    setBillingPhoneError(getPhoneError(phone));
+  }, []);
 
   const emit = (patch) => {
     if (typeof onChange === 'function') {
@@ -93,26 +120,42 @@ const PrimaryContactsSection = ({
             </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FieldRow helperText={primaryErrors.phone}>
+            <FieldRow helperText={primaryPhoneError || primaryErrors.phone}>
               <TextField
                 label="Direct Phone"
                 fullWidth
-                inputMode="tel"
                 value={primaryContact.phone || ''}
-                onChange={handlePrimaryChange('phone')}
-                error={Boolean(primaryErrors.phone)}
+                onChange={(e) => {
+                  handlePrimaryChange('phone')(e);
+                  if (primaryPhoneError && isValidPhone(e.target.value)) {
+                    setPrimaryPhoneError('');
+                  }
+                }}
+                onBlur={(e) => validatePrimaryPhone(e.target.value)}
+                error={Boolean(primaryPhoneError || primaryErrors.phone)}
+                InputProps={{
+                  inputComponent: PhoneMaskInput,
+                  inputProps: { type: 'phone' },
+                }}
               />
             </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FieldRow helperText={primaryErrors.email}>
+            <FieldRow helperText={primaryEmailError || primaryErrors.email}>
               <TextField
                 label="Email"
                 fullWidth
                 inputMode="email"
+                type="email"
                 value={primaryContact.email || ''}
-                onChange={handlePrimaryChange('email')}
-                error={Boolean(primaryErrors.email)}
+                onChange={(e) => {
+                  handlePrimaryChange('email')(e);
+                  if (primaryEmailError && isValidEmail(e.target.value)) {
+                    setPrimaryEmailError('');
+                  }
+                }}
+                onBlur={(e) => validatePrimaryEmail(e.target.value)}
+                error={Boolean(primaryEmailError || primaryErrors.email)}
               />
             </FieldRow>
           </Grid>
@@ -132,16 +175,6 @@ const PrimaryContactsSection = ({
 
   <Divider sx={{ my: 1, borderColor: alpha(theme.palette.divider, 0.85) }} />
 
-      {/* Same-as-primary toggle placed directly under Primary Contact for clearer flow */}
-      <Box sx={{ mt: 1, mb: 0 }}>
-        <FormControlLabel
-          control={<Checkbox checked={Boolean(sameAs)} onChange={toggleSame} />}
-          label="Same as primary contact"
-          sx={{ ml: 0 }}
-          aria-label="Use primary contact as billing contact"
-        />
-      </Box>
-
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap', gap: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -149,8 +182,18 @@ const PrimaryContactsSection = ({
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          We’ll send invoices and payment questions here.
+          We'll send invoices and payment questions here.
         </Typography>
+
+        {/* Same-as-primary toggle placed under Billing Contact header */}
+        <Box sx={{ mb: 2 }}>
+          <FormControlLabel
+            control={<Checkbox checked={Boolean(sameAs)} onChange={toggleSame} />}
+            label="Same as primary contact"
+            sx={{ ml: 0 }}
+            aria-label="Use primary contact as billing contact"
+          />
+        </Box>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <FieldRow helperText={billingErrors.name}>
@@ -165,28 +208,44 @@ const PrimaryContactsSection = ({
             </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FieldRow helperText={billingErrors.phone}>
+            <FieldRow helperText={billingPhoneError || billingErrors.phone}>
               <TextField
                 label="Phone"
                 fullWidth
-                inputMode="tel"
                 value={billingContact.phone || ''}
-                onChange={handleBillingChange('phone')}
+                onChange={(e) => {
+                  handleBillingChange('phone')(e);
+                  if (billingPhoneError && isValidPhone(e.target.value)) {
+                    setBillingPhoneError('');
+                  }
+                }}
+                onBlur={(e) => validateBillingPhone(e.target.value)}
                 disabled={sameAs}
-                error={Boolean(billingErrors.phone)}
+                error={Boolean(billingPhoneError || billingErrors.phone)}
+                InputProps={{
+                  inputComponent: PhoneMaskInput,
+                  inputProps: { type: 'phone' },
+                }}
               />
             </FieldRow>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FieldRow helperText={billingErrors.email}>
+            <FieldRow helperText={billingEmailError || billingErrors.email}>
               <TextField
                 label="Email"
                 fullWidth
                 inputMode="email"
+                type="email"
                 value={billingContact.email || ''}
-                onChange={handleBillingChange('email')}
+                onChange={(e) => {
+                  handleBillingChange('email')(e);
+                  if (billingEmailError && isValidEmail(e.target.value)) {
+                    setBillingEmailError('');
+                  }
+                }}
+                onBlur={(e) => validateBillingEmail(e.target.value)}
                 disabled={sameAs}
-                error={Boolean(billingErrors.email)}
+                error={Boolean(billingEmailError || billingErrors.email)}
               />
             </FieldRow>
           </Grid>

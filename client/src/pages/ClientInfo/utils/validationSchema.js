@@ -78,8 +78,8 @@ export const companyInfoSchema = (data = {}) => {
     if (!data.contactNumbers.primaryOfficeLine?.trim()) {
       contactErrors.primaryOfficeLine = 'Primary office line is required.';
     }
-    if (data.contactNumbers.officeEmail && !/\S+@\S+\.\S+/.test(data.contactNumbers.officeEmail)) {
-      contactErrors.officeEmail = 'Invalid email format.';
+    if (data.contactNumbers.officeEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.contactNumbers.officeEmail)) {
+      contactErrors.officeEmail = 'Please enter a valid email address (e.g., name@company.com).';
     }
     if (Object.keys(contactErrors).length) {
       errors.contactNumbers = contactErrors;
@@ -205,17 +205,20 @@ export const companyInfoSchema = (data = {}) => {
 export const billingContactSchema = (data = {}) => {
   const errors = {};
 
-  // ===== REQUIRED FIELDS (uncomment to require) =====
-  // if (!data.name?.trim()) errors.name = 'Full name is required.';
-  // if (!data.email?.trim()) errors.email = 'Email is required.';
-  // else if (!/\S+@\S+\.\S+/.test(data.email)) errors.email = 'Invalid email format.';
-  // if (!data.phone?.trim()) errors.phone = 'Primary office line is required.';
-  // else if (!/^[0-9+()\s-]{7,}$/.test(data.phone)) errors.phone = 'Invalid phone number.';
+  // ===== OPTIONAL FIELDS with format validation =====
+  // Validate email format if provided
+  if (data.email && data.email.trim()) {
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.email.trim())) {
+      errors.email = 'Please enter a valid email address (e.g., name@company.com).';
+    }
+  }
 
-  // ===== OPTIONAL FIELDS =====
-  // data.title
-  // data.purchaseOrder
-  // data.notes
+  // Validate phone format if provided
+  if (data.phone && data.phone.trim()) {
+    if (!/^[0-9+()\s-]{7,}$/.test(data.phone.trim())) {
+      errors.phone = 'Please enter a valid phone number.';
+    }
+  }
 
   return Object.keys(errors).length ? errors : null;
 };
@@ -372,8 +375,8 @@ export const consultationMeetingSchema = (data = {}) => {
     errors.meetingType = 'Select a valid meeting type option.';
   }
 
-  if (data.contactEmail && !/\S+@\S+\.\S+/.test(data.contactEmail)) {
-    errors.contactEmail = 'Enter a valid email address.';
+  if (data.contactEmail && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.contactEmail)) {
+    errors.contactEmail = 'Please enter a valid email address (e.g., name@company.com).';
   }
 
   if (data.contactPhone && !phoneOk(data.contactPhone)) {
@@ -586,7 +589,8 @@ export const callTypesSchema = (callTypes = {}) => {
 // helpers
 const isBlank = (v) => v == null || String(v).trim() === '';
 const phoneOk = (v) => /^[0-9+()\s-]{7,}$/.test(v || '');
-const emailOk = (v) => /\S+@\S+\.\S+/.test(v || '');
+// Improved email regex: requires proper format (user@domain.tld with at least 2-char TLD)
+const emailOk = (v) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v || '');
 const timeOk = (v) => {
   if (!v) return true;
   const m = String(v).match(/^(\d{2}):(\d{2})$/);
@@ -757,7 +761,7 @@ export const onCallTeamSchema = (rows = []) => {
     if (!hasContact) e.contactRequired = 'Provide at least one contact method.';
 
     if (emails.some((val) => !emailOk(val))) {
-      e.email = 'Enter valid email addresses.';
+      e.email = 'Please enter a valid email address (e.g., name@company.com).';
     }
 
     if (cells.some((val) => !phoneOk(val))) {
@@ -867,7 +871,7 @@ export const fastTrackSchema = (data = {}) => {
       rowErrors.phone = 'Direct phone number is required.';
     }
   if (contact?.email && !emailOk(contact.email.toString().trim())) {
-      rowErrors.email = 'Enter a valid email address.';
+      rowErrors.email = 'Please enter a valid email address (e.g., name@company.com).';
     }
     if (Object.keys(rowErrors).length) {
       contactRows[index] = rowErrors;
@@ -1037,9 +1041,25 @@ export const onCallSchedulesSchema = (rows = []) => {
 //   FINAL DETAILS SCHEMA
 // ==============================
 export const finalDetailsSchema = (data = {}) => {
-  // Final Details page contains optional review meeting preferences
-  // All fields are optional, so this validator always passes
-  return null;
+  const errors = {};
+
+  // Validate consultation meeting email if provided
+  if (data.consultationMeeting?.contactEmail) {
+    const email = data.consultationMeeting.contactEmail.trim();
+    if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      errors.contactEmail = 'Please enter a valid email address (e.g., name@company.com).';
+    }
+  }
+
+  // Validate daily recap email if provided
+  if (data.dailyRecap?.emailAddress) {
+    const email = data.dailyRecap.emailAddress.trim();
+    if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      errors.emailAddress = 'Please enter a valid email address (e.g., name@company.com).';
+    }
+  }
+
+  return Object.keys(errors).length ? errors : null;
 };
 
 /*

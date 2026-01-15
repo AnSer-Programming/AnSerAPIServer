@@ -1,6 +1,6 @@
 // src/pages/ClientInfo/sections/DailyRecapSection.jsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -18,11 +18,13 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { Summarize } from '@mui/icons-material';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
 
 const DailyRecapSection = ({ errors = {} }) => {
   const theme = useTheme();
   const { darkMode } = useClientInfoTheme();
   const { formData, updateSection } = useWizard();
+  const [emailError, setEmailError] = useState('');
 
   const dailyRecap = formData.companyInfo?.dailyRecap || {
     enabled: false,
@@ -39,6 +41,10 @@ const DailyRecapSection = ({ errors = {} }) => {
         [field]: value,
       },
     });
+  };
+
+  const validateEmail = (email) => {
+    setEmailError(getEmailError(email));
   };
 
   return (
@@ -114,12 +120,19 @@ const DailyRecapSection = ({ errors = {} }) => {
                   label="Email Address"
                   type="email"
                   value={dailyRecap.emailAddress || ''}
-                  onChange={(e) => handleChange('emailAddress', e.target.value)}
+                  onChange={(e) => {
+                    handleChange('emailAddress', e.target.value);
+                    // Clear error as user types if they've fixed it
+                    if (emailError && isValidEmail(e.target.value)) {
+                      setEmailError('');
+                    }
+                  }}
+                  onBlur={(e) => validateEmail(e.target.value)}
                   placeholder="reports@company.com"
                   fullWidth
                   size="small"
-                  error={Boolean(errors.emailAddress)}
-                  helperText={errors.emailAddress || 'Where to send daily recap reports'}
+                  error={Boolean(emailError || errors.emailAddress)}
+                  helperText={emailError || errors.emailAddress || 'Where to send daily recap reports'}
                 />
               )}
 

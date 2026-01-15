@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useWizard } from '../context_API/WizardContext';
+import { WIZARD_ROUTES } from '../constants/routes';
 import { Box, CircularProgress, Typography, Button, Paper } from '@mui/material';
 import { getInviteByToken } from '../context_API/mockInviteService';
 
@@ -10,13 +11,17 @@ export default function InviteLinkHandler() {
   const { initializeFromInvite } = useWizard();
   const [status, setStatus] = useState('loading'); // loading | success | invalid
   const [inviteMeta, setInviteMeta] = useState(null);
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
-    let mounted = true;
+    // Create new AbortController for this effect
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     async function fetchMeta() {
       try {
-        const res = await getInviteByToken(token);
-        if (!mounted) return;
+        const res = await getInviteByToken(token, { signal });
+        if (signal.aborted) return;
         if (!res.ok) {
           setStatus('invalid');
           return;
@@ -24,13 +29,17 @@ export default function InviteLinkHandler() {
         setInviteMeta(res.data);
         setStatus('show');
       } catch (err) {
-        if (!mounted) return;
+        if (signal.aborted || err.name === 'AbortError') return;
         setStatus('invalid');
       }
     }
     fetchMeta();
+
     return () => {
-      mounted = false;
+      // Abort any pending requests on cleanup
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [token, history, initializeFromInvite]);
 
@@ -79,14 +88,14 @@ export default function InviteLinkHandler() {
       try {
         const targetStep = await initializeFromInvite(token);
         const stepToPath = {
-          'company-info': '/ClientInfoReact/NewFormWizard/company-info',
-          'answer-calls': '/ClientInfoReact/NewFormWizard/answer-calls',
-          'office-reach': '/ClientInfoReact/NewFormWizard/office-reach',
-          'on-call': '/ClientInfoReact/NewFormWizard/on-call',
-          review: '/ClientInfoReact/NewFormWizard/review',
+          'company-info': WIZARD_ROUTES.COMPANY_INFO,
+          'answer-calls': WIZARD_ROUTES.ANSWER_CALLS,
+          'office-reach': WIZARD_ROUTES.OFFICE_REACH,
+          'on-call': WIZARD_ROUTES.ON_CALL,
+          review: WIZARD_ROUTES.REVIEW,
         };
         // default to company-info so tokens land on the first form page
-        const dest = stepToPath[targetStep] || '/ClientInfoReact/NewFormWizard/company-info';
+        const dest = stepToPath[targetStep] || WIZARD_ROUTES.COMPANY_INFO;
         history.replace(dest);
       } catch (err) {
         setStatus('invalid');

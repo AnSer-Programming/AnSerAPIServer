@@ -1,5 +1,6 @@
 import React, { createContext, useReducer, useContext, useCallback, useMemo } from 'react';
 import useAutosave from '../utils/useAutosave';
+import logger from '../utils/logger';
 import {
   validateSection as rawValidateSection,
   validateAll as rawValidateAll,
@@ -925,7 +926,7 @@ export const WizardProvider = ({ children }) => {
       }
       return false;
     } catch (error) {
-      console.error('Failed to restore form data:', error);
+      logger.error('Failed to restore form data:', error);
       return false;
     }
   }, []);

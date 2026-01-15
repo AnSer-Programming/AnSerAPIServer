@@ -45,6 +45,7 @@ import { WIZARD_ROUTES } from '../constants/routes';
 
 // Import AnSer logo
 import AnSerLogoStar from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
+import logger from '../utils/logger';
 
 const StartNewClient = () => {
   const { darkMode } = useClientInfoTheme();
@@ -82,7 +83,7 @@ const StartNewClient = () => {
           setShowRestoreDialog(true);
         }
       } catch (e) {
-        console.warn('Failed to parse draft:', e);
+        logger.warn('Failed to parse draft:', e);
       }
     }
 
@@ -766,33 +767,6 @@ const StartNewClient = () => {
               >
                 {loadingMode === 'standard' ? 'Starting Your Setup…' : 'Start Client Setup'}
               </Button>
-
-              {process.env.NODE_ENV === 'development' && (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  onClick={handleFillTestData}
-                  disabled={isLoading}
-                  startIcon={loadingMode === 'test' ? <CircularProgress size={20} /> : <BugReportIcon />}
-                  sx={{ 
-                    minWidth: isMobile ? 240 : 260,
-                    py: isMobile ? 1.5 : 2,
-                    fontSize: isMobile ? '0.9rem' : '0.95rem',
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    borderColor: theme.palette.warning.main,
-                    color: theme.palette.warning.main,
-                    '&:hover': {
-                      borderColor: theme.palette.warning.dark,
-                      backgroundColor: theme.palette.warning.main + '10',
-                      transform: 'translateY(-2px)',
-                    }
-                  }}
-                  aria-label="Fill Test Data for Testing"
-                >
-                  {loadingMode === 'test' ? 'Loading Test Data...' : 'Fill Test Data (DEV)'}
-                </Button>
-              )}
 
             </Box>
 

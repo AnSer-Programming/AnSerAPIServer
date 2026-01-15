@@ -26,9 +26,6 @@ import {
 import { alpha } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
 import HolidayMultiDatePicker from '../components/HolidayMultiDatePicker';
-
-// Default imports (both of these files export default)
-import SpecialEventsSection from './SpecialEventsSection';
 import SummaryPreferencesSection from './SummaryPreferencesSection';
 
 // --------- Holiday Calculation Helpers ---------
@@ -697,17 +694,6 @@ const OfficeHoursSection = ({
                   </Alert>
                 )}
               </Box>
-            </Grid>
-
-            {/* Special Events (when Other Holiday(s) is checked) */}
-            <Grid item xs={12}>
-              <Collapse in={!!(holidays.otherHolidays)}>
-                <SpecialEventsSection
-                  events={companyInfo.specialEvents || []}
-                  onChange={(evts) => updateSection('companyInfo', { specialEvents: evts })}
-                  errors={errors.specialEvents || []}
-                />
-              </Collapse>
             </Grid>
 
           </Grid>

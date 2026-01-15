@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   LinearProgress,
@@ -153,6 +154,13 @@ const SaveProgressIndicator = ({
       </Fade>
     </Box>
   );
+};
+
+SaveProgressIndicator.propTypes = {
+  saveStatus: PropTypes.oneOf(['idle', 'saving', 'saved', 'error']),
+  completionPercentage: PropTypes.number,
+  lastSavedTime: PropTypes.instanceOf(Date),
+  showDetails: PropTypes.bool,
 };
 
 export default SaveProgressIndicator;
