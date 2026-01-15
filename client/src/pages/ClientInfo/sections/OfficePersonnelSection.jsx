@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, TextField, Grid, Button, Paper, Divider,
 } from '@mui/material';
 import { useWizard } from '../context_API/WizardContext';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 /**
  * Schema per row:
@@ -35,6 +37,38 @@ const OfficePersonnelSection = ({ errors = {} }) => {
   const companyInfo = formData.companyInfo || {};
   const raw = Array.isArray(companyInfo.officePersonnel) ? companyInfo.officePersonnel : [];
   const personnel = raw.map(normalizeRow);
+
+  // Local email validation state (keyed by row index)
+  const [emailErrors, setEmailErrors] = useState({});
+  // Local phone validation state (keyed by row index and field)
+  const [phoneErrors, setPhoneErrors] = useState({});
+
+  const validateEmailAtIndex = (index, email) => {
+    const error = getEmailError(email);
+    setEmailErrors(prev => {
+      if (error) {
+        return { ...prev, [index]: error };
+      } else {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      }
+    });
+  };
+
+  const validatePhoneAtIndex = (index, field, phone) => {
+    const error = getPhoneError(phone);
+    const key = `${index}-${field}`;
+    setPhoneErrors(prev => {
+      if (error) {
+        return { ...prev, [key]: error };
+      } else {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+    });
+  };
 
   const setCompany = (patch) => updateSection('companyInfo', { ...companyInfo, ...patch });
   const setPersonnel = (rows) => setCompany({ officePersonnel: rows });
@@ -93,11 +127,18 @@ const OfficePersonnelSection = ({ errors = {} }) => {
                 <TextField
                   label="Email"
                   fullWidth
+                  type="email"
                   value={p.email}
-                  onChange={(e) => updatePerson(idx, { email: e.target.value })}
+                  onChange={(e) => {
+                    updatePerson(idx, { email: e.target.value });
+                    if (emailErrors[idx] && isValidEmail(e.target.value)) {
+                      validateEmailAtIndex(idx, e.target.value);
+                    }
+                  }}
+                  onBlur={(e) => validateEmailAtIndex(idx, e.target.value)}
                   inputProps={{ inputMode: 'email' }}
-                  error={!!rowErr.email}
-                  helperText={rowErr.email}
+                  error={!!emailErrors[idx] || !!rowErr.email}
+                  helperText={emailErrors[idx] || rowErr.email}
                 />
               </Grid>
 
@@ -106,10 +147,17 @@ const OfficePersonnelSection = ({ errors = {} }) => {
                   label="Office Phone"
                   fullWidth
                   value={p.officePhone}
-                  onChange={(e) => updatePerson(idx, { officePhone: e.target.value })}
+                  onChange={(e) => {
+                    updatePerson(idx, { officePhone: e.target.value });
+                    const key = `${idx}-officePhone`;
+                    if (phoneErrors[key] && isValidPhone(e.target.value)) {
+                      validatePhoneAtIndex(idx, 'officePhone', e.target.value);
+                    }
+                  }}
+                  onBlur={(e) => validatePhoneAtIndex(idx, 'officePhone', e.target.value)}
                   inputProps={{ inputMode: 'tel' }}
-                  error={!!rowErr.officePhone}
-                  helperText={rowErr.officePhone}
+                  error={!!phoneErrors[`${idx}-officePhone`] || !!rowErr.officePhone}
+                  helperText={phoneErrors[`${idx}-officePhone`] || rowErr.officePhone}
                 />
               </Grid>
 
@@ -129,10 +177,17 @@ const OfficePersonnelSection = ({ errors = {} }) => {
                   label="Cell"
                   fullWidth
                   value={p.cellPhone}
-                  onChange={(e) => updatePerson(idx, { cellPhone: e.target.value })}
+                  onChange={(e) => {
+                    updatePerson(idx, { cellPhone: e.target.value });
+                    const key = `${idx}-cellPhone`;
+                    if (phoneErrors[key] && isValidPhone(e.target.value)) {
+                      validatePhoneAtIndex(idx, 'cellPhone', e.target.value);
+                    }
+                  }}
+                  onBlur={(e) => validatePhoneAtIndex(idx, 'cellPhone', e.target.value)}
                   inputProps={{ inputMode: 'tel' }}
-                  error={!!rowErr.cellPhone}
-                  helperText={rowErr.cellPhone}
+                  error={!!phoneErrors[`${idx}-cellPhone`] || !!rowErr.cellPhone}
+                  helperText={phoneErrors[`${idx}-cellPhone`] || rowErr.cellPhone}
                 />
               </Grid>
 
@@ -141,10 +196,17 @@ const OfficePersonnelSection = ({ errors = {} }) => {
                   label="Other"
                   fullWidth
                   value={p.otherPhone}
-                  onChange={(e) => updatePerson(idx, { otherPhone: e.target.value })}
+                  onChange={(e) => {
+                    updatePerson(idx, { otherPhone: e.target.value });
+                    const key = `${idx}-otherPhone`;
+                    if (phoneErrors[key] && isValidPhone(e.target.value)) {
+                      validatePhoneAtIndex(idx, 'otherPhone', e.target.value);
+                    }
+                  }}
+                  onBlur={(e) => validatePhoneAtIndex(idx, 'otherPhone', e.target.value)}
                   inputProps={{ inputMode: 'tel' }}
-                  error={!!rowErr.otherPhone}
-                  helperText={rowErr.otherPhone}
+                  error={!!phoneErrors[`${idx}-otherPhone`] || !!rowErr.otherPhone}
+                  helperText={phoneErrors[`${idx}-otherPhone`] || rowErr.otherPhone}
                 />
               </Grid>
             </Grid>

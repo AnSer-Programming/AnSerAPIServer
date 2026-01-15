@@ -1,5 +1,6 @@
 // TimeRangePicker.jsx
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Grid, TextField } from '@mui/material';
 
 const TimeRangePicker = ({ label, value = {}, onChange }) => {
@@ -47,6 +48,17 @@ const TimeRangePicker = ({ label, value = {}, onChange }) => {
       </Grid>
     </Grid>
   );
+};
+
+TimeRangePicker.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.shape({
+    startHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    startMinute: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    endHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    endMinute: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+  onChange: PropTypes.func.isRequired,
 };
 
 export default TimeRangePicker;

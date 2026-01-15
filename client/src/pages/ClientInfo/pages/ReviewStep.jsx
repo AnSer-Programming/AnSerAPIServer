@@ -1,6 +1,6 @@
 // 📁 src/pages/ClientInfo/pages/ReviewStep.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -24,8 +24,10 @@ import { useHistory } from 'react-router-dom';
 // Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
+import { WIZARD_ROUTES } from '../constants/routes';
 import { sendSummaryEmail } from '../context_API/ClientWizardAPI';
 import InfoPagePreview from '../components/InfoPagePreview';
+import logger from '../utils/logger';
 
 // Mapping for meeting types used in the Final Details / Review step
 const MEETING_TYPE_MAP = {
@@ -147,68 +149,87 @@ const ReviewStep = () => {
     };
   }, []);
 
-  const ci = formData.companyInfo || {};
-  const ac = formData.answerCalls || { routine: {}, urgent: {}, callTypes: [] };
-  const oc = formData.onCall || {
-    rotation: {},
-    contactRules: {},
-    procedures: {},
-    team: [],
-    schedules: [],
-    departments: [],
-    escalation: [],
-    notificationRules: {},
-  };
-  const escalationPlan = Array.isArray(oc.escalation) ? oc.escalation : [];
-  const attachments = Array.isArray(formData.attachments) ? formData.attachments : [];
-  const notificationRules = oc.notificationRules || {};
-  const departments = oc.departments || [];
-  const consultation = ci.consultationMeeting || {};
-  const fastTrack = formData.fastTrack || {};
-  const fastTrackEnabled = fastTrack.enabled === true;
+  // Memoize form data sections to prevent unnecessary recalculations
+  const { ci, ac, oc, escalationPlan, attachments, notificationRules, departments, consultation, fastTrack, fastTrackEnabled } = useMemo(() => {
+    const ci = formData.companyInfo || {};
+    const ac = formData.answerCalls || { routine: {}, urgent: {}, callTypes: [] };
+    const oc = formData.onCall || {
+      rotation: {},
+      contactRules: {},
+      procedures: {},
+      team: [],
+      schedules: [],
+      departments: [],
+      escalation: [],
+      notificationRules: {},
+    };
+    return {
+      ci,
+      ac,
+      oc,
+      escalationPlan: Array.isArray(oc.escalation) ? oc.escalation : [],
+      attachments: Array.isArray(formData.attachments) ? formData.attachments : [],
+      notificationRules: oc.notificationRules || {},
+      departments: oc.departments || [],
+      consultation: ci.consultationMeeting || {},
+      fastTrack: formData.fastTrack || {},
+      fastTrackEnabled: formData.fastTrack?.enabled === true,
+    };
+  }, [formData]);
+
   const featureFastTrackEnabled = process.env.REACT_APP_FASTTRACK_ENABLED === 'true';
-  const consultationSlots = Array.isArray(consultation.selectedDateTimes)
-    ? consultation.selectedDateTimes.filter((slot) => slot && (slot.date || slot.time))
-    : [];
-  const sortedConsultationSlots = consultationSlots.slice().sort((a, b) => {
-    const dateA = a?.date ? new Date(a.date) : null;
-    const dateB = b?.date ? new Date(b.date) : null;
-    const validA = dateA && !Number.isNaN(dateA.getTime());
-    const validB = dateB && !Number.isNaN(dateB.getTime());
 
-    if (validA && validB && dateA.getTime() !== dateB.getTime()) {
-      return dateA.getTime() - dateB.getTime();
-    }
+  // Memoize consultation slots processing
+  const { sortedConsultationSlots, formattedConsultationSlots, meetingTypeSummary } = useMemo(() => {
+    const consultationSlots = Array.isArray(consultation.selectedDateTimes)
+      ? consultation.selectedDateTimes.filter((slot) => slot && (slot.date || slot.time))
+      : [];
+    const sortedConsultationSlots = consultationSlots.slice().sort((a, b) => {
+      const dateA = a?.date ? new Date(a.date) : null;
+      const dateB = b?.date ? new Date(b.date) : null;
+      const validA = dateA && !Number.isNaN(dateA.getTime());
+      const validB = dateB && !Number.isNaN(dateB.getTime());
 
-    if (validA !== validB) {
-      return validA ? -1 : 1;
-    }
+      if (validA && validB && dateA.getTime() !== dateB.getTime()) {
+        return dateA.getTime() - dateB.getTime();
+      }
 
-    return meetingTimeToMinutes(a?.time) - meetingTimeToMinutes(b?.time);
-  });
-  const formattedConsultationSlots = sortedConsultationSlots
-    .map((slot) => formatConsultationSlot(slot))
-    .filter(Boolean);
-  const meetingTypeMeta = consultation.meetingType ? MEETING_TYPE_MAP[consultation.meetingType] : null;
-  const meetingTypeSummary = meetingTypeMeta
-    ? `${meetingTypeMeta.label}${meetingTypeMeta.details ? ` — ${meetingTypeMeta.details}` : ''}`
-    : (consultation.meetingType ? consultation.meetingType : '-');
+      if (validA !== validB) {
+        return validA ? -1 : 1;
+      }
+
+      return meetingTimeToMinutes(a?.time) - meetingTimeToMinutes(b?.time);
+    });
+    const formattedConsultationSlots = sortedConsultationSlots
+      .map((slot) => formatConsultationSlot(slot))
+      .filter(Boolean);
+    const meetingTypeMeta = consultation.meetingType ? MEETING_TYPE_MAP[consultation.meetingType] : null;
+    const meetingTypeSummary = meetingTypeMeta
+      ? `${meetingTypeMeta.label}${meetingTypeMeta.details ? ` — ${meetingTypeMeta.details}` : ''}`
+      : (consultation.meetingType ? consultation.meetingType : '-');
+    
+    return { sortedConsultationSlots, formattedConsultationSlots, meetingTypeSummary };
+  }, [consultation]);
 
   const eh = ci.officeHours || {};
   const lunch = ci.lunchHours || {};
   const summaryPreferences = ci.summaryPreferences || {};
-  const observedHolidayDates = Array.isArray(ci.holidays) ? ci.holidays : [];
-  const formattedObservedHolidays = observedHolidayDates
-    .map((date) => {
-      const parsed = new Date(`${date}T00:00:00Z`);
-      if (Number.isNaN(parsed.getTime())) return String(date);
-      return parsed.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    })
-    .filter(Boolean);
+
+  // Memoize holiday formatting
+  const formattedObservedHolidays = useMemo(() => {
+    const observedHolidayDates = Array.isArray(ci.holidays) ? ci.holidays : [];
+    return observedHolidayDates
+      .map((date) => {
+        const parsed = new Date(`${date}T00:00:00Z`);
+        if (Number.isNaN(parsed.getTime())) return String(date);
+        return parsed.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      })
+      .filter(Boolean);
+  }, [ci.holidays]);
 
   const websiteAccess = ci.websiteAccess || {};
   const websiteRequiredLabel = websiteAccess.required ? 'Yes' : 'No';
@@ -315,7 +336,7 @@ const ReviewStep = () => {
         openSummaryDialog(summaryText, summaryPayload.accountName);
       }
     } catch (error) {
-      console.error('Failed to send automated summary email:', error);
+      logger.error('Failed to send automated summary email:', error);
       showToast(
         'Application saved, but the summary email did not send. Please retry or contact support.',
         'error'
@@ -334,7 +355,7 @@ const ReviewStep = () => {
         throw new Error('Clipboard API unavailable');
       }
     } catch (error) {
-      console.error('Failed to copy summary text:', error);
+      logger.error('Failed to copy summary text:', error);
       showToast('Unable to copy automatically. Please select the text and copy manually.', 'warning');
     }
   };
@@ -359,7 +380,7 @@ const ReviewStep = () => {
       URL.revokeObjectURL(url);
       showToast('Summary downloaded.', 'success');
     } catch (error) {
-      console.error('Failed to download summary text:', error);
+      logger.error('Failed to download summary text:', error);
       showToast('Unable to download summary. Please try again.', 'error');
     }
   };
@@ -410,10 +431,12 @@ const ReviewStep = () => {
     return flags.length ? flags.join(' • ') : '-';
   })();
 
-  const structuredCallTypes = (() => {
+  // Memoize call types processing
+  const { structuredCallTypes, legacyCallTypes, otherCallTypeNotes } = useMemo(() => {
     const raw = ac.callTypes;
+    let structuredCallTypes = [];
     if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-      return Object.entries(raw)
+      structuredCallTypes = Object.entries(raw)
         .filter(([key, value]) => key !== 'otherText' && value?.enabled)
         .map(([key, value]) => ({
           key,
@@ -423,17 +446,16 @@ const ReviewStep = () => {
           afterHoursInstructions: value?.afterHoursInstructions || '',
         }));
     }
-    return [];
-  })();
-
-  const legacyCallTypes = Array.isArray(ac.callTypes) ? ac.callTypes : [];
-
-  const otherCallTypeNotes = (() => {
+    
+    const legacyCallTypes = Array.isArray(ac.callTypes) ? ac.callTypes : [];
+    
+    let otherCallTypeNotes = '';
     if (ac.callTypes && typeof ac.callTypes === 'object' && !Array.isArray(ac.callTypes)) {
-      return ac.callTypes.otherText?.toString().trim() || '';
+      otherCallTypeNotes = ac.callTypes.otherText?.toString().trim() || '';
     }
-    return '';
-  })();
+    
+    return { structuredCallTypes, legacyCallTypes, otherCallTypeNotes };
+  }, [ac.callTypes]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: darkMode ? 'background.default' : '#f5f6f8' }}>
@@ -484,7 +506,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Company Information"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/company-info')}
+              onEdit={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row label="Company Name" value={ci.companyName || ci.company} />
@@ -497,7 +519,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Office Hours"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/office-reach')}
+              onEdit={() => history.push(WIZARD_ROUTES.OFFICE_REACH)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
                 {Object.entries(eh).map(([day, v]) => (
@@ -533,7 +555,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Answer Calls"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/answer-calls')}
+              onEdit={() => history.push(WIZARD_ROUTES.ANSWER_CALLS)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row
@@ -596,7 +618,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="On Call"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/on-call')}
+              onEdit={() => history.push(WIZARD_ROUTES.ON_CALL)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row label="Rotation" value={rotationSummary} />
@@ -688,7 +710,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Consultation Preferences"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/final-details')}
+              onEdit={() => history.push(WIZARD_ROUTES.FINAL_DETAILS)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row label="Preferred Meeting Type" value={meetingTypeSummary} />
@@ -719,7 +741,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Daily Summary Preferences"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/office-reach')}
+              onEdit={() => history.push(WIZARD_ROUTES.OFFICE_REACH)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row
@@ -760,7 +782,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Website Access"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/company-info')}
+              onEdit={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row label="Use a website during calls" value={websiteRequiredLabel} />
@@ -811,7 +833,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Billing Contact"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/final-details')}
+              onEdit={() => history.push(WIZARD_ROUTES.FINAL_DETAILS)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row label="Name" value={ci.billingContact?.name} />
@@ -827,7 +849,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Escalation Plan"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/on-call')}
+              onEdit={() => history.push(WIZARD_ROUTES.ON_CALL)}
             >
               {escalationPlan.length ? (
                 <Box sx={{ display: 'grid', gap: 1.5 }}>
@@ -870,7 +892,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Attachments"
-              onEdit={() => history.push('/ClientInfoReact/NewFormWizard/final-details')}
+              onEdit={() => history.push(WIZARD_ROUTES.FINAL_DETAILS)}
             >
               {attachments.length ? (
                 <Box sx={{ display: 'grid', gap: 1 }}>
@@ -910,7 +932,7 @@ const ReviewStep = () => {
               <Button
                 variant="outlined"
                 size="large"
-                onClick={() => history.push('/ClientInfoReact/NewFormWizard/final-details')}
+                onClick={() => history.push(WIZARD_ROUTES.FINAL_DETAILS)}
                 sx={{
                   borderRadius: 2,
                   px: 4,

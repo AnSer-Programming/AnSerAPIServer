@@ -75,16 +75,17 @@ const CallRouting = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [prerequisiteDialogOpen, setPrerequisiteDialogOpen] = useState(false);
 
   useEffect(() => {
     const prevTitle = document.title;
     document.title = 'Call Routing — AnSer Communications';
     let meta = document.querySelector('meta[name="description"]');
     let created = false;
-    if (!meta) { 
-      meta = document.createElement('meta'); 
-      meta.name = 'description'; 
-      created = true; 
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'description';
+      created = true;
     }
     meta.content = 'Assign team members to handle specific call categories';
     if (created) document.head.appendChild(meta);
@@ -94,6 +95,16 @@ const CallRouting = () => {
     };
   }, []);
 
+  // Check prerequisites: OnCall must have team members before accessing Call Routing
+  useEffect(() => {
+    const onCallData = formData.onCall || {};
+    const hasTeamMembers = Array.isArray(onCallData.team) && onCallData.team.length > 0;
+
+    if (!hasTeamMembers) {
+      setPrerequisiteDialogOpen(true);
+    }
+  }, [formData.onCall]);
+
   // Get call categories from answerCalls section
   const answerCalls = formData.answerCalls || {};
   const categories = answerCalls.categories || [];
@@ -101,6 +112,7 @@ const CallRouting = () => {
   // Get team members from onCall section
   const onCall = formData.onCall || {};
   const teamMembers = Array.isArray(onCall.team) ? onCall.team : [];
+  const departments = Array.isArray(onCall.departments) ? onCall.departments : [];
 
   // Get current routing assignments
   const callRouting = formData.callRouting || { categoryAssignments: [] };
@@ -120,7 +132,6 @@ const CallRouting = () => {
             contactPerson: '',
             contactMethod: 'call',
             notes: '',
-            ifNaAction: 'go-to-next',
             repeatSteps: false,
             holdForCheckIn: false,
           }
@@ -182,7 +193,6 @@ const CallRouting = () => {
           contactPerson: '',
           contactMethod: 'call',
           notes: '',
-          ifNaAction: 'go-to-next',
           repeatSteps: false,
           holdForCheckIn: false,
         };
@@ -261,6 +271,12 @@ const CallRouting = () => {
   const getAvailableContactMethods = (personId) => {
     if (!personId || personId === 'office') {
       // Office can have all methods
+      return ['call', 'text', 'email', 'pager', 'call-text', 'call-email', 'text-email', 'call-text-email', 'all', 'delivered'];
+    }
+
+    // Check if it's a team selection (starts with 'team-')
+    if (typeof personId === 'string' && personId.startsWith('team-')) {
+      // Teams can have all methods
       return ['call', 'text', 'email', 'pager', 'call-text', 'call-email', 'text-email', 'call-text-email', 'all', 'delivered'];
     }
 
@@ -346,18 +362,6 @@ const CallRouting = () => {
             
             html += `</p>`;
             
-            // If N/A action on same line or next line
-            if (step.ifNaAction && step.ifNaAction !== 'go-to-next') {
-              if (step.ifNaAction === 'no-cue') {
-                html += `<p style="margin: 3px 0 3px 15px; font-size: 13px; color: #666;">If N/A, NO CUE</p>`;
-              } else if (step.ifNaAction === 'lmtc') {
-                html += `<p style="margin: 3px 0 3px 15px; font-size: 13px; color: #666;">If N/A, LMTC</p>`;
-              } else if (step.ifNaAction === 'hold-checkin') {
-                html += `<p style="margin: 3px 0 3px 15px; font-size: 13px; color: #666;">If N/A, Hold for Check-In</p>`;
-              } else if (step.ifNaAction === 'auto-email') {
-                html += `<p style="margin: 3px 0 3px 15px; font-size: 13px; color: #666;">If N/A, Auto-Email & Consider Delivered</p>`;
-              }
-            }
           } else if (step.contactMethod === 'delivered') {
             html += `<p style="margin: 3px 0; font-size: 14px;"><strong>${stepNum})</strong> Consider Delivered</p>`;
           }
@@ -656,30 +660,70 @@ const CallRouting = () => {
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={6}>
                             <FormControl fullWidth size="small">
-                              <InputLabel>Contact Person {step.contactMethod !== 'delivered' && '*'}</InputLabel>
+                              <InputLabel>Contact Person / Team {step.contactMethod !== 'delivered' && '*'}</InputLabel>
                               <Select
                                 value={step.contactPerson || ''}
                                 onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'contactPerson', e.target.value)}
-                                label={`Contact Person ${step.contactMethod !== 'delivered' ? '*' : ''}`}
+                                label={`Contact Person / Team ${step.contactMethod !== 'delivered' ? '*' : ''}`}
                                 error={stepIndex === 0 && !step.contactPerson && step.contactMethod !== 'delivered'}
                                 disabled={step.contactMethod === 'delivered'}
                               >
                                 <MenuItem value="">
-                                  <em>{step.contactMethod === 'delivered' ? '-- No contact needed --' : '-- Select team member --'}</em>
+                                  <em>{step.contactMethod === 'delivered' ? '-- No contact needed --' : '-- Select team or member --'}</em>
                                 </MenuItem>
                                 <MenuItem value="office">
                                   <strong>Office / General Contact</strong>
                                 </MenuItem>
-                                {teamMembers.map((member) => (
-                                  <MenuItem key={member.id} value={member.id}>
-                                    {member.name} {member.role && `(${member.role})`}
-                                  </MenuItem>
-                                ))}
+
+                                {/* Teams/Departments Section */}
+                                {departments.length > 0 && [
+                                  <MenuItem key="teams-header" disabled sx={{ opacity: 1 }}>
+                                    <em style={{ fontWeight: 600 }}>— Teams —</em>
+                                  </MenuItem>,
+                                  ...departments.map((dept) => (
+                                    <MenuItem key={`dept-${dept.id}`} value={`team-${dept.id}`}>
+                                      🏢 {dept.department}
+                                    </MenuItem>
+                                  ))
+                                ]}
+
+                                {/* Individual Team Members Section */}
+                                {teamMembers.length > 0 && [
+                                  <MenuItem key="members-header" disabled sx={{ opacity: 1 }}>
+                                    <em style={{ fontWeight: 600 }}>— Individual Members —</em>
+                                  </MenuItem>,
+                                  ...teamMembers.map((member) => (
+                                    <MenuItem key={`member-${member.id}`} value={member.id}>
+                                      {member.name} {member.role && `(${member.role})`}
+                                    </MenuItem>
+                                  ))
+                                ]}
                               </Select>
                             </FormControl>
                             
-                            {/* Show selected member's escalation steps */}
+                            {/* Show selected contact's information */}
                             {step.contactPerson && step.contactPerson !== 'office' && (() => {
+                              // Check if it's a team selection
+                              if (typeof step.contactPerson === 'string' && step.contactPerson.startsWith('team-')) {
+                                const teamId = step.contactPerson.replace('team-', '');
+                                const selectedTeam = departments.find(d => d.id === teamId);
+                                if (selectedTeam) {
+                                  return (
+                                    <Alert severity="info" sx={{ mt: 1 }}>
+                                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                                        🏢 Team: {selectedTeam.department}
+                                      </Typography>
+                                      <Typography variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
+                                        {selectedTeam.members && selectedTeam.members.length > 0
+                                          ? `${selectedTeam.members.length} member${selectedTeam.members.length !== 1 ? 's' : ''}`
+                                          : 'No members assigned'}
+                                      </Typography>
+                                    </Alert>
+                                  );
+                                }
+                              }
+
+                              // Otherwise check for individual member
                               const selectedMember = teamMembers.find(m => m.id === step.contactPerson);
                               if (selectedMember && selectedMember.escalationSteps && selectedMember.escalationSteps.length > 0) {
                                 return (
@@ -730,23 +774,6 @@ const CallRouting = () => {
                                     </MenuItem>
                                   ));
                                 })()}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>If N/A Action</InputLabel>
-                              <Select
-                                value={step.ifNaAction || 'go-to-next'}
-                                onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'ifNaAction', e.target.value)}
-                                label="If N/A Action"
-                              >
-                                <MenuItem value="go-to-next">If N/A go to next step</MenuItem>
-                                <MenuItem value="no-cue">If N/A NO CUE</MenuItem>
-                                <MenuItem value="lmtc">If N/A LMTC</MenuItem>
-                                <MenuItem value="hold-checkin">If N/A Hold for Check-In</MenuItem>
-                                <MenuItem value="auto-email">If N/A Auto-Email & Consider Delivered</MenuItem>
                               </Select>
                             </FormControl>
                           </Grid>
@@ -930,6 +957,38 @@ const CallRouting = () => {
           </Button>
           <Button onClick={() => setPreviewOpen(false)} variant="contained">
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Prerequisite Dialog - redirects to OnCall if teams not set up */}
+      <Dialog
+        open={prerequisiteDialogOpen}
+        onClose={() => {}}
+        aria-labelledby="prerequisite-dialog-title"
+      >
+        <DialogTitle id="prerequisite-dialog-title">
+          Complete On-Call Setup First
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Before assigning call routing, you need to set up your on-call team members in the <strong>On Call</strong> section.
+          </Alert>
+          <Typography variant="body2">
+            Call Routing assigns specific team members to handle different types of calls. You'll need to add at least one team member before you can configure routing assignments.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setPrerequisiteDialogOpen(false);
+              history.push(WIZARD_ROUTES.ON_CALL);
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            Go to On Call Setup
           </Button>
         </DialogActions>
       </Dialog>

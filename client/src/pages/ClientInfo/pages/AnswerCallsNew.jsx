@@ -14,6 +14,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { Add as AddIcon, Delete as DeleteIcon, NavigateNext, NavigateBefore, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
@@ -81,6 +86,10 @@ const AnswerCallsNew = () => {
   // Local UI state (NOT persisted) - manages minimized/expanded state per session only
   const [minimizedMap, setMinimizedMap] = useState({});
 
+  // Confirmation dialog for category removal
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+
   // Focus-guard: local editing buffers to prevent mid-edit clobbering
   const [editingBuffers, setEditingBuffers] = useState({});
   const commitTimeoutRef = useRef({});
@@ -133,32 +142,46 @@ const AnswerCallsNew = () => {
     setMinimizedMap(prev => ({ ...prev, [newId]: false }));
   };
 
-  const removeCategory = (id) => {
+  const requestRemoveCategory = (id) => {
     // don't remove last one
     if (categories.length <= 1) return;
-    const next = categories.filter((c) => c.id !== id);
+    setCategoryToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmRemoveCategory = () => {
+    if (!categoryToDelete) return;
+    const next = categories.filter((c) => c.id !== categoryToDelete);
     setSection({ categories: next });
     // Clean up UI state and editing buffers for removed category
     setMinimizedMap(prev => {
       const updated = { ...prev };
-      delete updated[id];
+      delete updated[categoryToDelete];
       return updated;
     });
     setEditingBuffers(prev => {
       const updated = { ...prev };
-      delete updated[`${id}-customName`];
-      delete updated[`${id}-details`];
+      delete updated[`${categoryToDelete}-customName`];
+      delete updated[`${categoryToDelete}-details`];
       return updated;
     });
     // Clear any pending commit timeouts
-    if (commitTimeoutRef.current[`${id}-customName`]) {
-      clearTimeout(commitTimeoutRef.current[`${id}-customName`]);
-      delete commitTimeoutRef.current[`${id}-customName`];
+    if (commitTimeoutRef.current[`${categoryToDelete}-customName`]) {
+      clearTimeout(commitTimeoutRef.current[`${categoryToDelete}-customName`]);
+      delete commitTimeoutRef.current[`${categoryToDelete}-customName`];
     }
-    if (commitTimeoutRef.current[`${id}-details`]) {
-      clearTimeout(commitTimeoutRef.current[`${id}-details`]);
-      delete commitTimeoutRef.current[`${id}-details`];
+    if (commitTimeoutRef.current[`${categoryToDelete}-details`]) {
+      clearTimeout(commitTimeoutRef.current[`${categoryToDelete}-details`]);
+      delete commitTimeoutRef.current[`${categoryToDelete}-details`];
     }
+    // Close dialog and reset
+    setDeleteConfirmOpen(false);
+    setCategoryToDelete(null);
+  };
+
+  const cancelRemoveCategory = () => {
+    setDeleteConfirmOpen(false);
+    setCategoryToDelete(null);
   };
 
   const updateCategory = (id, patch) => {
@@ -398,7 +421,7 @@ const AnswerCallsNew = () => {
                     </Box>
 
                     <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-start', gap: 1 }}>
-                      <Button size="small" variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => removeCategory(cat.id)}>Remove</Button>
+                      <Button size="small" variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => requestRemoveCategory(cat.id)}>Remove</Button>
                     </Box>
                   </AccordionDetails>
                 </Accordion>
@@ -420,6 +443,29 @@ const AnswerCallsNew = () => {
           <Button endIcon={<NavigateNext />} variant="contained" onClick={() => history.push(WIZARD_ROUTES.ON_CALL)}>Next: On Call</Button>
         </Box>
       </Container>
+
+      {/* Confirmation Dialog for Category Removal */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={cancelRemoveCategory}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Remove Call Category?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to remove this call category? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelRemoveCategory} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmRemoveCategory} color="error" variant="contained" autoFocus>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

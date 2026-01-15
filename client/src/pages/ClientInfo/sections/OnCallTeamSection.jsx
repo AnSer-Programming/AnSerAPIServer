@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Typography, Grid, TextField, Button, Paper, Divider, Stack } from '@mui/material';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 const normalize = (r = {}) => ({
   name: r.name || '',
@@ -12,12 +14,41 @@ const normalize = (r = {}) => ({
 
 const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
   const team = rows.map(normalize);
+  const [localErrors, setLocalErrors] = useState({});
+  const [phoneErrors, setPhoneErrors] = useState({});
   const setRows = (next) => onChange?.(next);
 
   const addRow  = () => setRows([...team, normalize()]);
   const rmRow   = (i) => setRows(team.filter((_, idx) => idx !== i));
   const dupRow  = (i) => setRows([...team.slice(0, i + 1), { ...team[i] }, ...team.slice(i + 1)]);
   const setRow  = (i, patch) => setRows(team.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+
+  const validateEmail = (index, email) => {
+    const error = getEmailError(email);
+    if (error) {
+      setLocalErrors(prev => ({ ...prev, [index]: error }));
+    } else {
+      setLocalErrors(prev => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+    }
+  };
+
+  const validatePhone = (index, field, phone) => {
+    const error = getPhoneError(phone);
+    const key = `${index}-${field}`;
+    if (error) {
+      setPhoneErrors(prev => ({ ...prev, [key]: error }));
+    } else {
+      setPhoneErrors(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+  };
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
@@ -30,6 +61,7 @@ const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
 
       {team.map((row, i) => {
         const e = errors?.[i] || {};
+        const emailError = localErrors[i] || e.email;
         const contactMissing = ![row.email, row.cell, row.home, row.other].some(Boolean);
 
         return (
@@ -61,9 +93,16 @@ const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
                   type="email"
                   fullWidth
                   value={row.email}
-                  onChange={(ev) => setRow(i, { email: ev.target.value })}
-                  error={!!e.email}
-                  helperText={e.email}
+                  onChange={(ev) => {
+                    setRow(i, { email: ev.target.value });
+                    // Clear error as user types if they've fixed it
+                    if (localErrors[i] && isValidEmail(ev.target.value)) {
+                      validateEmail(i, ev.target.value);
+                    }
+                  }}
+                  onBlur={(ev) => validateEmail(i, ev.target.value)}
+                  error={!!emailError}
+                  helperText={emailError}
                   inputProps={{ inputMode: 'email' }}
                 />
               </Grid>
@@ -74,9 +113,16 @@ const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
                   type="tel"
                   fullWidth
                   value={row.cell}
-                  onChange={(ev) => setRow(i, { cell: ev.target.value })}
-                  error={!!e.cell}
-                  helperText={e.cell}
+                  onChange={(ev) => {
+                    setRow(i, { cell: ev.target.value });
+                    const key = `${i}-cell`;
+                    if (phoneErrors[key] && isValidPhone(ev.target.value)) {
+                      validatePhone(i, 'cell', ev.target.value);
+                    }
+                  }}
+                  onBlur={(ev) => validatePhone(i, 'cell', ev.target.value)}
+                  error={!!phoneErrors[`${i}-cell`] || !!e.cell}
+                  helperText={phoneErrors[`${i}-cell`] || e.cell}
                   inputProps={{ inputMode: 'tel' }}
                 />
               </Grid>
@@ -86,9 +132,16 @@ const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
                   type="tel"
                   fullWidth
                   value={row.home}
-                  onChange={(ev) => setRow(i, { home: ev.target.value })}
-                  error={!!e.home}
-                  helperText={e.home}
+                  onChange={(ev) => {
+                    setRow(i, { home: ev.target.value });
+                    const key = `${i}-home`;
+                    if (phoneErrors[key] && isValidPhone(ev.target.value)) {
+                      validatePhone(i, 'home', ev.target.value);
+                    }
+                  }}
+                  onBlur={(ev) => validatePhone(i, 'home', ev.target.value)}
+                  error={!!phoneErrors[`${i}-home`] || !!e.home}
+                  helperText={phoneErrors[`${i}-home`] || e.home}
                   inputProps={{ inputMode: 'tel' }}
                 />
               </Grid>
@@ -98,9 +151,16 @@ const OnCallTeamSection = ({ rows = [], onChange, errors = [] }) => {
                   type="tel"
                   fullWidth
                   value={row.other}
-                  onChange={(ev) => setRow(i, { other: ev.target.value })}
-                  error={!!e.other}
-                  helperText={e.other}
+                  onChange={(ev) => {
+                    setRow(i, { other: ev.target.value });
+                    const key = `${i}-other`;
+                    if (phoneErrors[key] && isValidPhone(ev.target.value)) {
+                      validatePhone(i, 'other', ev.target.value);
+                    }
+                  }}
+                  onBlur={(ev) => validatePhone(i, 'other', ev.target.value)}
+                  error={!!phoneErrors[`${i}-other`] || !!e.other}
+                  helperText={phoneErrors[`${i}-other`] || e.other}
                   inputProps={{ inputMode: 'tel' }}
                 />
               </Grid>

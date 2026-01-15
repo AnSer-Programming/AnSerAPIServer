@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Grid, TextField, Typography } from '@mui/material';
 import { useWizard } from '../context_API/WizardContext';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 const BillingContactSection = ({ errors = {}, data }) => {
   const { formData, updateSection } = useWizard();
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const bc = data || {
     name: formData.companyInfo?.billingContact?.name || '',
@@ -21,6 +25,14 @@ const BillingContactSection = ({ errors = {}, data }) => {
     updateSection('companyInfo', {
       billingContact: { ...bc, [key]: value },
     });
+  };
+
+  const validateEmail = (email) => {
+    setEmailError(getEmailError(email));
+  };
+
+  const validatePhone = (phone) => {
+    setPhoneError(getPhoneError(phone));
   };
 
   return (
@@ -57,11 +69,18 @@ const BillingContactSection = ({ errors = {}, data }) => {
             type="email"
             inputMode="email"
             value={bc.email}
-            onChange={(e) => setField('email', e.target.value)}
+            onChange={(e) => {
+              setField('email', e.target.value);
+              // Clear error as user types if they've fixed it
+              if (emailError && isValidEmail(e.target.value)) {
+                setEmailError('');
+              }
+            }}
+            onBlur={(e) => validateEmail(e.target.value)}
             fullWidth
             required
-            error={!!errors.email}
-            helperText={errors.email}
+            error={!!emailError || !!errors.email}
+            helperText={emailError || errors.email}
           />
         </Grid>
 
@@ -70,10 +89,17 @@ const BillingContactSection = ({ errors = {}, data }) => {
             label="Phone"
             inputMode="tel"
             value={bc.phone}
-            onChange={(e) => setField('phone', e.target.value)}
+            onChange={(e) => {
+              setField('phone', e.target.value);
+              // Clear error as user types if they've fixed it
+              if (phoneError && isValidPhone(e.target.value)) {
+                setPhoneError('');
+              }
+            }}
+            onBlur={(e) => validatePhone(e.target.value)}
             fullWidth
-            error={!!errors.phone}
-            helperText={errors.phone}
+            error={!!phoneError || !!errors.phone}
+            helperText={phoneError || errors.phone}
           />
         </Grid>
 

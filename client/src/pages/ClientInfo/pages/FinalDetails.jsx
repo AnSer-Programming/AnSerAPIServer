@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -31,7 +31,9 @@ import { useHistory } from 'react-router-dom';
 // Footer handled by WizardLayout
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
+import { WIZARD_ROUTES } from '../constants/routes';
 import AttachmentsSection from '../sections/AttachmentsSection';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
 
 // Available time slots for selection
 const timeSlots = [
@@ -73,10 +75,15 @@ const FinalDetails = () => {
   const [snackMessage, setSnackMessage] = React.useState('');
   const [errors, setErrors] = React.useState({});
   const [attachmentErrors, setAttachmentErrors] = React.useState(null);
+  const [emailError, setEmailError] = useState('');
 
   const showSnackMessage = (message) => {
     setSnackMessage(message);
     setSnack(true);
+  };
+
+  const validateEmail = (email) => {
+    setEmailError(getEmailError(email));
   };
 
   const companyInfo = formData.companyInfo || {};
@@ -150,7 +157,7 @@ const FinalDetails = () => {
   };
 
   // Back now goes to Other Info (previous step in the wizard).
-  const onBack = () => history.push('/ClientInfoReact/NewFormWizard/office-reach');
+  const onBack = () => history.push(WIZARD_ROUTES.OFFICE_REACH);
 
   const deriveValidationMessage = (validationErrors) => {
     if (!validationErrors) return '';
@@ -196,7 +203,7 @@ const FinalDetails = () => {
 
     setErrors({});
     setAttachmentErrors(null);
-    history.push('/ClientInfoReact/NewFormWizard/review');
+    history.push(WIZARD_ROUTES.REVIEW);
   };
 
   const getIconComponent = (iconName) => {
@@ -515,10 +522,15 @@ const FinalDetails = () => {
                     onChange={(e) => {
                       clearError('contactEmail');
                       setConsultation({ contactEmail: e.target.value });
+                      // Clear error as user types if they've fixed it
+                      if (emailError && isValidEmail(e.target.value)) {
+                        setEmailError('');
+                      }
                     }}
+                    onBlur={(e) => validateEmail(e.target.value)}
                     fullWidth
-                    error={Boolean(errors.contactEmail)}
-                    helperText={errors.contactEmail || ''}
+                    error={Boolean(emailError || errors.contactEmail)}
+                    helperText={emailError || errors.contactEmail || ''}
                     sx={{ 
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,

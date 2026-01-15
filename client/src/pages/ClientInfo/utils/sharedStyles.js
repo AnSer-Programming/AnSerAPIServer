@@ -2,11 +2,12 @@
 // Shared styling utilities for consistent theming across ClientInfo components
 
 import { alpha } from '@mui/material/styles';
+import logger from './logger';
 
 export const createSharedStyles = (theme, darkMode = false) => {
   // Ensure theme has required structure
   if (!theme || !theme.palette) {
-    console.warn('Invalid theme object passed to createSharedStyles');
+    logger.warn('Invalid theme object passed to createSharedStyles');
     return {
       layout: { pageWrapper: {}, wizardCard: {}, containerSpacing: {} },
       navigation: { container: {}, backButton: {}, nextButtonGroup: {}, saveButton: {}, nextButton: {} },

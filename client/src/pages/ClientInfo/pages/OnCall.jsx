@@ -189,7 +189,7 @@ const OnCall = () => {
     }
 
     // Always proceed to next step — new order: go to Call Routing
-    history.push('/ClientInfoReact/NewFormWizard/call-routing');
+    history.push(WIZARD_ROUTES.CALL_ROUTING);
   }, [markStepVisited, validateSection, onCall, history]);
 
   useEffect(() => {
@@ -218,7 +218,7 @@ const OnCall = () => {
       // Alt + Left Arrow = Previous step
       if (e.altKey && e.key === 'ArrowLeft') {
         e.preventDefault();
-        history.push('/ClientInfoReact/NewFormWizard/answer-calls');
+        history.push(WIZARD_ROUTES.ANSWER_CALLS);
       }
       // Ctrl + S or Cmd + S = Save draft
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -355,23 +355,28 @@ const OnCall = () => {
               </Stack>
             </Box>
 
-            {/* Compact progress (single concise indicator) */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                aria-label={`On-call completion ${progress} percent`}
-                sx={{
-                  flex: 1,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.06),
-                  '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: progress === 100 ? theme.palette.success.main : theme.palette.info.main },
-                }}
-              />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                {progress}%
+            {/* Compact progress for THIS PAGE only */}
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                On-Call Page Completion:
               </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress}
+                  aria-label={`On-call page completion ${progress} percent`}
+                  sx={{
+                    flex: 1,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                    '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: progress === 100 ? theme.palette.success.main : theme.palette.info.main },
+                  }}
+                />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                  {progress}%
+                </Typography>
+              </Box>
             </Box>
           </Paper>
         </Fade>
@@ -664,7 +669,7 @@ const OnCall = () => {
             <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push('/ClientInfoReact/NewFormWizard/answer-calls')}
+              onClick={() => history.push(WIZARD_ROUTES.ANSWER_CALLS)}
               sx={{ minWidth: { xs: '100%', sm: 120 }, order: { xs: 3, sm: 1 } }}
             >
               Back

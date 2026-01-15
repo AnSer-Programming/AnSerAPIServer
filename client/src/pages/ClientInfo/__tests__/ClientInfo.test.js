@@ -168,13 +168,31 @@ describe('ClientInfo Wizard Components', () => {
 
   describe('Form Validation', () => {
     test('validates email format', () => {
-      const { validateSection } = require('../utils/validationSchema');
+      const { billingContactSchema } = require('../utils/validationSchema');
       
       const invalidData = { email: 'invalid-email' };
-      const errors = validateSection('companyInfo', invalidData);
+      const errors = billingContactSchema(invalidData);
       
       expect(errors.email).toBeDefined();
       expect(errors.email).toContain('valid email');
+    });
+
+    test('accepts valid email format', () => {
+      const { billingContactSchema } = require('../utils/validationSchema');
+      
+      const validData = { email: 'user@example.com' };
+      const errors = billingContactSchema(validData);
+      
+      expect(errors).toBeNull();
+    });
+
+    test('rejects email with single-character TLD', () => {
+      const { billingContactSchema } = require('../utils/validationSchema');
+      
+      const invalidData = { email: 'user@domain.c' };
+      const errors = billingContactSchema(invalidData);
+      
+      expect(errors.email).toBeDefined();
     });
 
     test('validates phone number format', () => {

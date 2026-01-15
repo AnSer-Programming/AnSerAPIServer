@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Box, Button, Typography } from '@mui/material';
 
 class ChunkErrorBoundary extends React.Component {
@@ -44,5 +45,9 @@ class ChunkErrorBoundary extends React.Component {
     );
   }
 }
+
+ChunkErrorBoundary.propTypes = {
+  children: PropTypes.node,
+};
 
 export default ChunkErrorBoundary;

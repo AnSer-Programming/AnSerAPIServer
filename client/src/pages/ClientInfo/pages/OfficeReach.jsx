@@ -38,7 +38,7 @@ import { useHistory } from 'react-router-dom';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
-import { WIZARD_STEPS, STEP_LABELS } from '../constants/routes';
+import { WIZARD_STEPS, STEP_LABELS, WIZARD_ROUTES } from '../constants/routes';
 import OfficeHoursSection from '../sections/OfficeHoursSection';
 import WebsiteAccessSection from '../sections/WebsiteAccessSection';
 import SpecialEventsSection from '../sections/SpecialEventsSection';
@@ -101,9 +101,9 @@ const OfficeReach = () => {
     }
     
     setSaving(false);
-    
+
     // Always proceed to next step — new order: go to Final Details
-  history.push('/ClientInfoReact/NewFormWizard/final-details');
+    history.push(WIZARD_ROUTES.FINAL_DETAILS);
   };
 
   // Calculate completion percentage
@@ -345,7 +345,7 @@ const OfficeReach = () => {
             <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push('/ClientInfoReact/NewFormWizard/call-routing')}
+              onClick={() => history.push(WIZARD_ROUTES.CALL_ROUTING)}
               sx={{ minWidth: 120 }}
             >
               Back

@@ -17,20 +17,20 @@ import {
   InfoOutlined,
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
+import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB, BYTES_PER_KB } from '../constants/config';
 
 const formatBytes = (bytes = 0) => {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
   const exponent = Math.min(
-    Math.floor(Math.log(bytes) / Math.log(1024)),
+    Math.floor(Math.log(bytes) / Math.log(BYTES_PER_KB)),
     units.length - 1,
   );
-  const value = bytes / (1024 ** exponent);
+  const value = bytes / (BYTES_PER_KB ** exponent);
   return `${value.toFixed(value < 10 && exponent > 0 ? 1 : 0)} ${units[exponent]}`;
 };
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB limit
 
 const AttachmentsSection = ({ attachments = [], onChange = () => {}, errors = [] }) => {
   const theme = useTheme();
@@ -60,13 +60,13 @@ const AttachmentsSection = ({ attachments = [], onChange = () => {}, errors = []
       return;
     }
 
-    const tooLarge = files.filter((file) => file.size > MAX_FILE_SIZE);
+    const tooLarge = files.filter((file) => file.size > MAX_FILE_SIZE_BYTES);
     if (tooLarge.length) {
-      setLocalError('Some files were skipped because they exceed the 25MB limit.');
+      setLocalError(`Some files were skipped because they exceed the ${MAX_FILE_SIZE_MB}MB limit.`);
     }
 
     const nextItems = files
-      .filter((file) => file.size <= MAX_FILE_SIZE)
+      .filter((file) => file.size <= MAX_FILE_SIZE_BYTES)
       .map((file) => {
       const tempUri = URL.createObjectURL(file);
       createdUrlsRef.current.add(tempUri);

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import logger from './logger';
 
 const useAutosave = (key, state, delay = 800) => {
   const timeoutRef = useRef(null);
@@ -13,7 +14,7 @@ const useAutosave = (key, state, delay = 800) => {
       try {
         localStorage.setItem(key, JSON.stringify(state));
       } catch (e) {
-        console.warn('Autosave failed:', e);
+        logger.warn('Autosave failed:', e);
       }
     }, delay);
 

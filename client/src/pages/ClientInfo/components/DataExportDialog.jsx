@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -329,6 +330,13 @@ ${JSON.stringify(data.data[section], null, 2)}
       </DialogActions>
     </Dialog>
   );
+};
+
+DataExportDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  formData: PropTypes.object,
+  onExport: PropTypes.func,
 };
 
 export default DataExportDialog;

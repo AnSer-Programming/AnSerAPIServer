@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import logger from '../utils/logger';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -12,9 +13,9 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    // TODO: Log to external service or console
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Component stack:', info?.componentStack);
+    // Log to external service (errors are always logged)
+    logger.error('ErrorBoundary caught an error:', error);
+    logger.error('Component stack:', info?.componentStack);
   }
 
   handleReload = () => {
