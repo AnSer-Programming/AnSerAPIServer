@@ -186,7 +186,7 @@ describe('AnswerCallsNew Component', () => {
       renderWithProviders(<AnswerCallsNew />);
       
       expect(screen.getByText(/Back/i)).toBeInTheDocument();
-      expect(screen.getByText(/Next: On Call/i)).toBeInTheDocument();
+      expect(screen.getByText(/Next: On Call Setup/i)).toBeInTheDocument();
     });
   });
 

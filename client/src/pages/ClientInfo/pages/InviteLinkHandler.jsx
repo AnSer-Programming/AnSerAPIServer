@@ -90,8 +90,9 @@ export default function InviteLinkHandler() {
         const stepToPath = {
           'company-info': WIZARD_ROUTES.COMPANY_INFO,
           'answer-calls': WIZARD_ROUTES.ANSWER_CALLS,
-          'office-reach': WIZARD_ROUTES.OFFICE_REACH,
+          'on-call-rotation': WIZARD_ROUTES.ON_CALL_ESCALATION,
           'on-call': WIZARD_ROUTES.ON_CALL,
+          'escalation-details': WIZARD_ROUTES.ON_CALL_ESCALATION,
           review: WIZARD_ROUTES.REVIEW,
         };
         // default to company-info so tokens land on the first form page

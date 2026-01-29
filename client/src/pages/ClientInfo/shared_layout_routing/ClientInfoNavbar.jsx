@@ -19,20 +19,24 @@ import AnSerLogo from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
 
 // Wizard config
 const WIZARD_BASE = '/ClientInfoReact/NewFormWizard';
-// New order: Company Information → Answer Calls → On Call → Call Routing → Other Info → Final Details → Review
-const WIZARD_STEPS = ['company-info', 'answer-calls', 'on-call', 'call-routing', 'office-reach', 'final-details', 'review'];
+// New order: Company Information → Answer Calls → On Call → Team Setup → Escalation & Rotation Details → Call Routing → Other Info → Final Details → Review
+const WIZARD_STEPS = ['company-info', 'answer-calls', 'on-call', 'team-setup', 'escalation-details', 'call-routing', 'office-reach', 'final-details', 'review'];
 
 const NAV_ITEMS = [
   { label: 'HOME', to: '/ClientInfoReact' },
   { label: 'COMPANY INFORMATION', to: `${WIZARD_BASE}/company-info` },
   { label: 'HOW TO ANSWER YOUR CALLS', to: `${WIZARD_BASE}/answer-calls` },
+  { label: 'ON-CALL SETUP', to: `${WIZARD_BASE}/on-call` },
   { label: 'OTHER INFO', to: `${WIZARD_BASE}/office-reach` },
+  { label: 'FINAL DETAILS', to: `${WIZARD_BASE}/final-details` },
 ];
 
 const WIZARD_LINKS = [
   { label: 'Company Information', to: `${WIZARD_BASE}/company-info` },
   { label: 'Answer Calls', to: `${WIZARD_BASE}/answer-calls` },
-  { label: 'On Call', to: `${WIZARD_BASE}/on-call` },
+  { label: 'On Call Setup', to: `${WIZARD_BASE}/on-call` },
+  { label: 'Team Setup', to: `${WIZARD_BASE}/team-setup` },
+  { label: 'Escalation & Rotation Details', to: `${WIZARD_BASE}/escalation-details` },
   { label: 'Call Routing', to: `${WIZARD_BASE}/call-routing` },
   { label: 'Other Info', to: `${WIZARD_BASE}/office-reach` },
   { label: 'Final Details', to: `${WIZARD_BASE}/final-details` },
@@ -136,73 +140,85 @@ const ClientInfoNavbar = () => {
               minHeight: 40,
               bgcolor: 'primary.dark',
               px: { xs: 1.5, md: 2 },
+              flexWrap: 'wrap',
             }}
           >
-            {WIZARD_LINKS.map(({ label, to }) => {
-              const active = isActive(to);
-              const step = getSlugFromPath(to);
-              const visited = !!visitedSteps[step];
+            {/* Progress bar integrated into wizard step bar */}
+            <Box sx={{ width: '100%', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress || 0}
+                aria-label={`Wizard progress ${progress || 0}%`}
+                sx={{
+                  flex: 1,
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: alpha(theme.palette.common.white, 0.15),
+                  '& .MuiLinearProgress-bar': { 
+                    bgcolor: theme.palette.info.main,
+                    borderRadius: 3,
+                  },
+                }}
+              />
+              <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, minWidth: 40 }}>
+                {progress || 0}%
+              </Typography>
+            </Box>
+            
+            {/* Wizard step buttons */}
+            <Box sx={{ display: 'flex', gap: 0.5, width: '100%', justifyContent: 'center' }}>
+              {WIZARD_LINKS.map(({ label, to }) => {
+                const active = isActive(to);
+                const step = getSlugFromPath(to);
+                const visited = !!visitedSteps[step];
 
-              return (
-                <Button
-                  key={to}
-                  component={RouterLink}
-                  to={to}
-                  size="small"
-                  aria-current={active ? 'step' : undefined}
-                  sx={{
-                    color: '#fff',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    borderRadius: 1,
-                    px: 1.5,
-                    mx: 0.5,
-                    minHeight: 32,
-                    borderBottom: active ? `3px solid ${theme.palette.info.main}` : '3px solid transparent',
-                    '&:hover': { backgroundColor: 'primary.main' },
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}
-                >
-                  {/* Visited indicator: keep small check circle for clarity */}
-                  <Box
-                    component="span"
-                    aria-hidden
+                return (
+                  <Button
+                    key={to}
+                    component={RouterLink}
+                    to={to}
+                    size="small"
+                    aria-current={active ? 'step' : undefined}
                     sx={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '50%',
-                      display: 'inline-flex',
+                      color: '#fff',
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      borderRadius: 1,
+                      px: 1.5,
+                      mx: 0.5,
+                      minHeight: 32,
+                      borderBottom: active ? `3px solid ${theme.palette.info.main}` : '3px solid transparent',
+                      '&:hover': { backgroundColor: 'primary.main' },
+                      display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: visited ? 'success.main' : 'transparent',
-                      color: visited ? '#fff' : 'inherit',
-                      fontSize: 12,
-                      border: visited ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.12)}`,
+                      gap: 1,
                     }}
                   >
-                    {visited ? '✓' : ''}
-                  </Box>
-                  <Box component="span" sx={{ lineHeight: 1 }}>{label}</Box>
-                </Button>
-              );
-            })}
+                    {/* Visited indicator: keep small check circle for clarity */}
+                    <Box
+                      component="span"
+                      aria-hidden
+                      sx={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: visited ? 'success.main' : 'transparent',
+                        color: visited ? '#fff' : 'inherit',
+                        fontSize: 12,
+                        border: visited ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.12)}`,
+                      }}
+                    >
+                      {visited ? '✓' : ''}
+                    </Box>
+                    <Box component="span" sx={{ lineHeight: 1 }}>{label}</Box>
+                  </Button>
+                );
+              })}
+            </Box>
           </Toolbar>
-        )}
-
-        {/* Progress bar on wizard pages: compact and accessible */}
-        {onlyShowWizardBar && progress !== null && (
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            aria-label={`Wizard progress ${progress}%`}
-            sx={{
-              height: 6,
-              bgcolor: alpha(theme.palette.common.white, 0.08),
-              '& .MuiLinearProgress-bar': { bgcolor: theme.palette.info.main },
-            }}
-          />
         )}
       </AppBar>
 
@@ -243,3 +259,5 @@ const ClientInfoNavbar = () => {
 };
 
 export default ClientInfoNavbar;
+
+

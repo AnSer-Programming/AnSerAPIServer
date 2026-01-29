@@ -39,6 +39,7 @@ import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
 import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 const CARD_BRANDS = ['Visa', 'Mastercard', 'American Express', 'Discover', 'Other'];
 const MEETING_PLATFORMS = [
@@ -78,6 +79,22 @@ const FastTrack = () => {
   const validateEmailAtIndex = (index, email) => {
     const error = getEmailError(email);
     setEmailErrors(prev => {
+      if (error) {
+        return { ...prev, [index]: error };
+      } else {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      }
+    });
+  };
+
+  // Phone validation errors by contact index
+  const [phoneErrors, setPhoneErrors] = useState({});
+
+  const validatePhoneAtIndex = (index, phone) => {
+    const error = getPhoneError(phone);
+    setPhoneErrors(prev => {
       if (error) {
         return { ...prev, [index]: error };
       } else {
@@ -492,9 +509,19 @@ const FastTrack = () => {
                         label="Direct Phone"
                         fullWidth
                         value={contact.phone || ''}
-                        onChange={handleContactChange(index, 'phone')}
-                        error={Boolean(contactErrors.rows?.[index]?.phone)}
-                        helperText={contactErrors.rows?.[index]?.phone}
+                        onChange={(e) => {
+                          handleContactChange(index, 'phone')(e);
+                          if (phoneErrors[index] && isValidPhone(e.target.value)) {
+                            setPhoneErrors(prev => {
+                              const next = { ...prev };
+                              delete next[index];
+                              return next;
+                            });
+                          }
+                        }}
+                        onBlur={(e) => validatePhoneAtIndex(index, e.target.value)}
+                        error={Boolean(phoneErrors[index] || contactErrors.rows?.[index]?.phone)}
+                        helperText={phoneErrors[index] || contactErrors.rows?.[index]?.phone}
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>

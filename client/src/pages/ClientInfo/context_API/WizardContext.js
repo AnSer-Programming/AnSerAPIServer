@@ -289,9 +289,10 @@ const reducer = (state, action) => {
 
 const STEP_DATA_KEYS = {
   'company-info': 'companyInfo',
-  'office-reach': 'officeReach',
   'answer-calls': 'answerCalls',
   'on-call': 'onCall',
+  'team-setup': 'onCall',
+  'escalation-details': 'onCall',
   'final-details': 'finalDetails',
 };
 
@@ -386,7 +387,7 @@ export const WizardProvider = ({ children }) => {
   
   // Get completion percentage for entire form
   const getOverallProgress = useCallback(() => {
-    const sections = ['companyInfo', 'officeReach', 'metrics', 'answerCalls', 'onCall', 'finalDetails'];
+    const sections = ['companyInfo', 'answerCalls', 'onCall', 'callRouting', 'finalDetails'];
     const completedSections = sections.filter(section => {
       const sectionData = state.formData[section];
       if (!sectionData) return false;
@@ -414,7 +415,7 @@ export const WizardProvider = ({ children }) => {
 
   // Check if a step can be proceeded to (previous steps completed)
   const canProceedToStep = useCallback((targetStep) => {
-    const stepOrder = ['company-info', 'office-reach', 'metrics', 'answer-calls', 'on-call', 'final-details'];
+    const stepOrder = ['company-info', 'answer-calls', 'on-call', 'team-setup', 'escalation-details', 'call-routing', 'office-reach', 'final-details'];
     const normalizedTarget = normalizeStepSlug(targetStep);
     const targetIndex = stepOrder.indexOf(normalizedTarget);
     

@@ -34,6 +34,7 @@ import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
 import AttachmentsSection from '../sections/AttachmentsSection';
 import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 // Available time slots for selection
 const timeSlots = [
@@ -76,6 +77,7 @@ const FinalDetails = () => {
   const [errors, setErrors] = React.useState({});
   const [attachmentErrors, setAttachmentErrors] = React.useState(null);
   const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const showSnackMessage = (message) => {
     setSnackMessage(message);
@@ -84,6 +86,10 @@ const FinalDetails = () => {
 
   const validateEmail = (email) => {
     setEmailError(getEmailError(email));
+  };
+
+  const validatePhone = (phone) => {
+    setPhoneError(getPhoneError(phone));
   };
 
   const companyInfo = formData.companyInfo || {};
@@ -545,10 +551,15 @@ const FinalDetails = () => {
                     onChange={(e) => {
                       clearError('contactPhone');
                       setConsultation({ contactPhone: e.target.value });
+                      // Clear error as user types if they've fixed it
+                      if (phoneError && isValidPhone(e.target.value)) {
+                        setPhoneError('');
+                      }
                     }}
+                    onBlur={(e) => validatePhone(e.target.value)}
                     fullWidth
-                    error={Boolean(errors.contactPhone)}
-                    helperText={errors.contactPhone || ''}
+                    error={Boolean(phoneError || errors.contactPhone)}
+                    helperText={phoneError || errors.contactPhone || ''}
                     sx={{ 
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,

@@ -46,7 +46,6 @@ export function validateContactValue(type, value = '') {
   }
 
   if (type === 'website') {
-    if (!/^https?:\/\//i.test(v)) return { valid: false, reason: 'must include http:// or https://' };
     return { valid: true };
   }
 

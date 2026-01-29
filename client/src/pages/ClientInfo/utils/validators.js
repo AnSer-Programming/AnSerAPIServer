@@ -82,6 +82,7 @@ export const validators = {
   'onCall.procedures': onCallProceduresSchema,
   'onCall.team': onCallTeamSchema,
   'onCall.schedules': onCallSchedulesSchema,
+  'onCall.scheduleType': onCallScheduleTypeSchema,
   'onCall.escalation': onCallEscalationSchema,
 
   // --- Final Details ---
@@ -105,7 +106,9 @@ export const validateAll = (formData) => {
     if (key === 'onCall') continue;
 
     const parts = key.split('.');
-    const value = parts.reduce((obj, part) => obj?.[part], formData);
+    const value = key === 'onCall.scheduleType'
+      ? formData.onCall
+      : parts.reduce((obj, part) => obj?.[part], formData);
     const err = fn(value);
 
     if (err) {

@@ -84,7 +84,16 @@ const AnswerCallsNew = () => {
   const categories = Array.isArray(section.categories) ? section.categories : [];
 
   // Local UI state (NOT persisted) - manages minimized/expanded state per session only
-  const [minimizedMap, setMinimizedMap] = useState({});
+  // Initialize all categories as collapsed on page load
+  const [minimizedMap, setMinimizedMap] = useState(() => {
+    const initial = {};
+    if (Array.isArray(section.categories)) {
+      section.categories.forEach(cat => {
+        initial[cat.id] = true; // all collapsed by default
+      });
+    }
+    return initial;
+  });
 
   // Confirmation dialog for category removal
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -93,6 +102,27 @@ const AnswerCallsNew = () => {
   // Focus-guard: local editing buffers to prevent mid-edit clobbering
   const [editingBuffers, setEditingBuffers] = useState({});
   const commitTimeoutRef = useRef({});
+
+  useEffect(() => {
+    // Ensure any categories loaded later start collapsed
+    setMinimizedMap((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      categories.forEach((cat) => {
+        if (next[cat.id] === undefined) {
+          next[cat.id] = true;
+          changed = true;
+        }
+      });
+      Object.keys(next).forEach((id) => {
+        if (!categories.some((cat) => cat.id === id)) {
+          delete next[id];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [categories]);
 
   useEffect(() => {
     // ensure at least one category exists on initial load
@@ -138,8 +168,13 @@ const AnswerCallsNew = () => {
     const next = [...(categories || [])];
     next.push({ id: newId, selectedCommon: '', customName: '', details: '' });
     setSection({ categories: next });
-    // Set new category as expanded (all others inherit their minimized state from minimizedMap)
-    setMinimizedMap(prev => ({ ...prev, [newId]: false }));
+    // Collapse all existing categories, expand only the new one
+    const newMinimizedMap = {};
+    categories.forEach(cat => {
+      newMinimizedMap[cat.id] = true; // minimize all existing
+    });
+    newMinimizedMap[newId] = false; // expand the new one
+    setMinimizedMap(newMinimizedMap);
   };
 
   const requestRemoveCategory = (id) => {
@@ -301,7 +336,7 @@ const AnswerCallsNew = () => {
 
         {/* Business Type Card */}
         <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 0.5 }}>Business Type</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Business Type</Typography>
           <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>Start by telling us what kind of account this is. Categories will belong to this business type.</Typography>
 
           <FormControl fullWidth>
@@ -323,10 +358,10 @@ const AnswerCallsNew = () => {
 
         {/* Categories Card */}
         <Paper sx={sharedStyles.card('primary', 'outlined')}>
-          <Typography sx={{ fontSize: 15, fontWeight: 700, mb: 0.5 }}>Call Categories</Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>How do we identify this type of call from others? For each category, what clarifying questions should agents ask?</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Call Categories</Typography>
+          <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>How do we identify this type of call from others? For each category, what clarifying questions should agents ask?</Typography>
 
-          <Box sx={{ mt: 1 }}>
+          <Box>
             {categories.map((cat, index) => {
               const minimized = isMinimized(cat.id);
               const customNameKey = `${cat.id}-customName`;
@@ -360,54 +395,50 @@ const AnswerCallsNew = () => {
                     id={`category-${cat.id}-header`}
                     sx={{ px: 2, py: 1 }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, width: '100%' }}>
-                      <Box sx={{ flex: '0 0 auto', minWidth: 220 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                          {displayCustomName || cat.selectedCommon || `Call Category ${index + 1}`}
-                        </Typography>
-                      </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, fontSize: '1.35rem', color: theme.palette.text.primary }}>
+                        {displayCustomName || cat.selectedCommon || `Call Category ${index + 1}`}
+                      </Typography>
                     </Box>
                   </AccordionSummary>
-                  <AccordionDetails sx={{ px: 2, pb: 2 }}>
-                    <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                      <Grid item xs={12}>
-                        <Typography sx={{ fontSize: 12, fontWeight: 700, mb: 0.5 }}>Pick one of the suggestions or type your own</Typography>
-                        <Autocomplete
-                          freeSolo
-                          options={getAvailableExamples(cat.id)}
-                          value={displayCustomName}
-                          onChange={(_e, newValue) => handleCategoryFreeInputChange(cat.id, newValue)}
-                          inputValue={displayCustomName}
-                          onInputChange={(_e, newInput) => handleCategoryFreeInputChange(cat.id, newInput)}
-                          onFocus={() => startEditing(customNameKey, cat.customName || '')}
-                          onBlur={() => commitEdit(cat.id, 'customName', displayCustomName)}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              size="small"
-                              placeholder="e.g. Boiler Pressure Low"
-                              inputProps={{ ...params.inputProps, 'aria-label': `Category input for ${cat.id}` }}
-                            />
-                          )}
+                  <AccordionDetails sx={{ px: 2, pt: 0, pb: 2 }}>
+                    <Typography sx={{ fontSize: 10, fontWeight: 400, mb: 0.5, color: 'text.secondary' }}>Pick one of the suggestions or type your own</Typography>
+                    <Autocomplete
+                      freeSolo
+                      options={getAvailableExamples(cat.id)}
+                      value={displayCustomName}
+                      onChange={(_e, newValue) => handleCategoryFreeInputChange(cat.id, newValue)}
+                      inputValue={displayCustomName}
+                      onInputChange={(_e, newInput) => handleCategoryFreeInputChange(cat.id, newInput)}
+                      onFocus={() => startEditing(customNameKey, cat.customName || '')}
+                      onBlur={() => commitEdit(cat.id, 'customName', displayCustomName)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          placeholder="e.g. Boiler Pressure Low"
+                          inputProps={{ ...params.inputProps, 'aria-label': `Category input for ${cat.id}` }}
                         />
-                      </Grid>
-                    </Grid>
+                      )}
+                    />
 
                     <Box sx={{ mt: 1 }}>
-                      <Box sx={{ mb: 1, p: 1, borderRadius: 1, border: `1px solid ${theme.palette.divider}`, bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50] }}>
-                        <Box component="ul" sx={{ pl: 2, mt: 0, mb: 0 }}>
-                          <li style={{ listStyleType: 'disc', marginBottom: 6 }}><strong>What clarifying questions should agents ask?</strong></li>
-                          <li style={{ listStyleType: 'disc' }}>How do we identify this from other calls?</li>
-                          <li style={{ listStyleType: 'disc' }}>What follow-up questions confirm the issue?</li>
-                          <li style={{ listStyleType: 'disc' }}>Any safety or access notes?</li>
-                        </Box>
+                      <Typography sx={{ fontSize: 10, fontWeight: 400, mb: 0.5, color: 'text.secondary' }}>
+                        What clarifying questions should agents ask for this call type?
+                      </Typography>
+                      <Box sx={{ fontSize: 12, color: 'text.secondary', mb: 1, pl: 1 }}>
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          <li>How do we identify this from other calls?</li>
+                          <li>What follow-up questions confirm the issue?</li>
+                          <li>Any safety or access notes?</li>
+                        </ul>
                       </Box>
-
                       <TextField
                         multiline
-                        minRows={4}
+                        minRows={3}
                         fullWidth
                         size="small"
+                        placeholder="e.g. Is this an emergency? When did the issue start? Have you tried restarting?"
                         value={displayDetails}
                         onFocus={() => startEditing(detailsKey, cat.details || '')}
                         onChange={(e) => {
@@ -440,7 +471,7 @@ const AnswerCallsNew = () => {
         {/* Footer navigation */}
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
           <Button startIcon={<NavigateBefore />} variant="outlined" onClick={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}>Back</Button>
-          <Button endIcon={<NavigateNext />} variant="contained" onClick={() => history.push(WIZARD_ROUTES.ON_CALL)}>Next: On Call</Button>
+          <Button endIcon={<NavigateNext />} variant="contained" onClick={() => history.push(WIZARD_ROUTES.ON_CALL)}>Next: On Call Setup</Button>
         </Box>
       </Container>
 

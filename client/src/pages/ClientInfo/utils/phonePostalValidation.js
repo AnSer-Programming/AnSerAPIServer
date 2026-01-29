@@ -8,21 +8,23 @@
 // PHONE NUMBER VALIDATION
 // ========================
 
-// US/Canada phone: (XXX) XXX-XXXX or similar formats
-const US_PHONE_REGEX = /^[\d\s()+-]{10,}$/;
+// US/Canada phone must have exactly 10 digits
+const US_PHONE_REGEX = /^\d{10}$/;
 
-// More flexible international phone pattern
-const PHONE_REGEX = /^[0-9+()\s-]{7,20}$/;
+// Toll-free or with country code: 11 digits (1 + 10)
+const US_PHONE_WITH_COUNTRY_REGEX = /^1\d{10}$/;
 
 /**
  * Check if a phone number is valid (or empty)
+ * Requires exactly 10 digits for US/Canada, or 11 with country code
  * @param {string} phone - The phone to validate
  * @returns {boolean} - True if valid or empty
  */
 export const isValidPhone = (phone) => {
   if (!phone || !phone.trim()) return true;
-  const cleaned = phone.replace(/\s/g, '');
-  return PHONE_REGEX.test(cleaned) && cleaned.replace(/\D/g, '').length >= 7;
+  const digits = phone.replace(/\D/g, '');
+  // Accept 10 digits (standard) or 11 digits starting with 1 (with country code)
+  return US_PHONE_REGEX.test(digits) || US_PHONE_WITH_COUNTRY_REGEX.test(digits);
 };
 
 /**
@@ -33,6 +35,12 @@ export const isValidPhone = (phone) => {
 export const getPhoneError = (phone) => {
   if (!phone || !phone.trim()) return '';
   if (!isValidPhone(phone)) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 10) {
+      return `Phone number must have 10 digits (currently ${digits.length}).`;
+    } else if (digits.length > 11) {
+      return 'Phone number is too long.';
+    }
     return 'Please enter a valid phone number (e.g., (555) 123-4567).';
   }
   return '';
