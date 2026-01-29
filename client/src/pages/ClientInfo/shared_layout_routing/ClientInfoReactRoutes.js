@@ -52,10 +52,8 @@ const ClientInfoReactRoutesInner = () => (
               <Route path="/ClientInfoReact/admin-invite" component={AdminInvite} />
               <Route path="/ClientInfoReact/invite/:token" component={InviteLinkHandler} />
 
-              {/* Fast Track route is feature-flag guarded */}
-              {process.env.REACT_APP_FASTTRACK_ENABLED === 'true' && (
-                <Route path="/ClientInfoReact/NewFormWizard/fast-track" component={lazy(() => import('../pages/FastTrack'))} />
-              )}
+              {/* Fast Track route */}
+              <Route path="/ClientInfoReact/NewFormWizard/fast-track" component={lazy(() => import('../pages/FastTrack'))} />
 
               <Route component={StartNewClient} />
             </Switch>

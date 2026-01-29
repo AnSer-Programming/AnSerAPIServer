@@ -177,8 +177,6 @@ const ReviewStep = () => {
     };
   }, [formData]);
 
-  const featureFastTrackEnabled = process.env.REACT_APP_FASTTRACK_ENABLED === 'true';
-
   // Memoize consultation slots processing
   const { sortedConsultationSlots, formattedConsultationSlots, meetingTypeSummary } = useMemo(() => {
     const consultationSlots = Array.isArray(consultation.selectedDateTimes)

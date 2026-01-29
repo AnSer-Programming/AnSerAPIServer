@@ -175,25 +175,6 @@ const FastTrack = () => {
       </Typography>
     );
   };
-  const featureFastTrackEnabled = process.env.REACT_APP_FASTTRACK_ENABLED === 'true';
-
-  if (!featureFastTrackEnabled) {
-    // Render a small informative placeholder so the component remains present for data integrity,
-    // but the full Fast Track UI is hidden unless the feature flag is enabled.
-    return (
-      <Box sx={{ minHeight: '40vh', p: 4 }}>
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6">Fast Track (disabled)</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Fast Track has been temporarily disabled for this environment. Existing fast-track data is preserved and can be re-enabled via configuration.
-          </Typography>
-          <Box sx={{ mt: 2 }}>
-            <Button variant="contained" disabled>Fast Track (disabled)</Button>
-          </Box>
-        </Paper>
-      </Box>
-    );
-  }
   useEffect(() => {
     const prevTitle = document.title;
     document.title = 'Fast Track — AnSer Communications';
