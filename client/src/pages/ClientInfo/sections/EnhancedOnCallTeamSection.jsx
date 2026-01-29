@@ -13,14 +13,7 @@ import {
   Select,
   MenuItem,
   Menu,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemSecondaryAction,
-  Chip,
   Tooltip,
-  Switch,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -30,6 +23,7 @@ import {
   Collapse,
 } from '@mui/material';
 import FieldRow from '../components/FieldRow';
+import PhoneMaskInput from '../components/PhoneMaskInput';
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
@@ -45,6 +39,8 @@ import {
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -89,6 +85,7 @@ const createDefaultTeamMember = () => ({
   homePhone: [''],
   textCell: [''],
   pager: [''],
+  msm: [''],
   escalationSteps: createDefaultEscalationSteps(),
 });
 
@@ -104,8 +101,9 @@ const normalizeMember = (member = {}) => {
     email: ensureArray(member?.email ?? member?.emails),
     cellPhone: ensureArray(member?.cellPhone ?? member?.cell),
     homePhone: ensureArray(member?.homePhone ?? member?.home),
-  textCell: ensureArray(member?.textCell ?? member?.text),
+    textCell: ensureArray(member?.textCell ?? member?.text),
     pager: ensureArray(member?.pager ?? member?.other),
+    msm: ensureArray(member?.msm),
     escalationSteps: normalizeEscalationSteps(member?.escalationSteps),
   };
 };
@@ -128,6 +126,7 @@ const CONTACT_ERROR_KEYS = {
   email: ['email'],
   textCell: ['textCell', 'text'],
   pager: ['pager', 'other'],
+  msm: ['msm'],
 };
 
 const resolveContactError = (errors, contactType) => {
@@ -152,23 +151,15 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
   // Initialize team members state with normalized data
   const [teamMembers, setTeamMembers] = useState(normalizedInitialTeam);
   
-  // State for managing expanded team members - expand first member by default
-  const [expandedMembers, setExpandedMembers] = useState(() => (
-    normalizedInitialTeam.length > 0 ? new Set([normalizedInitialTeam[0].id]) : new Set()
-  ));
+  // State for managing expanded team members (default all collapsed)
+  const [expandedMembers, setExpandedMembers] = useState(() => new Set());
 
   useEffect(() => {
     setTeamMembers(normalizedInitialTeam);
     setExpandedMembers((prev) => {
-      if (normalizedInitialTeam.length === 0) {
-        return new Set();
-      }
-
-      if (prev.size > 0) {
-        return prev;
-      }
-
-      return new Set([normalizedInitialTeam[0].id]);
+      const prevSet = prev || new Set();
+      const validIds = new Set(normalizedInitialTeam.map((member) => member.id));
+      return new Set([...prevSet].filter((id) => validIds.has(id)));
     });
   }, [normalizedInitialTeam]);
   
@@ -208,8 +199,6 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   const inputBg = darkMode ? alpha('#fff', 0.06) : theme.palette.common.white;
-
-  const [compactView, setCompactView] = useState(false);
 
   const addTeamMember = () => {
     const newMember = createDefaultTeamMember();
@@ -284,17 +273,22 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
 
   // Contact method management
   const addContactMethod = (memberId, contactType) => {
+    let focusTarget = null;
     const updatedTeam = teamMembers.map(member => {
       if (member.id === memberId) {
         const currentArray = Array.isArray(member[contactType]) ? member[contactType] : [];
         const hasOnlyEmpty = currentArray.length === 1 && (currentArray[0] === '' || currentArray[0] == null);
         const nextArray = currentArray.length === 0 || hasOnlyEmpty ? [''] : [...currentArray, ''];
-        const added = Array.isArray(member._methodsAdded) ? new Set(member._methodsAdded) : new Set();
-        added.add(contactType);
+        const targetIndex = (currentArray.length === 0 || hasOnlyEmpty) ? 0 : nextArray.length - 1;
+        const added = Array.isArray(member._methodsAdded)
+          ? member._methodsAdded.filter((method) => method !== contactType)
+          : [];
+        added.push(contactType);
+        focusTarget = { memberId, contactType, index: targetIndex };
         return {
           ...member,
           [contactType]: nextArray,
-          _methodsAdded: Array.from(added),
+          _methodsAdded: added,
         };
       }
       return member;
@@ -302,6 +296,9 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
     const normalizedTeam = normalizeTeam(updatedTeam);
     setTeamMembers(normalizedTeam);
     setOnCall({ team: normalizedTeam });
+    if (focusTarget) {
+      setPendingFocus(focusTarget);
+    }
   };
 
   const removeContactMethod = (memberId, contactType, index) => {
@@ -338,58 +335,142 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
     setOnCall({ team: normalizedTeam });
   };
 
-  // Render contact method fields with Add/Remove functionality
+  const removeContactMethodType = (memberId, contactType) => {
+    const updatedTeam = teamMembers.map(member => {
+      if (member.id !== memberId) return member;
+      const next = { ...member, [contactType]: [''] };
+      if (Array.isArray(next._methodsAdded)) {
+        next._methodsAdded = next._methodsAdded.filter((method) => method !== contactType);
+      }
+      return next;
+    });
+    const normalizedTeam = normalizeTeam(updatedTeam);
+    setTeamMembers(normalizedTeam);
+    setOnCall({ team: normalizedTeam });
+
+    setContactValidationErrors((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (key.startsWith(`${memberId}-${contactType}-`)) {
+          delete next[key];
+        }
+      });
+      return next;
+    });
+  };
+
+  // Render contact method fields - compact version with validation
+  const [contactValidationErrors, setContactValidationErrors] = useState({});
+  const [pendingFocus, setPendingFocus] = useState(null);
+
+  const validateContactField = (memberId, contactType, index, value) => {
+    const key = `${memberId}-${contactType}-${index}`;
+    let error = '';
+    
+    if (value && value.trim()) {
+      if (contactType === 'email') {
+        error = getEmailError(value);
+      } else if (['cellPhone', 'homePhone', 'textCell'].includes(contactType)) {
+        error = getPhoneError(value);
+      }
+    }
+    
+    setContactValidationErrors(prev => {
+      if (error) {
+        return { ...prev, [key]: error };
+      } else {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+    });
+  };
+
   const renderContactMethodField = (member, contactType, label, icon, errorMessage) => {
     const contacts = member[contactType] || [''];
     const showError = Boolean(errorMessage);
+    const canRemoveMethod = true;
     
+    const placeholderMap = {
+      cellPhone: '(555) 123-4567',
+      homePhone: '(555) 987-6543',
+      email: 'name@company.com',
+      textCell: '(555) 123-4567',
+      pager: 'Pager number or code',
+      msm: 'MSM username or ID',
+    };
+
     return (
-      <Box sx={{ mb: 2 }}>
-        <Typography
-          variant="subtitle2"
-          sx={{
-            mb: 1,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            color: showError ? theme.palette.error.main : 'inherit'
-          }}
-        >
-          {icon}
-          {label}
-        </Typography>
-        {contacts.map((contact, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <TextField
-              label={`${label} ${contacts.length > 1 ? index + 1 : ''}`}
-              value={contact}
-              onChange={(e) => updateContactMethod(member.id, contactType, index, e.target.value)}
-              size="small"
-              sx={{ flex: 1, bgcolor: inputBg }}
-              error={showError && index === 0}
-              helperText={showError && index === 0 ? errorMessage : ''}
-            />
-            {contacts.length > 1 && (
-              <IconButton
-                onClick={() => removeContactMethod(member.id, contactType, index)}
-                color="error"
+      <Box sx={{ mb: 1.5 }}>
+        {contacts.map((contact, index) => {
+          const validationKey = `${member.id}-${contactType}-${index}`;
+          const validationError = contactValidationErrors[validationKey] || '';
+          const fieldError = (showError && index === 0) ? errorMessage : validationError;
+          
+        const showRowRemove = contacts.length > 1;
+        const showMethodRemove = !showRowRemove && canRemoveMethod;
+        const shouldAutoFocus = Boolean(
+          pendingFocus
+            && pendingFocus.memberId === member.id
+            && pendingFocus.contactType === contactType
+            && pendingFocus.index === index
+        );
+        const isPhoneType = ['cellPhone', 'homePhone', 'textCell'].includes(contactType);
+
+        return (
+            <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.75 }}>
+              <TextField
+                label={contacts.length > 1 ? `${label} ${index + 1}` : label}
+                placeholder={placeholderMap[contactType] || ''}
+                value={contact}
+                onChange={(e) => {
+                  updateContactMethod(member.id, contactType, index, e.target.value);
+                  // Clear validation error if user is typing and value becomes valid
+                  if (validationError) {
+                    const isPhone = ['cellPhone', 'homePhone', 'textCell'].includes(contactType);
+                    const isEmailType = contactType === 'email';
+                    if ((isPhone && isValidPhone(e.target.value)) || (isEmailType && isValidEmail(e.target.value))) {
+                      setContactValidationErrors(prev => {
+                        const next = { ...prev };
+                        delete next[validationKey];
+                        return next;
+                      });
+                    }
+                  }
+                }}
+                onBlur={(e) => validateContactField(member.id, contactType, index, e.target.value)}
                 size="small"
-              >
-                <RemoveIcon />
-              </IconButton>
+                sx={{ flex: 1, bgcolor: inputBg }}
+                error={Boolean(fieldError)}
+                helperText={fieldError}
+                InputProps={isPhoneType ? { inputComponent: PhoneMaskInput, inputProps: { type: 'phone' } } : undefined}
+                inputRef={(node) => {
+                  if (node && shouldAutoFocus) {
+                    requestAnimationFrame(() => {
+                      node.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                      node.focus();
+                    });
+                    setPendingFocus(null);
+                  }
+                }}
+              />
+            {(showRowRemove || showMethodRemove) && (
+              <Tooltip title={showRowRemove ? 'Remove this entry' : `Remove ${label}`}>
+                <IconButton
+                  onClick={() => (showRowRemove
+                    ? removeContactMethod(member.id, contactType, index)
+                    : removeContactMethodType(member.id, contactType))}
+                  color="error"
+                  size="small"
+                  sx={{ p: 0.5, alignSelf: 'center' }}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
           </Box>
-        ))}
-        <Button
-          startIcon={<AddIcon />}
-          onClick={() => addContactMethod(member.id, contactType)}
-          size="small"
-          variant="outlined"
-          sx={{ mt: 1 }}
-        >
-          Add {label}
-        </Button>
+          );
+        })}
       </Box>
     );
   };
@@ -475,43 +556,6 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
   return (
     <>
       <Box sx={{ mb: 3 }}>
-        {/* Team Size Question */}
-        <Box sx={{ mb: 3, p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.08), border: `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: theme.palette.info.main }}>
-            How many people are on your on-call team?
-          </Typography>
-          <TextField
-            type="number"
-            size="small"
-            value={onCall?.teamSize || 0}
-            onChange={(e) => setOnCall({ teamSize: parseInt(e.target.value) || 0 })}
-            inputProps={{ min: 0, max: 100 }}
-            sx={{ width: 120 }}
-          />
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-            This helps us understand the size of your rotation
-          </Typography>
-        </Box>
-
-        {/* Email Collection Toggle */}
-        <Box sx={{ mb: 3, p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.secondary.main, 0.08), border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}` }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
-                Would you like to collect email addresses for daily recaps?
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                If enabled, we'll gather team member emails for automated recap reports
-              </Typography>
-            </Box>
-            <Switch
-              checked={onCall?.collectEmailsForRecaps || false}
-              onChange={(e) => setOnCall({ collectEmailsForRecaps: e.target.checked })}
-              color="secondary"
-            />
-          </Stack>
-        </Box>
-
   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Box sx={{ 
           p: 1.5, 
@@ -529,72 +573,18 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
             Add team members and configure how to reach them during after-hours situations
           </Typography>
         </Box>
-        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">Detailed</Typography>
-          <Switch size="small" checked={compactView} onChange={(e) => setCompactView(e.target.checked)} />
-          <Typography variant="caption" color="text.secondary">Compact</Typography>
-        </Box>
+        <Box sx={{ ml: 'auto' }} />
       </Stack>
 
       {/* Add Team Member button is rendered after the member list so it appears after the last added member */}
 
-      {compactView ? (
-        <List>
-          {teamMembers.map((member, index) => {
-            const primaryContact = getPrimaryContactValue(member.cellPhone)
-              || getPrimaryContactValue(member.email)
-              || getPrimaryContactValue(member.homePhone)
-              || getPrimaryContactValue(member.pager);
-            return (
-              <React.Fragment key={member.id}>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => toggleMemberExpansion(member.id)}>
-                    <ListItemText
-                      primary={member.name || `Team Member ${index + 1}`}
-                      secondary={member.title || primaryContact}
-                    />
-                    <ListItemSecondaryAction>
-                      <Chip label={`${(member.escalationSteps || []).length} steps`} size="small" sx={{ mr: 1 }} />
-                      <Tooltip title="Edit">
-                        <IconButton edge="end" onClick={() => toggleMemberExpansion(member.id)}>
-                          {expandedMembers.has(member.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                        </IconButton>
-                      </Tooltip>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                </ListItem>
-                <Collapse in={expandedMembers.has(member.id)} timeout={200} unmountOnExit>
-                  <Box sx={{ p: 2, bgcolor: alpha(theme.palette.background.paper, 0.5) }}>
-                    {/* reuse the same detailed editor UI inside collapse: we'll call updateTeamMember etc. */}
-                    {/* Basic Info */}
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} md={6}>
-                        <FieldRow>
-                          <TextField label="Full Name" value={member.name} onChange={(e) => updateTeamMember(member.id, 'name', e.target.value)} size="small" fullWidth />
-                        </FieldRow>
-                        <FieldRow>
-                          <TextField label="Job Title" value={member.title} onChange={(e) => updateTeamMember(member.id, 'title', e.target.value)} size="small" fullWidth />
-                        </FieldRow>
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        {renderContactMethodField(member, 'cellPhone', 'Cell Phone', <Phone fontSize="small" />, resolveContactError({}, 'cellPhone'))}
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Collapse>
-              </React.Fragment>
-            );
-          })}
-        </List>
-      ) : (
-        teamMembers.length === 0 && (
+      {teamMembers.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
           No team members added yet. Click "Add Team Member" to get started.
         </Alert>
-        )
       )}
 
-      {!compactView && teamMembers.map((member, index) => {
+      {teamMembers.map((member, index) => {
         const isExpanded = expandedMembers.has(member.id);
         const memberErrors = teamErrors[index] || {};
         const hasMemberError = Object.keys(memberErrors).length > 0;
@@ -681,264 +671,433 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
 
             {/* Collapsible Content */}
             <Collapse in={isExpanded} timeout={300}>
-              <Box sx={{ p: 2, pt: 1, bgcolor: alpha(theme.palette.background.paper, 0.5) }}>
-                <Grid container spacing={3}>
+              <Box sx={{ p: { xs: 2, md: 2.5 }, bgcolor: alpha(theme.palette.background.default, 0.5) }}>
+                <Grid container spacing={2.5}>
                   {/* Basic Information */}
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Person fontSize="small" />
-                      Basic Information
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <TextField
-                        label="Full Name"
-                        value={member.name}
-                        onChange={(e) => updateTeamMember(member.id, 'name', e.target.value)}
-                        fullWidth
-                        size="small"
-                        sx={{ mb: 2, bgcolor: inputBg }}
-                        error={Boolean(memberErrors?.name)}
-                        helperText={memberErrors?.name || ''}
-                      />
-                      <TextField
-                        label="Job Title"
-                        value={member.title}
-                        onChange={(e) => updateTeamMember(member.id, 'title', e.target.value)}
-                        fullWidth
-                        size="small"
-                        sx={{ mb: 2, bgcolor: inputBg }}
-                      />
-                      
-                      {/* Role Selection */}
-                      <Box>
-                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                          Role
+                    <Box sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.03)}`,
+                      height: '100%'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <Box sx={{
+                          p: 0.5,
+                          borderRadius: 1,
+                          bgcolor: alpha(theme.palette.primary.main, 0.08),
+                          color: theme.palette.primary.main,
+                          display: 'flex',
+                        }}>
+                          <Person fontSize="small" />
+                        </Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          Basic Information
                         </Typography>
-                        <Stack direction="row" spacing={2}>
-                          <Button
-                            variant={member.role === 'primary' ? 'contained' : 'outlined'}
-                            size="small"
-                            onClick={() => updateTeamMember(member.id, 'role', 'primary')}
-                            sx={{ flex: 1 }}
-                          >
-                            Primary
-                          </Button>
-                          <Button
-                            variant={member.role === 'backup' ? 'contained' : 'outlined'}
-                            size="small"
-                            onClick={() => updateTeamMember(member.id, 'role', 'backup')}
-                            sx={{ flex: 1 }}
-                          >
-                            Backup
-                          </Button>
-                        </Stack>
                       </Box>
+                      <Stack spacing={1.5}>
+                        <TextField
+                          label="Full Name"
+                          placeholder="John Smith"
+                          value={member.name}
+                          onChange={(e) => updateTeamMember(member.id, 'name', e.target.value)}
+                          fullWidth
+                          size="small"
+                          error={Boolean(memberErrors?.name)}
+                          helperText={memberErrors?.name || ''}
+                        />
+                        <TextField
+                          label="Job Title"
+                          placeholder="On-Call Technician"
+                          value={member.title}
+                          onChange={(e) => updateTeamMember(member.id, 'title', e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                      </Stack>
                     </Box>
                   </Grid>
 
                   {/* Contact Methods */}
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Phone fontSize="small" />
-                      Contact Methods
-                    </Typography>
+                    <Box sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.03)}`,
+                      height: '100%'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <Box sx={{
+                          p: 0.5,
+                          borderRadius: 1,
+                          bgcolor: alpha(theme.palette.success.main, 0.08),
+                          color: theme.palette.success.main,
+                          display: 'flex',
+                        }}>
+                          <Phone fontSize="small" />
+                        </Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          Contact Information
+                        </Typography>
+                      </Box>
 
-                    {memberErrors?.contactRequired && (
-                      <Alert severity="warning" sx={{ mb: 2 }}>
-                        {memberErrors.contactRequired}
-                      </Alert>
-                    )}
-                    
-                    {/* Always show Cell Phone first */}
-                    {renderContactMethodField(member, 'cellPhone', 'Cell Phone', <Phone fontSize="small" />, resolveContactError(memberErrors, 'cellPhone'))}
+                      {memberErrors?.contactRequired && (
+                        <Alert severity="warning" sx={{ mb: 1.5, py: 0.25 }} icon={false}>
+                          <Typography variant="caption">{memberErrors.contactRequired}</Typography>
+                        </Alert>
+                      )}
 
-                    {/* Render other contact methods the user has added or that already contain values, in the order they were added */}
-                    {(() => {
-                      const methodKeys = ['homePhone', 'email', 'textCell', 'pager'];
-                      const addedArray = Array.isArray(member._methodsAdded) ? member._methodsAdded : [];
-                      const addedOrdered = addedArray.filter(k => k !== 'cellPhone' && methodKeys.includes(k));
-                      const fallback = methodKeys.filter(k => !addedOrdered.includes(k) && (member[k] && member[k].some(v => (v || '').trim())));
-                      const finalList = [...addedOrdered, ...fallback];
-                      const labelMap = {
-                        cellPhone: 'Cell Phone',
-                        homePhone: 'Home Phone',
-                        email: 'Email',
-                        textCell: 'Text Cell',
-                        pager: 'Send Page',
-                      };
-                      const iconMap = {
-                        cellPhone: <Phone fontSize="small" />,
-                        homePhone: <Home fontSize="small" />,
-                        email: <Email fontSize="small" />,
-                        textCell: <Message fontSize="small" />,
-                        pager: <Notifications fontSize="small" />,
-                      };
-                      return finalList.map((k) => (
-                        <React.Fragment key={k}>
-                          {renderContactMethodField(member, k, labelMap[k], iconMap[k], resolveContactError(memberErrors, k))}
-                        </React.Fragment>
-                      ));
-                    })()}
+                      {/* Render contact methods the user has added or that already contain values */}
+                      {(() => {
+                        const methodKeys = ['cellPhone', 'homePhone', 'pager', 'msm', 'email'];
+                        const addedArray = Array.isArray(member._methodsAdded) ? member._methodsAdded : [];
+                        const addedOrdered = Array.from(new Set(addedArray.filter(k => methodKeys.includes(k))));
+                        const fallback = methodKeys.filter(k => !addedOrdered.includes(k) && (member[k] && member[k].some(v => (v || '').trim())));
+                        const finalList = [...fallback, ...addedOrdered];
+                        const labelMap = {
+                          cellPhone: 'Cell Phone',
+                          homePhone: 'Home Phone',
+                          email: 'Email',
+                          pager: 'Pager',
+                          msm: 'MSM',
+                        };
+                        const iconMap = {
+                          cellPhone: <Phone fontSize="small" />,
+                          homePhone: <Home fontSize="small" />,
+                          email: <Email fontSize="small" />,
+                          pager: <Notifications fontSize="small" />,
+                          msm: <Message fontSize="small" />,
+                        };
+                        return finalList.map((k) => (
+                          <React.Fragment key={k}>
+                            {renderContactMethodField(member, k, labelMap[k], iconMap[k], resolveContactError(memberErrors, k))}
+                          </React.Fragment>
+                        ));
+                      })()}
 
-                    {/* Button to add another contact method - placed after the last visible method */}
-                    <Box sx={{ mb: 2 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={(e) => openAddMethodMenu(member.id, e)}
-                        startIcon={<AddIcon />}
-                        fullWidth
-                      >
-                        Add another contact method
-                      </Button>
+                      {/* Button to add another contact method */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5 }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={(e) => openAddMethodMenu(member.id, e)}
+                          startIcon={<AddIcon />}
+                          sx={{
+                            flex: 1,
+                            textTransform: 'none',
+                            fontSize: 12,
+                            color: 'text.secondary',
+                            borderColor: alpha(theme.palette.divider, 0.6),
+                            borderStyle: 'dashed',
+                            borderRadius: 1.5,
+                            minHeight: 40,
+                            py: 0.5,
+                            justifyContent: 'center',
+                            pl: 1,
+                            '&:hover': {
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
+                              bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            }
+                          }}
+                        >
+                          Add contact method
+                        </Button>
+                        <Box sx={{ width: 32, height: 32, flexShrink: 0 }} />
+                      </Box>
                       <Menu
                         anchorEl={addMethodAnchor[member.id]}
                         open={Boolean(addMethodAnchor[member.id])}
                         onClose={() => closeAddMethodMenu(member.id)}
                       >
                         {[
+                          ['cellPhone', 'Cell Phone'],
                           ['homePhone', 'Home Phone'],
+                          ['pager', 'Pager'],
+                          ['msm', 'MSM'],
                           ['email', 'Email'],
-                          ['textCell', 'Text Cell'],
-                          ['pager', 'Send Page'],
-                        ].map(([key, label]) => {
-                          const already = (Array.isArray(member._methodsAdded) && member._methodsAdded.includes(key)) || (member[key] && member[key].some(v => (v || '').trim()));
-                          return (
-                            <MenuItem
-                              key={key}
-                              disabled={already}
-                              onClick={() => { addContactMethod(member.id, key); closeAddMethodMenu(member.id); }}
-                            >
-                              {label}
-                            </MenuItem>
-                          );
-                        })}
+                        ].map(([key, label]) => (
+                          <MenuItem
+                            key={key}
+                            onClick={() => { addContactMethod(member.id, key); closeAddMethodMenu(member.id); }}
+                          >
+                            {label}
+                          </MenuItem>
+                        ))}
                       </Menu>
                     </Box>
                   </Grid>
 
-                  {/* Escalation Procedures */}
+                  {/* Escalation Procedures - Timeline Style */}
                   <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Notifications fontSize="small" />
-                      Escalation Procedures
-                    </Typography>
-                    
-                    {member.escalationSteps?.map((step, stepIndex) => (
-                      <Box 
-                        key={step.id} 
-                        sx={{ 
-                          mb: 2, 
-                          p: 2,
-                          bgcolor: alpha(theme.palette.success.main, 0.05),
-                          borderRadius: 1,
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                            Escalation Step {stepIndex + 1}
-                          </Typography>
-                          {member.escalationSteps.length > 1 && (
-                            <IconButton
-                              onClick={() => removeEscalationStep(member.id, step.id)}
-                              color="error"
-                              size="small"
-                            >
-                              <RemoveIcon />
-                            </IconButton>
-                          )}
+                    <Box sx={{
+                      p: 2.5,
+                      borderRadius: 2,
+                      bgcolor: alpha(theme.palette.warning.main, 0.03),
+                      border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+                    }}>
+                      {/* Header */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{
+                            p: 0.75,
+                            borderRadius: 1.5,
+                            bgcolor: alpha(theme.palette.warning.main, 0.12),
+                            color: theme.palette.warning.dark,
+                            display: 'flex',
+                          }}>
+                            <Notifications fontSize="small" />
+                          </Box>
+                          <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                              Escalation Procedures
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              How we reach this person, step by step
+                            </Typography>
+                          </Box>
                         </Box>
-                        
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} md={4}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Contact Method</InputLabel>
-                              <Select
-                                value={step.contactMethod}
-                                onChange={(e) => updateEscalationStep(member.id, step.id, 'contactMethod', e.target.value)}
-                                label="Contact Method"
-                                sx={{ bgcolor: inputBg }}
-                              >
-                                <MenuItem value="cell">Cell Phone</MenuItem>
-                                <MenuItem value="home">Home Phone</MenuItem>
-                                <MenuItem value="email">Email</MenuItem>
-                                <MenuItem value="text">Text Cell</MenuItem>
-                                <MenuItem value="pager">Send Page</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Attempts</InputLabel>
-                              <Select
-                                value={step.attempts}
-                                onChange={(e) => updateEscalationStep(member.id, step.id, 'attempts', e.target.value)}
-                                label="Attempts"
-                                sx={{ bgcolor: inputBg }}
-                              >
-                                <MenuItem value="1">1 Attempt</MenuItem>
-                                <MenuItem value="2">2 Attempts</MenuItem>
-                                <MenuItem value="3">3 Attempts</MenuItem>
-                                <MenuItem value="5">5 Attempts</MenuItem>
-                                <MenuItem value="continuous">Continuous</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Interval</InputLabel>
-                              <Select
-                                value={step.interval}
-                                onChange={(e) => updateEscalationStep(member.id, step.id, 'interval', e.target.value)}
-                                label="Interval"
-                                sx={{ bgcolor: inputBg }}
-                              >
-                                <MenuItem value="immediate">Immediate</MenuItem>
-                                <MenuItem value="2min">2 Minutes</MenuItem>
-                                <MenuItem value="5min">5 Minutes</MenuItem>
-                                <MenuItem value="10min">10 Minutes</MenuItem>
-                                <MenuItem value="15min">15 Minutes</MenuItem>
-                                <MenuItem value="30min">30 Minutes</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                        </Grid>
                       </Box>
-                    ))}
 
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <Button
-                        startIcon={<AddIcon />}
-                        onClick={() => addEscalationStep(member.id)}
-                        size="small"
-                        variant="outlined"
-                        color="success"
-                      >
-                        Add Escalation Step
-                      </Button>
+                      {/* Timeline Steps */}
+                      <Box sx={{ position: 'relative', pl: 1 }}>
+                        {member.escalationSteps?.map((step, stepIndex) => {
+                          const isLast = stepIndex === member.escalationSteps.length - 1;
+                          return (
+                            <Box
+                              key={step.id}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2,
+                                mb: isLast ? 0 : 1.5,
+                                position: 'relative',
+                              }}
+                            >
+                              {/* Timeline connector */}
+                              <Box sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                pt: 0.5,
+                              }}>
+                                {/* Step number circle */}
+                                <Box sx={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: '50%',
+                                  bgcolor: theme.palette.warning.main,
+                                  color: '#fff',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 700,
+                                  fontSize: 13,
+                                  flexShrink: 0,
+                                  zIndex: 1,
+                                }}>
+                                  {stepIndex + 1}
+                                </Box>
+                                {/* Vertical line */}
+                                {!isLast && (
+                                  <Box sx={{
+                                    width: 2,
+                                    flexGrow: 1,
+                                    bgcolor: alpha(theme.palette.warning.main, 0.3),
+                                    minHeight: 40,
+                                    mt: 0.5,
+                                  }} />
+                                )}
+                              </Box>
 
-                      <Button
-                        startIcon={<AddIcon />}
-                        onClick={() => openConfirmApply(member.id)}
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                      >
-                        Apply to all contacts
-                      </Button>
+                              {/* Step content */}
+                              <Box sx={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                flexWrap: 'wrap',
+                                p: 1.5,
+                                borderRadius: 1.5,
+                                bgcolor: 'background.paper',
+                                border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.04)}`,
+                              }}>
+                                <FormControl size="small" sx={{ minWidth: 150, flex: '1 1 150px' }}>
+                                  <InputLabel>Contact Method</InputLabel>
+                                  <Select
+                                    value={step.contactMethod}
+                                    onChange={(e) => updateEscalationStep(member.id, step.id, 'contactMethod', e.target.value)}
+                                    label="Contact Method"
+                                  >
+                                    {/* Only show contact methods that have been added for this member */}
+                                    {(() => {
+                                      const menuItems = [];
+                                      const addedMethods = Array.isArray(member._methodsAdded) ? member._methodsAdded : [];
 
-                      <Button
-                        startIcon={<RemoveIcon />}
-                        onClick={() => clearSavedDefaults()}
-                        size="small"
-                        variant="text"
-                        color="warning"
-                        sx={{ ml: 1 }}
-                      >
-                        Clear saved defaults
-                      </Button>
+                                      // Helper to get non-empty values from a contact array
+                                      const getFilledValues = (arr) => (arr || []).filter(v => (v || '').trim());
+
+                                      // Cell Phones
+                                      const cellPhones = getFilledValues(member.cellPhone);
+                                      if (cellPhones.length > 0 || addedMethods.includes('cellPhone')) {
+                                        if (cellPhones.length > 1) {
+                                          cellPhones.forEach((_, idx) => {
+                                            menuItems.push(<MenuItem key={`cell-${idx}`} value={`cell-${idx}`}>Cell Phone {idx + 1}</MenuItem>);
+                                            menuItems.push(<MenuItem key={`text-${idx}`} value={`text-${idx}`}>Text Cell {idx + 1}</MenuItem>);
+                                          });
+                                        } else {
+                                          menuItems.push(<MenuItem key="cell" value="cell">Cell Phone</MenuItem>);
+                                          if (cellPhones.length === 1) {
+                                            menuItems.push(<MenuItem key="text" value="text">Text Cell</MenuItem>);
+                                          }
+                                        }
+                                      }
+
+                                      // Home Phone
+                                      const homePhones = getFilledValues(member.homePhone);
+                                      if (homePhones.length > 0 || addedMethods.includes('homePhone')) {
+                                        if (homePhones.length > 1) {
+                                          homePhones.forEach((_, idx) => {
+                                            menuItems.push(<MenuItem key={`home-${idx}`} value={`home-${idx}`}>Home Phone {idx + 1}</MenuItem>);
+                                          });
+                                        } else {
+                                          menuItems.push(<MenuItem key="home" value="home">Home Phone</MenuItem>);
+                                        }
+                                      }
+
+                                      // Pager
+                                      const pagers = getFilledValues(member.pager);
+                                      if (pagers.length > 0 || addedMethods.includes('pager')) {
+                                        if (pagers.length > 1) {
+                                          pagers.forEach((_, idx) => {
+                                            menuItems.push(<MenuItem key={`pager-${idx}`} value={`pager-${idx}`}>Pager {idx + 1}</MenuItem>);
+                                          });
+                                        } else {
+                                          menuItems.push(<MenuItem key="pager" value="pager">Pager</MenuItem>);
+                                        }
+                                      }
+
+                                      // MSM
+                                      const msms = getFilledValues(member.msm);
+                                      if (msms.length > 0 || addedMethods.includes('msm')) {
+                                        if (msms.length > 1) {
+                                          msms.forEach((_, idx) => {
+                                            menuItems.push(<MenuItem key={`msm-${idx}`} value={`msm-${idx}`}>MSM {idx + 1}</MenuItem>);
+                                          });
+                                        } else {
+                                          menuItems.push(<MenuItem key="msm" value="msm">MSM</MenuItem>);
+                                        }
+                                      }
+
+                                      // Email
+                                      const emails = getFilledValues(member.email);
+                                      if (emails.length > 0 || addedMethods.includes('email')) {
+                                        if (emails.length > 1) {
+                                          emails.forEach((_, idx) => {
+                                            menuItems.push(<MenuItem key={`email-${idx}`} value={`email-${idx}`}>Email {idx + 1}</MenuItem>);
+                                          });
+                                        } else {
+                                          menuItems.push(<MenuItem key="email" value="email">Email</MenuItem>);
+                                        }
+                                      }
+
+                                      return menuItems;
+                                    })()}
+                                  </Select>
+                                </FormControl>
+
+                                <FormControl size="small" sx={{ minWidth: 130, flex: '0 1 130px' }}>
+                                  <InputLabel>Attempts</InputLabel>
+                                  <Select
+                                    value={step.attempts}
+                                    onChange={(e) => updateEscalationStep(member.id, step.id, 'attempts', e.target.value)}
+                                    label="Attempts"
+                                  >
+                                    <MenuItem value="1">1 Attempt</MenuItem>
+                                    <MenuItem value="2">2 Attempts</MenuItem>
+                                    <MenuItem value="3">3 Attempts</MenuItem>
+                                    <MenuItem value="5">5 Attempts</MenuItem>
+                                    <MenuItem value="continuous">Continuous</MenuItem>
+                                  </Select>
+                                </FormControl>
+
+                                <FormControl size="small" sx={{ minWidth: 120, flex: '0 1 120px' }}>
+                                  <InputLabel>Interval</InputLabel>
+                                  <Select
+                                    value={step.interval}
+                                    onChange={(e) => updateEscalationStep(member.id, step.id, 'interval', e.target.value)}
+                                    label="Interval"
+                                  >
+                                    <MenuItem value="immediate">Immediate</MenuItem>
+                                    <MenuItem value="2min">2 Minutes</MenuItem>
+                                    <MenuItem value="5min">5 Minutes</MenuItem>
+                                    <MenuItem value="10min">10 Minutes</MenuItem>
+                                    <MenuItem value="15min">15 Minutes</MenuItem>
+                                    <MenuItem value="30min">30 Minutes</MenuItem>
+                                  </Select>
+                                </FormControl>
+
+                                {member.escalationSteps.length > 1 && (
+                                  <Tooltip title="Remove step">
+                                    <IconButton
+                                      onClick={() => removeEscalationStep(member.id, step.id)}
+                                      size="small"
+                                      sx={{
+                                        color: theme.palette.error.main,
+                                        opacity: 0.7,
+                                        '&:hover': { opacity: 1, bgcolor: alpha(theme.palette.error.main, 0.08) }
+                                      }}
+                                    >
+                                      <RemoveIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                              </Box>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+
+                      {/* Footer actions */}
+                      <Divider sx={{ my: 2 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1, flexWrap: 'wrap' }}>
+                        <Button
+                          startIcon={<AddIcon />}
+                          onClick={() => addEscalationStep(member.id)}
+                          size="small"
+                          variant="contained"
+                          sx={{
+                            bgcolor: theme.palette.warning.main,
+                            color: theme.palette.warning.contrastText,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            '&:hover': { bgcolor: theme.palette.warning.dark }
+                          }}
+                        >
+                          Add Step
+                        </Button>
+                        <Button
+                          onClick={() => openConfirmApply(member.id)}
+                          size="small"
+                          variant="text"
+                          sx={{ textTransform: 'none', fontSize: 12, color: 'text.secondary' }}
+                        >
+                          Apply to all members
+                        </Button>
+                        <Button
+                          onClick={() => clearSavedDefaults()}
+                          size="small"
+                          variant="text"
+                          sx={{ textTransform: 'none', fontSize: 12, color: 'text.disabled' }}
+                        >
+                          Clear defaults
+                        </Button>
+                      </Box>
                     </Box>
                   </Grid>
                 </Grid>
@@ -947,17 +1106,28 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
           </Box>
         );
       })}
-      {/* Add Team Member button placed after the list so it follows the most recently added member */}
-      <Box sx={{ mt: 2 }}>
+      {/* Add Team Member button */}
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
         <Button
-          variant="contained"
+          variant="outlined"
           startIcon={<AddIcon />}
           onClick={addTeamMember}
           sx={{
-            mt: 1,
-            background: `linear-gradient(135deg, ${theme.palette.success.main}, ${alpha(theme.palette.success.main, 0.8)})`,
+            px: 6,
+            py: 1.5,
+            fontSize: '1rem',
+            borderWidth: 2,
+            borderStyle: 'dashed',
+            borderColor: alpha(theme.palette.success.main, 0.5),
+            color: theme.palette.success.main,
+            fontWeight: 600,
+            textTransform: 'none',
+            borderRadius: 2,
             '&:hover': {
-              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.9)}, ${alpha(theme.palette.success.main, 0.7)})`,
+              borderWidth: 2,
+              borderStyle: 'dashed',
+              borderColor: theme.palette.success.main,
+              bgcolor: alpha(theme.palette.success.main, 0.04),
             }
           }}
         >

@@ -249,7 +249,7 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
                     <MenuItem key={d.id || d.department} value={d.id || d.department}>{d.department || d.name}</MenuItem>
                   ))}
                 </Select>
-                {/* Member select filtered by department membership if department chosen */}
+                {/* Choose roster member (filtered by department) or enter custom contact */}
                 <Box>
                   <Select
                     value={step.contactMemberId || ''}
@@ -279,33 +279,6 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
                         </MenuItem>
                       );
                     })}
-                  </Select>
-                </Box>
-                {/* Choose roster member or enter custom contact */}
-                <Box>
-                  <Select
-                    value={step.contactMemberId || ''}
-                    onChange={(e) => {
-                      const memberId = e.target.value || null;
-                      if (memberId) {
-                        const member = team.find((m) => m.id === memberId);
-                        const primary = (member?.cellPhone && member.cellPhone[0]) || (member?.email && member.email[0]) || '';
-                        // update both member id and contact display
-                        handleChange(index, 'contactMemberId', memberId);
-                        handleChange(index, 'contact', member?.name || primary || '');
-                      } else {
-                        handleChange(index, 'contactMemberId', null);
-                      }
-                    }}
-                    displayEmpty
-                    fullWidth
-                  >
-                    <MenuItem value="">Custom contact (enter below)</MenuItem>
-                    {team.map((member) => (
-                      <MenuItem key={member.id} value={member.id}>
-                        {member.name || member.id} {member.cellPhone?.[0] ? `— ${member.cellPhone[0]}` : member.email?.[0] ? `— ${member.email[0]}` : ''}
-                      </MenuItem>
-                    ))}
                   </Select>
                   {!step.contactMemberId && (
                     <FieldRow helperText={rowErrors.contact || ''}>

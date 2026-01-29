@@ -1,6 +1,6 @@
 // src/pages/ClientInfo/pages/CallRouting.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -8,18 +8,18 @@ import {
   Button,
   Typography,
   FormControl,
+  FormControlLabel,
+  Checkbox,
   InputLabel,
   Select,
   MenuItem,
+  Menu,
   TextField,
   Stack,
   Grid,
-  Card,
-  CardContent,
   Chip,
   Alert,
   Divider,
-  LinearProgress,
   Fade,
   Snackbar,
   IconButton,
@@ -40,6 +40,7 @@ import {
   Assessment,
   Add as AddIcon,
   Delete as DeleteIcon,
+  Remove as RemoveIcon,
   ArrowDownward,
   Visibility as VisibilityIcon,
   ContentCopy as ContentCopyIcon,
@@ -52,6 +53,8 @@ import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
 import { WIZARD_ROUTES } from '../constants/routes';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
+import { isValidEmail, getEmailError } from '../utils/emailValidation';
 
 const escapeHtml = (value) => {
   if (value == null) return '';
@@ -61,6 +64,16 @@ const escapeHtml = (value) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+};
+
+const normalizeEmailList = (value) => {
+  if (Array.isArray(value)) {
+    return value.length ? value : [''];
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return [value.trim()];
+  }
+  return [''];
 };
 
 const CallRouting = () => {
@@ -76,6 +89,7 @@ const CallRouting = () => {
   const [previewHtml, setPreviewHtml] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
   const [prerequisiteDialogOpen, setPrerequisiteDialogOpen] = useState(false);
+  const [confirmationErrors, setConfirmationErrors] = useState({}); // { [categoryId]: { phone?: string, email?: { [index]: string } } }
 
   useEffect(() => {
     const prevTitle = document.title;
@@ -114,6 +128,60 @@ const CallRouting = () => {
   const teamMembers = Array.isArray(onCall.team) ? onCall.team : [];
   const departments = Array.isArray(onCall.departments) ? onCall.departments : [];
 
+  const contactEmailOptions = useMemo(() => {
+    const options = new Map();
+    const addOption = (email, label) => {
+      if (!email || typeof email !== 'string') return;
+      const trimmed = email.trim();
+      if (!trimmed) return;
+      if (!options.has(trimmed)) {
+        options.set(trimmed, label || trimmed);
+      }
+    };
+
+    const companyInfo = formData.companyInfo || {};
+    if (companyInfo.primaryContact?.email) {
+      const name = companyInfo.primaryContact?.name;
+      addOption(companyInfo.primaryContact.email, name ? `${name} - ${companyInfo.primaryContact.email}` : companyInfo.primaryContact.email);
+    }
+    if (companyInfo.billingContact?.email) {
+      const name = companyInfo.billingContact?.name;
+      addOption(companyInfo.billingContact.email, name ? `${name} - ${companyInfo.billingContact.email}` : companyInfo.billingContact.email);
+    }
+    if (companyInfo.contactNumbers?.officeEmail) {
+      addOption(companyInfo.contactNumbers.officeEmail, `Office - ${companyInfo.contactNumbers.officeEmail}`);
+    }
+    if (Array.isArray(companyInfo.contactChannels)) {
+      companyInfo.contactChannels.forEach((channel) => {
+        if (!channel) return;
+        const type = channel.type || '';
+        if (type === 'group-email' || type === 'email') {
+          addOption(channel.value, `Group Email - ${channel.value}`);
+        }
+      });
+    }
+
+    teamMembers.forEach((member) => {
+      const emails = Array.isArray(member.email) ? member.email : (member.email ? [member.email] : []);
+      emails.forEach((email) => {
+        const label = member.name ? `${member.name} - ${email}` : email;
+        addOption(email, label);
+      });
+    });
+
+    return Array.from(options.entries()).map(([value, label]) => ({ value, label }));
+  }, [formData.companyInfo, teamMembers]);
+
+  const [emailMenuAnchor, setEmailMenuAnchor] = useState({});
+
+  const openEmailMenu = (key, event) => {
+    setEmailMenuAnchor((prev) => ({ ...prev, [key]: event.currentTarget }));
+  };
+
+  const closeEmailMenu = (key) => {
+    setEmailMenuAnchor((prev) => ({ ...prev, [key]: null }));
+  };
+
   // Get current routing assignments
   const callRouting = formData.callRouting || { categoryAssignments: [] };
   const assignments = callRouting.categoryAssignments || [];
@@ -126,6 +194,8 @@ const CallRouting = () => {
         categoryName: cat.customName || cat.selectedCommon || 'Unnamed Category',
         whenToContact: 'all-hours',
         specialInstructions: '',
+        finalAction: 'repeat-until-delivered',
+        afterHoursFinalAction: 'repeat-until-delivered',
         escalationSteps: [
           {
             id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -141,16 +211,26 @@ const CallRouting = () => {
     }
   }, [categories.length, assignments.length]);
 
-  // Initialize all accordions to be expanded
+  // Ensure any new category accordions start collapsed
   useEffect(() => {
-    if (assignments.length > 0) {
-      const initialExpanded = {};
-      assignments.forEach(assignment => {
-        initialExpanded[assignment.categoryId] = true;
+    setExpandedCategories((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      assignments.forEach((assignment) => {
+        if (next[assignment.categoryId] === undefined) {
+          next[assignment.categoryId] = false;
+          changed = true;
+        }
       });
-      setExpandedCategories(initialExpanded);
-    }
-  }, [assignments.length]);
+      Object.keys(next).forEach((id) => {
+        if (!assignments.some((assignment) => assignment.categoryId === id)) {
+          delete next[id];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [assignments]);
 
   const handleAccordionChange = (categoryId) => (event, isExpanded) => {
     setExpandedCategories(prev => ({
@@ -221,6 +301,77 @@ const CallRouting = () => {
     updateSection('callRouting', { categoryAssignments: updatedAssignments });
   };
 
+  // After Hours step handlers
+  const handleAfterHoursStepChange = (categoryId, stepId, field, value) => {
+    const updatedAssignments = assignments.map(assignment => {
+      if (assignment.categoryId === categoryId) {
+        const updatedSteps = (assignment.afterHoursSteps || []).map(step => {
+          if (step.id === stepId) {
+            return { ...step, [field]: value };
+          }
+          return step;
+        });
+        return { ...assignment, afterHoursSteps: updatedSteps };
+      }
+      return assignment;
+    });
+    updateSection('callRouting', { categoryAssignments: updatedAssignments });
+  };
+
+  const addAfterHoursStep = (categoryId) => {
+    const updatedAssignments = assignments.map(assignment => {
+      if (assignment.categoryId === categoryId) {
+        const newStep = {
+          id: `step-ah-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          contactPerson: '',
+          contactMethod: 'call',
+          notes: '',
+        };
+        return {
+          ...assignment,
+          afterHoursSteps: [...(assignment.afterHoursSteps || []), newStep],
+        };
+      }
+      return assignment;
+    });
+    updateSection('callRouting', { categoryAssignments: updatedAssignments });
+  };
+
+  const removeAfterHoursStep = (categoryId, stepId) => {
+    const updatedAssignments = assignments.map(assignment => {
+      if (assignment.categoryId === categoryId) {
+        const updatedSteps = (assignment.afterHoursSteps || []).filter(step => step.id !== stepId);
+        if (updatedSteps.length === 0) {
+          return assignment;
+        }
+        return { ...assignment, afterHoursSteps: updatedSteps };
+      }
+      return assignment;
+    });
+    updateSection('callRouting', { categoryAssignments: updatedAssignments });
+  };
+
+  // Initialize after hours steps when "different" is selected
+  const initializeAfterHoursSteps = (categoryId, newWhenToContact) => {
+    const updatedAssignments = assignments.map(assignment => {
+      if (assignment.categoryId === categoryId) {
+        const updates = { whenToContact: newWhenToContact };
+        // Only add afterHoursSteps if they don't exist yet
+        if (!assignment.afterHoursSteps || assignment.afterHoursSteps.length === 0) {
+          updates.afterHoursSteps = [{
+            id: `step-ah-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            contactPerson: '',
+            contactMethod: 'call',
+            notes: '',
+          }];
+        }
+        return { ...assignment, ...updates };
+      }
+      return assignment;
+    });
+    updateSection('callRouting', { categoryAssignments: updatedAssignments });
+  };
+
   const onNext = () => {
     markStepVisited('call-routing');
     
@@ -247,69 +398,6 @@ const CallRouting = () => {
 
     // Proceed to next step
     history.push(WIZARD_ROUTES.OFFICE_REACH);
-  };
-
-  const getCompletionPercentage = () => {
-    if (assignments.length === 0) return 0;
-    const withContacts = assignments.filter(a => 
-      a.escalationSteps && 
-      a.escalationSteps.length > 0 && 
-      (a.escalationSteps[0].contactPerson || a.escalationSteps[0].contactMethod === 'delivered')
-    ).length;
-    return Math.round((withContacts / assignments.length) * 100);
-  };
-
-  const progress = getCompletionPercentage();
-
-  // Helper function to check if an array has values
-  const hasValue = (arr) => {
-    if (!Array.isArray(arr)) return false;
-    return arr.some(val => val && val.trim() !== '');
-  };
-
-  // Get available contact methods for a specific person
-  const getAvailableContactMethods = (personId) => {
-    if (!personId || personId === 'office') {
-      // Office can have all methods
-      return ['call', 'text', 'email', 'pager', 'call-text', 'call-email', 'text-email', 'call-text-email', 'all', 'delivered'];
-    }
-
-    // Check if it's a team selection (starts with 'team-')
-    if (typeof personId === 'string' && personId.startsWith('team-')) {
-      // Teams can have all methods
-      return ['call', 'text', 'email', 'pager', 'call-text', 'call-email', 'text-email', 'call-text-email', 'all', 'delivered'];
-    }
-
-    const member = teamMembers.find(m => m.id === personId);
-    if (!member) {
-      return ['delivered']; // If no member found, only allow "Consider Delivered"
-    }
-
-    const availableMethods = [];
-    const hasPhone = hasValue(member.cellPhone) || hasValue(member.homePhone);
-    const hasText = hasValue(member.textCell) || hasValue(member.cellPhone); // Cell phone can be used for text
-    const hasEmail = hasValue(member.email);
-    const hasPager = hasValue(member.pager);
-
-    // Single methods
-    if (hasPhone) availableMethods.push('call');
-    if (hasText) availableMethods.push('text');
-    if (hasEmail) availableMethods.push('email');
-    if (hasPager) availableMethods.push('pager');
-
-    // Combination methods
-    if (hasPhone && hasText) availableMethods.push('call-text');
-    if (hasPhone && hasEmail) availableMethods.push('call-email');
-    if (hasText && hasEmail) availableMethods.push('text-email');
-    if (hasPhone && hasText && hasEmail) availableMethods.push('call-text-email');
-
-    // Try all methods if multiple are available
-    if (availableMethods.length > 1) availableMethods.push('all');
-
-    // Always allow "Consider Delivered" as a fallback
-    availableMethods.push('delivered');
-
-    return availableMethods;
   };
 
   const generateDispatchInstructions = () => {
@@ -413,6 +501,525 @@ const CallRouting = () => {
     });
   };
 
+  // Render escalation steps section - reusable for both office hours and after hours
+  const renderEscalationSection = (assignment, isAfterHours = false) => {
+    const steps = isAfterHours ? (assignment.afterHoursSteps || []) : (assignment.escalationSteps || []);
+    const handleStepChangeForMode = isAfterHours ? handleAfterHoursStepChange : handleStepChange;
+    const addStepForMode = isAfterHours ? addAfterHoursStep : addEscalationStep;
+    const removeStepForMode = isAfterHours ? removeAfterHoursStep : removeEscalationStep;
+    const prefix = isAfterHours ? 'afterHours' : '';
+    const sectionColor = isAfterHours ? 'secondary' : 'primary';
+    const finalActionField = isAfterHours ? 'afterHoursFinalAction' : 'finalAction';
+    const repeatCountField = isAfterHours ? 'afterHoursRepeatCount' : 'repeatCount';
+    const repeatFinalActionField = isAfterHours ? 'afterHoursRepeatFinalAction' : 'repeatFinalAction';
+    const escalateToField = isAfterHours ? 'afterHoursEscalateTo' : 'escalateTo';
+    const escalationNotesField = isAfterHours ? 'afterHoursEscalationNotes' : 'escalationNotes';
+    const confirmationField = isAfterHours ? 'afterHoursSendConfirmation' : 'sendConfirmationAfterDelivery';
+    const confirmTextField = isAfterHours ? 'afterHoursConfirmationViaText' : 'confirmationViaText';
+    const confirmEmailField = isAfterHours ? 'afterHoursConfirmationViaEmail' : 'confirmationViaEmail';
+    const confirmPhoneField = isAfterHours ? 'afterHoursConfirmationPhone' : 'confirmationPhone';
+    const confirmEmailValueField = isAfterHours ? 'afterHoursConfirmationEmail' : 'confirmationEmail';
+    const errorKey = isAfterHours ? `${assignment.categoryId}-ah` : assignment.categoryId;
+    const emailValues = normalizeEmailList(assignment[confirmEmailValueField]);
+    const emailErrorMap = confirmationErrors[errorKey]?.email;
+    const emailErrors = emailErrorMap && typeof emailErrorMap === 'object' ? emailErrorMap : {};
+    const selectedEmailSet = new Set(
+      emailValues.map((email) => email.trim().toLowerCase()).filter(Boolean)
+    );
+    const availableEmailOptions = contactEmailOptions.filter(
+      (option) => !selectedEmailSet.has(option.value.toLowerCase())
+    );
+
+    const setEmailErrorForIndex = (index, message) => {
+      setConfirmationErrors((prev) => {
+        const current = prev[errorKey] || {};
+        const nextEmailErrors = current.email && typeof current.email === 'object' ? { ...current.email } : {};
+
+        if (message) {
+          nextEmailErrors[index] = message;
+        } else {
+          delete nextEmailErrors[index];
+        }
+
+        const nextEntry = { ...current };
+        if (Object.keys(nextEmailErrors).length) {
+          nextEntry.email = nextEmailErrors;
+        } else {
+          delete nextEntry.email;
+        }
+
+        if (!nextEntry.phone && !nextEntry.email) {
+          const { [errorKey]: _removed, ...rest } = prev;
+          return rest;
+        }
+
+        return { ...prev, [errorKey]: nextEntry };
+      });
+    };
+
+    const clearEmailErrorsForKey = () => {
+      setConfirmationErrors((prev) => {
+        const current = prev[errorKey];
+        if (!current || !current.email) return prev;
+        const nextEntry = { ...current };
+        delete nextEntry.email;
+        if (!nextEntry.phone) {
+          const { [errorKey]: _removed, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [errorKey]: nextEntry };
+      });
+    };
+
+    return (
+      <>
+        <Stack spacing={2}>
+          {steps.map((step, stepIndex) => (
+            <Box key={step.id}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette[sectionColor].main, 0.05),
+                  border: `1px solid ${alpha(theme.palette[sectionColor].main, 0.2)}`,
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Step {stepIndex + 1}
+                  </Typography>
+                  {steps.length > 1 && (
+                    <Tooltip title="Remove this step">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => removeStepForMode(assignment.categoryId, step.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Stack>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Contact Person / Team *</InputLabel>
+                      <Select
+                        value={step.contactPerson || ''}
+                        onChange={(e) => handleStepChangeForMode(assignment.categoryId, step.id, 'contactPerson', e.target.value)}
+                        label="Contact Person / Team *"
+                        error={stepIndex === 0 && !step.contactPerson}
+                      >
+                        <MenuItem value="">
+                          <em>-- Select team or member --</em>
+                        </MenuItem>
+                        <MenuItem value="office">
+                          <strong>Office / General Contact</strong>
+                        </MenuItem>
+
+                        {/* Teams/Departments Section */}
+                        {departments.length > 0 && [
+                          <MenuItem key={`${prefix}teams-header`} disabled sx={{ opacity: 1 }}>
+                            <em style={{ fontWeight: 600 }}>— Teams —</em>
+                          </MenuItem>,
+                          ...departments.map((dept) => (
+                            <MenuItem key={`${prefix}dept-${dept.id}`} value={`team-${dept.id}`}>
+                              🏢 {dept.department}
+                            </MenuItem>
+                          ))
+                        ]}
+
+                        {/* Individual Team Members Section */}
+                        {teamMembers.length > 0 && [
+                          <MenuItem key={`${prefix}members-header`} disabled sx={{ opacity: 1 }}>
+                            <em style={{ fontWeight: 600 }}>— Individual Members —</em>
+                          </MenuItem>,
+                          ...teamMembers.map((member) => (
+                            <MenuItem key={`${prefix}member-${member.id}`} value={member.id}>
+                              {member.name} {member.role && `(${member.role})`}
+                            </MenuItem>
+                          ))
+                        ]}
+                      </Select>
+                    </FormControl>
+                    
+                    {/* Show selected contact's information */}
+                    {step.contactPerson && step.contactPerson !== 'office' && (() => {
+                      if (typeof step.contactPerson === 'string' && step.contactPerson.startsWith('team-')) {
+                        const teamId = step.contactPerson.replace('team-', '');
+                        const selectedTeam = departments.find(d => d.id === teamId);
+                        if (selectedTeam) {
+                          return (
+                            <Alert severity="info" sx={{ mt: 1 }}>
+                              <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                                🏢 Team: {selectedTeam.department}
+                              </Typography>
+                              <Typography variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
+                                {selectedTeam.members && selectedTeam.members.length > 0
+                                  ? `${selectedTeam.members.length} member${selectedTeam.members.length !== 1 ? 's' : ''}`
+                                  : 'No members assigned'}
+                              </Typography>
+                            </Alert>
+                          );
+                        }
+                      }
+
+                      const selectedMember = teamMembers.find(m => m.id === step.contactPerson);
+                      if (selectedMember && selectedMember.escalationSteps && selectedMember.escalationSteps.length > 0) {
+                        return (
+                          <Alert severity="info" sx={{ mt: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                              {selectedMember.name}'s Contact Methods:
+                            </Typography>
+                            {selectedMember.escalationSteps.map((escStep, idx) => (
+                              <Typography key={idx} variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
+                                {idx + 1}. {escStep.contactMethod ? escStep.contactMethod.toUpperCase() : 'Method not set'}
+                                {escStep.attempts && ` (${escStep.attempts} attempts)`}
+                                {escStep.interval && ` - Wait ${escStep.interval} min`}
+                              </Typography>
+                            ))}
+                          </Alert>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Notes for this step"
+                      value={step.notes || ''}
+                      onChange={(e) => handleStepChangeForMode(assignment.categoryId, step.id, 'notes', e.target.value)}
+                      placeholder="e.g., Wait 5 minutes before moving to next step"
+                      multiline
+                      rows={2}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Arrow between steps */}
+              {stepIndex < steps.length - 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+                  <ArrowDownward color="action" />
+                </Box>
+              )}
+            </Box>
+          ))}
+        </Stack>
+
+        {/* Add Step Button */}
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => addStepForMode(assignment.categoryId)}
+          variant="outlined"
+          size="small"
+          color={sectionColor}
+          sx={{ mt: 2 }}
+          fullWidth
+        >
+          Add Another Step
+        </Button>
+
+        {/* When All Steps Are Exhausted */}
+        <Box sx={{ mt: 3, p: 2, bgcolor: alpha(theme.palette.warning.main, 0.08), borderRadius: 2, border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}` }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: theme.palette.warning.dark }}>
+            When all steps are exhausted, what should we do?
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Final Action</InputLabel>
+                <Select
+                  value={assignment[finalActionField] || 'repeat-until-delivered'}
+                  onChange={(e) => {
+                    const nextValue = e.target.value;
+                    handleAssignmentChange(assignment.categoryId, finalActionField, nextValue);
+                    if (nextValue === 'repeat-times' && !assignment[repeatFinalActionField]) {
+                      handleAssignmentChange(assignment.categoryId, repeatFinalActionField, 'hold');
+                    }
+                  }}
+                  label="Final Action"
+                >
+                  <MenuItem value="repeat-until-delivered">Repeat Steps Until Delivered</MenuItem>
+                  <MenuItem value="repeat-times">Repeat Steps X Times</MenuItem>
+                  <MenuItem value="repeat-then-escalate">Repeat Steps Then Escalate</MenuItem>
+                  <MenuItem value="hold-checkin">Hold for Check-In</MenuItem>
+                  <MenuItem value="hold">Hold</MenuItem>
+                  <MenuItem value="delivered">Consider Delivered</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Show repeat count field if "Repeat Steps X Times" is selected */}
+            {assignment[finalActionField] === 'repeat-times' && (
+              <>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    label="Number of Times to Repeat"
+                    value={assignment[repeatCountField] || 2}
+                    onChange={(e) => handleAssignmentChange(assignment.categoryId, repeatCountField, parseInt(e.target.value) || 1)}
+                    inputProps={{ min: 1, max: 10 }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>After Repeats</InputLabel>
+                    <Select
+                      value={assignment[repeatFinalActionField] || 'hold'}
+                      onChange={(e) => handleAssignmentChange(assignment.categoryId, repeatFinalActionField, e.target.value)}
+                      label="After Repeats"
+                    >
+                      <MenuItem value="repeat-until-delivered">Repeat Steps Until Delivered</MenuItem>
+                      <MenuItem value="repeat-then-escalate">Repeat Steps Then Escalate</MenuItem>
+                      <MenuItem value="hold-checkin">Hold for Check-In</MenuItem>
+                      <MenuItem value="hold">Hold</MenuItem>
+                      <MenuItem value="delivered">Consider Delivered</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </>
+            )}
+
+            {/* Show escalation step if "Repeat Steps Then Escalate" is selected */}
+            {(assignment[finalActionField] === 'repeat-then-escalate'
+              || (assignment[finalActionField] === 'repeat-times'
+                && assignment[repeatFinalActionField] === 'repeat-then-escalate')) && (
+              <Grid item xs={12}>
+                <Paper variant="outlined" sx={{ p: 2, mt: 1, bgcolor: alpha(theme.palette.error.main, 0.05) }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 2, color: theme.palette.error.main }}>
+                    Escalation Contact
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Escalate To</InputLabel>
+                        <Select
+                          value={assignment[escalateToField] || ''}
+                          onChange={(e) => handleAssignmentChange(assignment.categoryId, escalateToField, e.target.value)}
+                          label="Escalate To"
+                        >
+                          <MenuItem value="">
+                            <em>-- Select escalation contact --</em>
+                          </MenuItem>
+                          <MenuItem value="office">
+                            <strong>Office / General Contact</strong>
+                          </MenuItem>
+                          {teamMembers.map((member) => (
+                            <MenuItem key={`${prefix}esc-${member.id}`} value={member.id}>
+                              {member.name} {member.role && `(${member.role})`}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Escalation Notes"
+                        value={assignment[escalationNotesField] || ''}
+                        onChange={(e) => handleAssignmentChange(assignment.categoryId, escalationNotesField, e.target.value)}
+                        placeholder="e.g., Urgent - all attempts failed"
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+            )}
+
+            {/* Confirmation after delivery option */}
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={assignment[confirmationField] || false}
+                    onChange={(e) => handleAssignmentChange(assignment.categoryId, confirmationField, e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Send confirmation after delivery"
+              />
+              {assignment[confirmationField] && (
+                <Box sx={{ mt: 1, pl: 4 }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    How would you like to receive confirmation?
+                  </Typography>
+                  <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={assignment[confirmTextField] || false}
+                          onChange={(e) => handleAssignmentChange(assignment.categoryId, confirmTextField, e.target.checked)}
+                          size="small"
+                        />
+                      }
+                      label="Text"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={assignment[confirmEmailField] || false}
+                          onChange={(e) => handleAssignmentChange(assignment.categoryId, confirmEmailField, e.target.checked)}
+                          size="small"
+                        />
+                      }
+                      label="Email"
+                    />
+                  </Stack>
+                  <Grid container spacing={2}>
+                    {assignment[confirmTextField] && (
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Phone Number for Text Confirmation"
+                          value={assignment[confirmPhoneField] || ''}
+                          onChange={(e) => {
+                            handleAssignmentChange(assignment.categoryId, confirmPhoneField, e.target.value);
+                            if (confirmationErrors[errorKey]?.phone && isValidPhone(e.target.value)) {
+                              setConfirmationErrors(prev => ({
+                                ...prev,
+                                [errorKey]: { ...prev[errorKey], phone: '' }
+                              }));
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value && !isValidPhone(value)) {
+                              setConfirmationErrors(prev => ({
+                                ...prev,
+                                [errorKey]: { ...prev[errorKey], phone: getPhoneError(value) }
+                              }));
+                            }
+                          }}
+                          placeholder="e.g., 206-555-1234"
+                          error={!!confirmationErrors[errorKey]?.phone}
+                          helperText={confirmationErrors[errorKey]?.phone}
+                        />
+                      </Grid>
+                    )}
+                    {assignment[confirmEmailField] && (
+                      <Grid item xs={12} md={6}>
+                        <Stack spacing={1}>
+                          {emailValues.map((email, index) => {
+                            const errorMsg = emailErrors[index] || '';
+                            return (
+                              <Box key={`${confirmEmailValueField}-${index}`} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <TextField
+                                  fullWidth
+                                  size="small"
+                                  label={emailValues.length > 1 ? `Email Address ${index + 1}` : 'Email Address for Confirmation'}
+                                  value={email}
+                                  onChange={(e) => {
+                                    const nextList = [...emailValues];
+                                    nextList[index] = e.target.value;
+                                    handleAssignmentChange(assignment.categoryId, confirmEmailValueField, nextList);
+                                    if (errorMsg && isValidEmail(e.target.value)) {
+                                      setEmailErrorForIndex(index, '');
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    const value = e.target.value;
+                                    if (value && !isValidEmail(value)) {
+                                      setEmailErrorForIndex(index, getEmailError(value));
+                                    } else {
+                                      setEmailErrorForIndex(index, '');
+                                    }
+                                  }}
+                                  placeholder="e.g., office@company.com"
+                                  error={Boolean(errorMsg)}
+                                  helperText={errorMsg}
+                                />
+                                {emailValues.length > 1 && (
+                                  <IconButton
+                                    onClick={() => {
+                                      const nextList = emailValues.filter((_, i) => i !== index);
+                                      handleAssignmentChange(
+                                        assignment.categoryId,
+                                        confirmEmailValueField,
+                                        nextList.length ? nextList : ['']
+                                      );
+                                      clearEmailErrorsForKey();
+                                    }}
+                                    color="error"
+                                    size="small"
+                                    sx={{ p: 0.5 }}
+                                  >
+                                    <RemoveIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                              </Box>
+                            );
+                          })}
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Button
+                              size="small"
+                              variant="text"
+                              startIcon={<AddIcon />}
+                              onClick={() => {
+                                handleAssignmentChange(
+                                  assignment.categoryId,
+                                  confirmEmailValueField,
+                                  [...emailValues, '']
+                                );
+                              }}
+                            >
+                              Add email
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={(e) => openEmailMenu(errorKey, e)}
+                              disabled={availableEmailOptions.length === 0}
+                            >
+                              Add from contacts
+                            </Button>
+                          </Stack>
+                          <Menu
+                            anchorEl={emailMenuAnchor[errorKey]}
+                            open={Boolean(emailMenuAnchor[errorKey])}
+                            onClose={() => closeEmailMenu(errorKey)}
+                          >
+                            {availableEmailOptions.length === 0 && (
+                              <MenuItem disabled>No contact emails available</MenuItem>
+                            )}
+                            {availableEmailOptions.map((option) => (
+                              <MenuItem
+                                key={option.value}
+                                onClick={() => {
+                                  const hasOnlyEmpty = emailValues.length === 1 && !emailValues[0].trim();
+                                  handleAssignmentChange(
+                                    assignment.categoryId,
+                                    confirmEmailValueField,
+                                    hasOnlyEmpty ? [option.value] : [...emailValues, option.value]
+                                  );
+                                  closeEmailMenu(errorKey);
+                                }}
+                              >
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Menu>
+                        </Stack>
+                      </Grid>
+                    )}
+                  </Grid>
+                </Box>
+              )}
+            </Grid>
+          </Grid>
+        </Box>
+      </>
+    );
+  };
+
   // Show warning if no categories or team members
   if (categories.length === 0) {
     return (
@@ -464,91 +1071,47 @@ const CallRouting = () => {
         {/* Header */}
         <Fade in timeout={600}>
           <Paper elevation={2} sx={{ p: { xs: 3, md: 4 }, mb: 3 }}>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: alpha(theme.palette.primary.main, 0.15),
-                  color: theme.palette.primary.main,
-                }}
-              >
-                <Phone fontSize="large" />
-              </Box>
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  Call Routing Configuration
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Assign team members to handle specific call categories
-                </Typography>
-              </Box>
-            </Stack>
-
-            {/* Progress Indicator */}
-            <Box sx={{ mt: 3 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Completion
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {progress}%
-                </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.primary.main, 0.15),
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  <Phone fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    Call Routing Configuration
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    Assign team members to handle specific call categories
+                  </Typography>
+                </Box>
               </Stack>
-              <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 1 }} />
-            </Box>
-
-            {/* Preview Button */}
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                startIcon={<VisibilityIcon />}
-                onClick={handlePreview}
-                disabled={assignments.length === 0}
-              >
-                Preview Dispatch Instructions
-              </Button>
-            </Box>
-
-            {/* Summary Stats */}
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={6} md={4}>
-                <Card variant="outlined" sx={{ bgcolor: alpha(theme.palette.info.main, 0.05) }}>
-                  <CardContent sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.info.main }}>
-                      {categories.length}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Call Categories
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={6} md={4}>
-                <Card variant="outlined" sx={{ bgcolor: alpha(theme.palette.success.main, 0.05) }}>
-                  <CardContent sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
-                      {teamMembers.length}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Team Members
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Card variant="outlined" sx={{ bgcolor: alpha(theme.palette.warning.main, 0.05) }}>
-                  <CardContent sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
-                      {assignments.filter(a => a.escalationSteps && a.escalationSteps.length > 0 && (a.escalationSteps[0].contactPerson || a.escalationSteps[0].contactMethod === 'delivered')).length}/{assignments.length}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Categories Assigned
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip label={`${categories.length} Categories`} size="small" color="info" variant="outlined" />
+                <Chip label={`${departments.length} Teams · ${teamMembers.length} Personnel`} size="small" color="success" variant="outlined" />
+                <Chip 
+                  label={`${assignments.filter(a => a.escalationSteps && a.escalationSteps.length > 0 && (a.escalationSteps[0].contactPerson || a.escalationSteps[0].contactMethod === 'delivered')).length}/${assignments.length} Assigned`} 
+                  size="small" 
+                  color="warning" 
+                  variant="outlined" 
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={handlePreview}
+                  disabled={assignments.length === 0}
+                >
+                  Preview
+                </Button>
+              </Stack>
+            </Stack>
           </Paper>
         </Fade>
 
@@ -613,235 +1176,71 @@ const CallRouting = () => {
                     <InputLabel>When to Contact</InputLabel>
                     <Select
                       value={assignment.whenToContact || 'all-hours'}
-                      onChange={(e) => handleAssignmentChange(assignment.categoryId, 'whenToContact', e.target.value)}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        // If "different" is selected, use special handler that also initializes after hours steps
+                        if (newValue === 'different') {
+                          initializeAfterHoursSteps(assignment.categoryId, newValue);
+                        } else {
+                          handleAssignmentChange(assignment.categoryId, 'whenToContact', newValue);
+                        }
+                      }}
                       label="When to Contact"
                     >
                       <MenuItem value="all-hours">All Hours (24/7)</MenuItem>
                       <MenuItem value="business-hours">Business Hours Only</MenuItem>
                       <MenuItem value="after-hours">After Hours Only</MenuItem>
+                      <MenuItem value="different">Different for Office Hours &amp; After Hours</MenuItem>
                       <MenuItem value="emergency">Emergency Only</MenuItem>
                     </Select>
                   </FormControl>
                 </Box>
 
-                {/* Escalation Steps */}
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: theme.palette.primary.main }}>
-                  Escalation Steps
-                </Typography>
+                {/* Conditional Escalation Sections */}
+                {assignment.whenToContact === 'different' ? (
+                  <>
+                    {/* Office Hours Section */}
+                    <Paper 
+                      elevation={0} 
+                      sx={{ 
+                        p: 2, 
+                        mb: 3, 
+                        bgcolor: alpha(theme.palette.primary.main, 0.03), 
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        ☀️ Office Hours Escalation
+                      </Typography>
+                      {renderEscalationSection(assignment, false)}
+                    </Paper>
 
-                <Stack spacing={2}>
-                  {assignment.escalationSteps && assignment.escalationSteps.map((step, stepIndex) => (
-                    <Box key={step.id}>
-                      <Box
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          bgcolor: alpha(theme.palette.primary.main, 0.05),
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        }}
-                      >
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            Step {stepIndex + 1}
-                          </Typography>
-                          {assignment.escalationSteps.length > 1 && (
-                            <Tooltip title="Remove this step">
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => removeEscalationStep(assignment.categoryId, step.id)}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Stack>
-
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Contact Person / Team {step.contactMethod !== 'delivered' && '*'}</InputLabel>
-                              <Select
-                                value={step.contactPerson || ''}
-                                onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'contactPerson', e.target.value)}
-                                label={`Contact Person / Team ${step.contactMethod !== 'delivered' ? '*' : ''}`}
-                                error={stepIndex === 0 && !step.contactPerson && step.contactMethod !== 'delivered'}
-                                disabled={step.contactMethod === 'delivered'}
-                              >
-                                <MenuItem value="">
-                                  <em>{step.contactMethod === 'delivered' ? '-- No contact needed --' : '-- Select team or member --'}</em>
-                                </MenuItem>
-                                <MenuItem value="office">
-                                  <strong>Office / General Contact</strong>
-                                </MenuItem>
-
-                                {/* Teams/Departments Section */}
-                                {departments.length > 0 && [
-                                  <MenuItem key="teams-header" disabled sx={{ opacity: 1 }}>
-                                    <em style={{ fontWeight: 600 }}>— Teams —</em>
-                                  </MenuItem>,
-                                  ...departments.map((dept) => (
-                                    <MenuItem key={`dept-${dept.id}`} value={`team-${dept.id}`}>
-                                      🏢 {dept.department}
-                                    </MenuItem>
-                                  ))
-                                ]}
-
-                                {/* Individual Team Members Section */}
-                                {teamMembers.length > 0 && [
-                                  <MenuItem key="members-header" disabled sx={{ opacity: 1 }}>
-                                    <em style={{ fontWeight: 600 }}>— Individual Members —</em>
-                                  </MenuItem>,
-                                  ...teamMembers.map((member) => (
-                                    <MenuItem key={`member-${member.id}`} value={member.id}>
-                                      {member.name} {member.role && `(${member.role})`}
-                                    </MenuItem>
-                                  ))
-                                ]}
-                              </Select>
-                            </FormControl>
-                            
-                            {/* Show selected contact's information */}
-                            {step.contactPerson && step.contactPerson !== 'office' && (() => {
-                              // Check if it's a team selection
-                              if (typeof step.contactPerson === 'string' && step.contactPerson.startsWith('team-')) {
-                                const teamId = step.contactPerson.replace('team-', '');
-                                const selectedTeam = departments.find(d => d.id === teamId);
-                                if (selectedTeam) {
-                                  return (
-                                    <Alert severity="info" sx={{ mt: 1 }}>
-                                      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-                                        🏢 Team: {selectedTeam.department}
-                                      </Typography>
-                                      <Typography variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
-                                        {selectedTeam.members && selectedTeam.members.length > 0
-                                          ? `${selectedTeam.members.length} member${selectedTeam.members.length !== 1 ? 's' : ''}`
-                                          : 'No members assigned'}
-                                      </Typography>
-                                    </Alert>
-                                  );
-                                }
-                              }
-
-                              // Otherwise check for individual member
-                              const selectedMember = teamMembers.find(m => m.id === step.contactPerson);
-                              if (selectedMember && selectedMember.escalationSteps && selectedMember.escalationSteps.length > 0) {
-                                return (
-                                  <Alert severity="info" sx={{ mt: 1 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-                                      {selectedMember.name}'s Contact Methods:
-                                    </Typography>
-                                    {selectedMember.escalationSteps.map((escStep, idx) => (
-                                      <Typography key={idx} variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
-                                        {idx + 1}. {escStep.contactMethod ? escStep.contactMethod.toUpperCase() : 'Method not set'}
-                                        {escStep.attempts && ` (${escStep.attempts} attempts)`}
-                                        {escStep.interval && ` - Wait ${escStep.interval} min`}
-                                      </Typography>
-                                    ))}
-                                  </Alert>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Contact Method</InputLabel>
-                              <Select
-                                value={step.contactMethod || 'call'}
-                                onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'contactMethod', e.target.value)}
-                                label="Contact Method"
-                              >
-                                {(() => {
-                                  const availableMethods = getAvailableContactMethods(step.contactPerson);
-                                  const methodLabels = {
-                                    'call': 'Call',
-                                    'text': 'Text/SMS',
-                                    'email': 'Email',
-                                    'pager': 'Pager',
-                                    'call-text': 'Call + Text',
-                                    'call-email': 'Call + Email',
-                                    'text-email': 'Text + Email',
-                                    'call-text-email': 'Call + Text + Email',
-                                    'all': 'Try All Methods',
-                                    'delivered': 'Consider Delivered'
-                                  };
-                                  
-                                  return availableMethods.map(method => (
-                                    <MenuItem key={method} value={method}>
-                                      {methodLabels[method]}
-                                    </MenuItem>
-                                  ));
-                                })()}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Repeat Steps?</InputLabel>
-                              <Select
-                                value={step.repeatSteps ? 'yes' : 'no'}
-                                onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'repeatSteps', e.target.value === 'yes')}
-                                label="Repeat Steps?"
-                              >
-                                <MenuItem value="no">No - Don't Repeat</MenuItem>
-                                <MenuItem value="yes">Yes - Repeat All Steps Up to This One</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12} md={6}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>Hold for Check-In Mode</InputLabel>
-                              <Select
-                                value={step.holdForCheckIn ? 'yes' : 'no'}
-                                onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'holdForCheckIn', e.target.value === 'yes')}
-                                label="Hold for Check-In Mode"
-                              >
-                                <MenuItem value="no">No - Proceed Normally</MenuItem>
-                                <MenuItem value="yes">Yes - Hold Until Check-In</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12}>
-                            <TextField
-                              fullWidth
-                              size="small"
-                              label="Notes for this step"
-                              value={step.notes || ''}
-                              onChange={(e) => handleStepChange(assignment.categoryId, step.id, 'notes', e.target.value)}
-                              placeholder="e.g., Wait 5 minutes before moving to next step"
-                              multiline
-                              rows={2}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Box>
-
-                      {/* Arrow between steps */}
-                      {stepIndex < assignment.escalationSteps.length - 1 && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-                          <ArrowDownward color="action" />
-                        </Box>
-                      )}
-                    </Box>
-                  ))}
-                </Stack>
-
-                {/* Add Step Button */}
-                <Button
-                  startIcon={<AddIcon />}
-                  onClick={() => addEscalationStep(assignment.categoryId)}
-                  variant="outlined"
-                  size="small"
-                  sx={{ mt: 2 }}
-                  fullWidth
-                >
-                  Add Another Step
-                </Button>
+                    {/* After Hours Section */}
+                    <Paper 
+                      elevation={0} 
+                      sx={{ 
+                        p: 2, 
+                        bgcolor: alpha(theme.palette.secondary.main, 0.03), 
+                        border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: theme.palette.secondary.main, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        🌙 After Hours Escalation
+                      </Typography>
+                      {renderEscalationSection(assignment, true)}
+                    </Paper>
+                  </>
+                ) : (
+                  <>
+                    {/* Standard Escalation Steps */}
+                    <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: theme.palette.primary.main }}>
+                      Escalation Steps
+                    </Typography>
+                    {renderEscalationSection(assignment, false)}
+                  </>
+                )}
 
                 {/* Special Instructions - Global */}
                 <Box sx={{ mt: 3 }}>
@@ -900,7 +1299,7 @@ const CallRouting = () => {
             <Button
               variant="outlined"
               startIcon={<NavigateBeforeRounded />}
-              onClick={() => history.push(WIZARD_ROUTES.ON_CALL)}
+              onClick={() => history.push(WIZARD_ROUTES.ON_CALL_ESCALATION)}
               sx={{ minWidth: 120 }}
             >
               Back

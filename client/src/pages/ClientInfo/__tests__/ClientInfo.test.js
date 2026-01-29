@@ -121,7 +121,7 @@ describe('ClientInfo Wizard Components', () => {
       const user = userEvent.setup();
       renderWithProviders(<AnswerCalls />, { formData: {} });
       
-      const nextButton = screen.getByText('Next: On Call');
+      const nextButton = screen.getByText('Next: On Call Setup');
       await user.click(nextButton);
       
       // Should show validation errors

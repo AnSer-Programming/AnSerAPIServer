@@ -111,8 +111,9 @@ const PrimaryContactsSection = ({
           <Grid item xs={12} md={6}>
             <FieldRow helperText={primaryErrors.name}>
               <TextField
-                label="Name"
+                label="Name *"
                 fullWidth
+                required
                 value={primaryContact.name || ''}
                 onChange={handlePrimaryChange('name')}
                 error={Boolean(primaryErrors.name)}
@@ -122,8 +123,9 @@ const PrimaryContactsSection = ({
           <Grid item xs={12} md={6}>
             <FieldRow helperText={primaryPhoneError || primaryErrors.phone}>
               <TextField
-                label="Direct Phone"
+                label="Direct Phone *"
                 fullWidth
+                required
                 value={primaryContact.phone || ''}
                 onChange={(e) => {
                   handlePrimaryChange('phone')(e);
@@ -143,8 +145,9 @@ const PrimaryContactsSection = ({
           <Grid item xs={12} md={6}>
             <FieldRow helperText={primaryEmailError || primaryErrors.email}>
               <TextField
-                label="Email"
+                label="Email *"
                 fullWidth
+                required
                 inputMode="email"
                 type="email"
                 value={primaryContact.email || ''}
@@ -198,8 +201,9 @@ const PrimaryContactsSection = ({
           <Grid item xs={12} md={6}>
             <FieldRow helperText={billingErrors.name}>
               <TextField
-                label="Name"
+                label={sameAs ? 'Name' : 'Name *'}
                 fullWidth
+                required={!sameAs}
                 value={billingContact.name || ''}
                 onChange={handleBillingChange('name')}
                 disabled={sameAs}
@@ -232,8 +236,9 @@ const PrimaryContactsSection = ({
           <Grid item xs={12} md={6}>
             <FieldRow helperText={billingEmailError || billingErrors.email}>
               <TextField
-                label="Email"
+                label={sameAs ? 'Email' : 'Email *'}
                 fullWidth
+                required={!sameAs}
                 inputMode="email"
                 type="email"
                 value={billingContact.email || ''}

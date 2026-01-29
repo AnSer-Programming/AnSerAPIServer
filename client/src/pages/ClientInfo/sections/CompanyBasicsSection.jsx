@@ -17,12 +17,14 @@ import {
   MenuItem,
   Select,
   ListSubheader,
+  FormHelperText,
 } from '@mui/material';
 import FieldRow from '../components/FieldRow';
 import PhoneMaskInput from '../components/PhoneMaskInput';
 import { AddCircleOutline, DeleteOutline } from '@mui/icons-material';
 import { US_STATES, CANADIAN_PROVINCES } from '../constants/statesProvinces';
 import { isValidPostalCode, getPostalCodeError, formatPostalCode } from '../utils/phonePostalValidation';
+import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 
 const cleanPhone = (v = '') => v.replace(/[^\d\-()+ ]/g, '').slice(0, 30);
 
@@ -89,19 +91,19 @@ const hydrateChannels = (channels, contacts) => {
   return fallbackFromContacts(contacts);
 };
 
-const mailingMirrorMap = {
-  physicalLocation: 'mailingAddress',
-  physicalCity: 'mailingCity',
-  physicalState: 'mailingState',
-  physicalPostalCode: 'mailingPostalCode',
+const billingMirrorMap = {
+  physicalLocation: 'billingAddress',
+  physicalCity: 'billingCity',
+  physicalState: 'billingState',
+  physicalPostalCode: 'billingPostalCode',
 };
 
 const CompanyBasicsSection = ({
   data = {},
   onChange,
   errors = {},
-  mailingSameAsPhysical = false,
-  onMailingSameAsPhysicalChange,
+  billingSameAsPhysical = false,
+  onBillingSameAsPhysicalChange,
   onAdditionalLocationsChange,
 }) => {
   const contacts = data.contactNumbers || {};
@@ -120,15 +122,38 @@ const CompanyBasicsSection = ({
   // Postal code validation errors
   const [postalErrors, setPostalErrors] = useState({
     physical: '',
-    mailing: '',
+    billing: '',
   });
   // Additional locations postal errors (keyed by index)
   const [additionalPostalErrors, setAdditionalPostalErrors] = useState({});
+  // Channel phone validation errors (keyed by channel id)
+  const [channelPhoneErrors, setChannelPhoneErrors] = useState({});
 
   // Validate postal code on blur
   const validatePostalCode = (field, value) => {
     const error = getPostalCodeError(value);
     setPostalErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  // Handle billing same as physical toggle
+  const handleBillingToggle = (checked) => {
+    onBillingSameAsPhysicalChange?.(checked);
+    if (checked) {
+      emit({
+        billingSameAsPhysical: true,
+        billingAddress: data.physicalLocation || '',
+        billingSuite: data.suiteOrUnit || '',
+        billingCity: data.physicalCity || '',
+        billingState: data.physicalState || '',
+        billingPostalCode: data.physicalPostalCode || '',
+      });
+    } else {
+      emit({ billingSameAsPhysical: false });
+    }
+  };
+
+  const billingField = (key) => (event) => {
+    emit({ [key]: event.target.value });
   };
 
   // Validate additional location postal code
@@ -146,18 +171,18 @@ const CompanyBasicsSection = ({
   };
 
   // Handle postal code change with formatting
-  const handlePostalCodeChange = (field, mailingField = null) => (event) => {
+  const handlePostalCodeChange = (field, billingField = null) => (event) => {
     const raw = event.target.value;
     const formatted = formatPostalCode(raw);
     
     const patch = { [field]: formatted };
-    if (mailingSameAsPhysical && mailingField) {
-      patch[mailingField] = formatted;
+    if (billingSameAsPhysical && billingField) {
+      patch[billingField] = formatted;
     }
     emit(patch);
     
     // Clear error if now valid
-    const fieldKey = field.includes('mailing') ? 'mailing' : 'physical';
+    const fieldKey = field.includes('billing') ? 'billing' : 'physical';
     if (postalErrors[fieldKey] && isValidPostalCode(formatted)) {
       setPostalErrors(prev => ({ ...prev, [fieldKey]: '' }));
     }
@@ -282,6 +307,30 @@ const CompanyBasicsSection = ({
     const channel = channels[index] || {};
     const { normalizeContactValue } = require('../utils/contactValidators');
     const { value } = event.target;
+    const channelId = channel.id || `channel-${index}`;
+    
+    // Phone validation for phone-type channels
+    const isPhoneType = ['phone', 'toll-free', 'fax', 'whatsapp'].includes(channel.type);
+    if (isPhoneType && value && value.trim()) {
+      const phoneError = getPhoneError(value);
+      if (phoneError) {
+        setChannelPhoneErrors(prev => ({ ...prev, [channelId]: phoneError }));
+      } else {
+        setChannelPhoneErrors(prev => {
+          const next = { ...prev };
+          delete next[channelId];
+          return next;
+        });
+      }
+    } else if (isPhoneType) {
+      // Clear error if field is empty
+      setChannelPhoneErrors(prev => {
+        const next = { ...prev };
+        delete next[channelId];
+        return next;
+      });
+    }
+    
     const { value: normalized, changed } = normalizeContactValue(channel.type, value);
     if (changed) {
       const next = channels.map((c, idx) => (idx === index ? { ...c, value: normalized } : c));
@@ -297,14 +346,13 @@ const CompanyBasicsSection = ({
       } else {
         msg = `Normalized ${labelText}`;
       }
-      const id = channel.id || `channel-${index}`;
-      setChannelNotes((prev) => ({ ...(prev || {}), [id]: msg }));
+      setChannelNotes((prev) => ({ ...(prev || {}), [channelId]: msg }));
       // clear the note after a short delay
       setTimeout(() => {
         setChannelNotes((prev) => {
           if (!prev) return prev;
           const copy = { ...prev };
-          delete copy[id];
+          delete copy[channelId];
           return copy;
         });
       }, 4000);
@@ -362,33 +410,13 @@ const CompanyBasicsSection = ({
     setAdditionalLocations(additionalLocations.filter((_, idx) => idx !== index));
   };
 
-  const handleMailingToggle = (checked) => {
-    onMailingSameAsPhysicalChange?.(checked);
-    if (checked) {
-      emit({
-        mailingSameAsPhysical: true,
-        mailingAddress: data.physicalLocation || '',
-        mailingSuite: data.suiteOrUnit || '',
-        mailingCity: data.physicalCity || '',
-        mailingState: data.physicalState || '',
-        mailingPostalCode: data.physicalPostalCode || '',
-      });
-    } else {
-      emit({ mailingSameAsPhysical: false });
-    }
-  };
-
   const handlePhysicalField = (key) => (event) => {
     const value = event.target.value;
     const patch = { [key]: value };
-    if (mailingSameAsPhysical && mailingMirrorMap[key]) {
-      patch[mailingMirrorMap[key]] = value;
+    if (billingSameAsPhysical && billingMirrorMap[key]) {
+      patch[billingMirrorMap[key]] = value;
     }
     emit(patch);
-  };
-
-  const mailingField = (key) => (event) => {
-    emit({ [key]: event.target.value });
   };
 
   return (
@@ -403,8 +431,9 @@ const CompanyBasicsSection = ({
       <Box sx={{ display: 'grid', gap: 2 }}>
         <FieldRow helperText={errors.businessName || errors.company}>
           <TextField
-            label="Business Name"
+            label="Business Name *"
             fullWidth
+            required
             value={data.businessName || data.company || ''}
             onChange={(e) => emit({ businessName: e.target.value, company: e.target.value })}
             error={Boolean(errors.businessName || errors.company)}
@@ -415,8 +444,9 @@ const CompanyBasicsSection = ({
           <Grid item xs={12} md={8}>
             <FieldRow helperText={errors.physicalLocation}>
               <TextField
-                label="Physical Street Address"
+                label="Physical Street Address *"
                 fullWidth
+                required
                 value={data.physicalLocation || ''}
                 onChange={handlePhysicalField('physicalLocation')}
                 error={Boolean(errors.physicalLocation)}
@@ -433,8 +463,9 @@ const CompanyBasicsSection = ({
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="City"
+              label="City *"
               fullWidth
+              required
               value={data.physicalCity || ''}
               onChange={handlePhysicalField('physicalCity')}
               error={Boolean(errors.physicalCity)}
@@ -442,17 +473,17 @@ const CompanyBasicsSection = ({
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth error={Boolean(errors.physicalState)}>
-              <InputLabel id="physical-state-label">State / Province</InputLabel>
+            <FormControl fullWidth required error={Boolean(errors.physicalState)}>
+              <InputLabel id="physical-state-label">State / Province *</InputLabel>
               <Select
                 labelId="physical-state-label"
-                label="State / Province"
+                label="State / Province *"
                 value={data.physicalState || ''}
                 onChange={(e) => {
                   const value = e.target.value;
                   const patch = { physicalState: value };
-                  if (mailingSameAsPhysical) {
-                    patch.mailingState = value;
+                  if (billingSameAsPhysical) {
+                    patch.billingState = value;
                   }
                   emit(patch);
                 }}
@@ -479,10 +510,11 @@ const CompanyBasicsSection = ({
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
-              label="Zip / Postal Code"
+              label="Zip / Postal Code *"
               fullWidth
+              required
               value={data.physicalPostalCode || ''}
-              onChange={handlePostalCodeChange('physicalPostalCode', 'mailingPostalCode')}
+              onChange={handlePostalCodeChange('physicalPostalCode', 'billingPostalCode')}
               onBlur={(e) => validatePostalCode('physical', e.target.value)}
               error={Boolean(postalErrors.physical || errors.physicalPostalCode)}
               helperText={postalErrors.physical || errors.physicalPostalCode}
@@ -491,30 +523,41 @@ const CompanyBasicsSection = ({
           </Grid>
         </Grid>
 
-        <Box sx={{ pl: { xs: 0.5, md: 1 } }}>
-          <FieldRow>
+        <Divider sx={{ my: 3 }} />
+
+        {/* Billing Address Section */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            Billing Address
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            We'll send invoices here.
+          </Typography>
+
+          <Box sx={{ mb: 2 }}>
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={Boolean(mailingSameAsPhysical)}
-                  onChange={(e) => handleMailingToggle(e.target.checked)}
+                  checked={Boolean(billingSameAsPhysical)}
+                  onChange={(e) => handleBillingToggle(e.target.checked)}
                 />
               }
               label="Same as physical address"
+              sx={{ ml: 0 }}
             />
-          </FieldRow>
+          </Box>
         </Box>
 
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
-            <FieldRow helperText={errors.mailingAddress}>
+            <FieldRow helperText={errors.billingAddress}>
               <TextField
-                label="Mailing Street Address"
+                label="Billing Street Address"
                 fullWidth
-                value={mailingSameAsPhysical ? (data.physicalLocation || '') : (data.mailingAddress || '')}
-                onChange={mailingField('mailingAddress')}
-                disabled={mailingSameAsPhysical}
-                error={Boolean(errors.mailingAddress)}
+                value={billingSameAsPhysical ? (data.physicalLocation || '') : (data.billingAddress || '')}
+                onChange={billingField('billingAddress')}
+                disabled={billingSameAsPhysical}
+                error={Boolean(errors.billingAddress)}
               />
             </FieldRow>
           </Grid>
@@ -522,32 +565,32 @@ const CompanyBasicsSection = ({
             <TextField
               label="Suite / Unit (optional)"
               fullWidth
-              value={mailingSameAsPhysical ? (data.suiteOrUnit || '') : (data.mailingSuite || '')}
-              onChange={mailingField('mailingSuite')}
-              disabled={mailingSameAsPhysical}
-              error={Boolean(errors.mailingSuite)}
-              helperText={errors.mailingSuite}
+              value={billingSameAsPhysical ? (data.suiteOrUnit || '') : (data.billingSuite || '')}
+              onChange={billingField('billingSuite')}
+              disabled={billingSameAsPhysical}
+              error={Boolean(errors.billingSuite)}
+              helperText={errors.billingSuite}
             />
           </Grid>
           <Grid item xs={12} md={4}>
             <TextField
               label="City"
               fullWidth
-              value={mailingSameAsPhysical ? (data.physicalCity || '') : (data.mailingCity || '')}
-              onChange={mailingField('mailingCity')}
-              disabled={mailingSameAsPhysical}
-              error={Boolean(errors.mailingCity)}
-              helperText={errors.mailingCity}
+              value={billingSameAsPhysical ? (data.physicalCity || '') : (data.billingCity || '')}
+              onChange={billingField('billingCity')}
+              disabled={billingSameAsPhysical}
+              error={Boolean(errors.billingCity)}
+              helperText={errors.billingCity}
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth error={Boolean(errors.mailingState)} disabled={mailingSameAsPhysical}>
-              <InputLabel id="mailing-state-label">State / Province</InputLabel>
+            <FormControl fullWidth error={Boolean(errors.billingState)} disabled={billingSameAsPhysical}>
+              <InputLabel id="billing-state-label">State / Province</InputLabel>
               <Select
-                labelId="mailing-state-label"
+                labelId="billing-state-label"
                 label="State / Province"
-                value={mailingSameAsPhysical ? (data.physicalState || '') : (data.mailingState || '')}
-                onChange={(e) => emit({ mailingState: e.target.value })}
+                value={billingSameAsPhysical ? (data.physicalState || '') : (data.billingState || '')}
+                onChange={(e) => emit({ billingState: e.target.value })}
               >
                 <ListSubheader>United States</ListSubheader>
                 {US_STATES.map((state) => (
@@ -562,9 +605,9 @@ const CompanyBasicsSection = ({
                   </MenuItem>
                 ))}
               </Select>
-              {errors.mailingState && (
+              {errors.billingState && (
                 <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                  {errors.mailingState}
+                  {errors.billingState}
                 </Typography>
               )}
             </FormControl>
@@ -573,18 +616,18 @@ const CompanyBasicsSection = ({
             <TextField
               label="Zip / Postal Code"
               fullWidth
-              value={mailingSameAsPhysical ? (data.physicalPostalCode || '') : (data.mailingPostalCode || '')}
+              value={billingSameAsPhysical ? (data.physicalPostalCode || '') : (data.billingPostalCode || '')}
               onChange={(e) => {
                 const formatted = formatPostalCode(e.target.value);
-                emit({ mailingPostalCode: formatted });
-                if (postalErrors.mailing && isValidPostalCode(formatted)) {
-                  setPostalErrors(prev => ({ ...prev, mailing: '' }));
+                emit({ billingPostalCode: formatted });
+                if (postalErrors.billing && isValidPostalCode(formatted)) {
+                  setPostalErrors(prev => ({ ...prev, billing: '' }));
                 }
               }}
-              onBlur={(e) => validatePostalCode('mailing', e.target.value)}
-              disabled={mailingSameAsPhysical}
-              error={Boolean(postalErrors.mailing || errors.mailingPostalCode)}
-              helperText={postalErrors.mailing || errors.mailingPostalCode}
+              onBlur={(e) => validatePostalCode('billing', e.target.value)}
+              disabled={billingSameAsPhysical}
+              error={Boolean(postalErrors.billing || errors.billingPostalCode)}
+              helperText={postalErrors.billing || errors.billingPostalCode}
               inputProps={{ maxLength: 10 }}
             />
           </Grid>
@@ -738,11 +781,17 @@ const CompanyBasicsSection = ({
 
       <Box>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-          Public Contact Channels
+          Public Contact Channels *
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Public-facing business channels (as published on your website/Google). Examples: main phone, toll-free, group email, website, and official social profiles.
+          Public-facing business channels (as published on your website/Google). <strong>At least one phone number is required.</strong> Examples: main phone, toll-free, group email, website, and official social profiles.
         </Typography>
+
+        {errors.contactNumbers?.primaryOfficeLine && (
+          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+            {errors.contactNumbers.primaryOfficeLine}
+          </Typography>
+        )}
 
         <Stack spacing={2}>
           {channels.map((channel, index) => {
@@ -751,6 +800,9 @@ const CompanyBasicsSection = ({
             const isWebsite = channel.type === 'website';
             const selectedType = typeOptions.find((o) => o.value === channel.type);
             const labelText = selectedType ? selectedType.label : (isWebsite ? 'Link' : 'Value');
+            const channelId = channel.id || `channel-${index}`;
+            const isPhoneType = ['phone', 'toll-free', 'fax', 'whatsapp'].includes(channel.type);
+            const phoneError = channelPhoneErrors[channelId] || '';
 
             return (
               <Grid container spacing={2} key={channel.id || index} alignItems="flex-end">
@@ -761,7 +813,15 @@ const CompanyBasicsSection = ({
                       labelId={`contact-type-${channel.id}`}
                       label="Type"
                       value={channel.type}
-                      onChange={handleChannelTypeChange(index)}
+                      onChange={(e) => {
+                        handleChannelTypeChange(index)(e);
+                        // Clear phone error when type changes
+                        setChannelPhoneErrors(prev => {
+                          const next = { ...prev };
+                          delete next[channelId];
+                          return next;
+                        });
+                      }}
                     >
                       {typeOptions.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
@@ -782,13 +842,23 @@ const CompanyBasicsSection = ({
                       if (v.trim() && v.trim().toLowerCase() === labelText.toLowerCase()) return '';
                       return v;
                     })()}
-                    onChange={handleChannelValueChange(index)}
+                    onChange={(e) => {
+                      handleChannelValueChange(index)(e);
+                      // Clear phone error if now valid
+                      if (isPhoneType && phoneError && isValidPhone(e.target.value)) {
+                        setChannelPhoneErrors(prev => {
+                          const next = { ...prev };
+                          delete next[channelId];
+                          return next;
+                        });
+                      }
+                    }}
                     onBlur={(e) => { handleChannelBlur(index)(e); setFocusedChannelId(null); }}
                     onFocus={() => setFocusedChannelId(channel.id || `channel-${index}`)}
                     // Use text input mode for alphanumeric support; websites keep 'url'
                     inputMode={isWebsite ? 'url' : 'text'}
-                    error={Boolean(channelError.value)}
-                    helperText={channelNotes[channel.id] || channelError.value}
+                    error={Boolean(channelError.value || phoneError)}
+                    helperText={phoneError || channelNotes[channel.id] || channelError.value}
                     InputProps={
                       ['phone', 'toll-free', 'fax'].includes(channel.type)
                         ? {

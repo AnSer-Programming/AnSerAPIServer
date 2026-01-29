@@ -31,6 +31,8 @@ import {
   ReviewsOutlined,
   CheckCircleOutlined,
   TimerOutlined,
+  GroupOutlined,
+  AccountTreeOutlined,
   PlayArrowRounded,
   RouteOutlined,
   BugReport as BugReportIcon,
@@ -55,7 +57,7 @@ const StartNewClient = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loadingMode, setLoadingMode] = useState(null);
   const isLoading = Boolean(loadingMode);
-  const { updateSection, formData } = useWizard();
+  const { updateSection, formData, restoreFormData } = useWizard();
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState(null);
 
@@ -109,6 +111,10 @@ const StartNewClient = () => {
   const handleRestoreDraft = async () => {
     setShowRestoreDialog(false);
     setLoadingMode('restore');
+    const draft = localStorage.getItem('clientWizardDraft');
+    if (draft && typeof restoreFormData === 'function') {
+      restoreFormData(draft);
+    }
     await new Promise(resolve => setTimeout(resolve, 300));
     history.push(WIZARD_ROUTES.COMPANY_INFO);
   };
@@ -141,12 +147,12 @@ const StartNewClient = () => {
       physicalCity: 'Seattle',
       physicalState: 'WA',
       physicalPostalCode: '98101',
-      mailingAddress: '123 Main Street',
-      mailingSuite: 'Suite 100',
-      mailingCity: 'Seattle',
-      mailingState: 'WA',
-      mailingPostalCode: '98101',
-      mailingSameAsPhysical: true,
+      billingAddress: '456 Corporate Plaza',
+      billingSuite: 'Floor 3',
+      billingCity: 'Seattle',
+      billingState: 'WA',
+      billingPostalCode: '98102',
+      billingSameAsPhysical: false,
       additionalLocations: [],
       contactNumbers: {
         primaryOfficeLine: '206-555-1234',
@@ -605,6 +611,8 @@ const StartNewClient = () => {
         categoryName: cat.categoryName,
         whenToContact: cat.whenToContact,
         specialInstructions: cat.specialInstructions,
+        finalAction: 'repeat-until-delivered',
+        afterHoursFinalAction: 'repeat-until-delivered',
         escalationSteps: cat.steps.map(step => ({
           id: generateId(),
           contactPerson: step.contactPerson,
@@ -644,9 +652,10 @@ const StartNewClient = () => {
   const setupSteps = [
     { icon: <BusinessOutlined />, title: 'Company Information', desc: 'Essential contacts and addresses' },
     { icon: <PhoneOutlined />, title: 'Answer Calls', desc: 'How our agents will answer incoming calls' },
-    { icon: <ScheduleOutlined />, title: 'On Call', desc: 'On-call team members and schedules' },
+    { icon: <ScheduleOutlined />, title: 'On Call Setup', desc: 'On-call team members and schedules' },
+    { icon: <GroupOutlined />, title: 'Team Setup', desc: 'Group on-call personnel into teams or departments' },
+    { icon: <AccountTreeOutlined />, title: 'Escalation & Rotation Details', desc: 'Define escalation contacts, schedules, and coverage timing' },
     { icon: <RouteOutlined />, title: 'Call Routing', desc: 'Assign team members to call categories' },
-    { icon: <TimerOutlined />, title: 'Other Info', desc: 'Additional configuration and preferences' },
     { icon: <EventOutlined />, title: 'Final Details', desc: 'Choose availability and upload documents' },
     { icon: <ReviewsOutlined />, title: 'Review & Submit', desc: 'Confirm everything before we start' },
   ];
@@ -823,6 +832,32 @@ const StartNewClient = () => {
                 </Grid>
               ))}
             </Grid>
+          </Box>
+        </Fade>
+
+        {/* Fill Test Data Button */}
+        <Fade in timeout={1400}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleFillTestData}
+              disabled={isLoading}
+              startIcon={loadingMode === 'test' ? <CircularProgress size={16} /> : <BugReportIcon />}
+              sx={{
+                color: theme.palette.text.secondary,
+                borderColor: theme.palette.divider,
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: theme.palette.action.hover,
+                },
+              }}
+            >
+              {loadingMode === 'test' ? 'Loading Test Data…' : 'Fill Test Data'}
+            </Button>
+            <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.disabled' }}>
+              Pre-fill the form with sample data for testing
+            </Typography>
           </Box>
         </Fade>
 

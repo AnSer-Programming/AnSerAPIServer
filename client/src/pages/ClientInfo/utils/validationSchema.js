@@ -59,9 +59,9 @@ export const companyInfoSchema = (data = {}) => {
     errors.businessName = 'Business name is required.';
     errors.company = 'Business name is required.';
   }
-  
+
   if (!data.physicalLocation?.trim()) {
-    errors.physicalLocation = 'Physical location is required.';
+    errors.physicalLocation = 'Physical address is required.';
   }
 
   if (!data.physicalCity?.trim()) {
@@ -70,6 +70,58 @@ export const companyInfoSchema = (data = {}) => {
 
   if (!data.physicalState?.trim()) {
     errors.physicalState = 'State or province is required for your physical location.';
+  }
+
+  if (!data.physicalPostalCode?.trim()) {
+    errors.physicalPostalCode = 'Postal code is required for your physical location.';
+  }
+
+  // ===== PRIMARY CONTACT REQUIRED =====
+  if (data.primaryContact) {
+    const primaryErrors = {};
+    if (!data.primaryContact.name?.trim()) {
+      primaryErrors.name = 'Primary contact name is required.';
+    }
+    if (!data.primaryContact.phone?.trim()) {
+      primaryErrors.phone = 'Primary contact phone is required.';
+    }
+    if (!data.primaryContact.email?.trim()) {
+      primaryErrors.email = 'Primary contact email is required.';
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.primaryContact.email.trim())) {
+      primaryErrors.email = 'Please enter a valid email address (e.g., name@company.com).';
+    }
+    if (Object.keys(primaryErrors).length) {
+      errors.primaryContact = primaryErrors;
+    }
+  } else {
+    errors.primaryContact = {
+      name: 'Primary contact name is required.',
+      phone: 'Primary contact phone is required.',
+      email: 'Primary contact email is required.',
+    };
+  }
+
+  // ===== BILLING CONTACT REQUIRED (unless same as primary) =====
+  if (!data.billingSameAsPrimary) {
+    if (data.billingContact) {
+      const billingErrors = {};
+      if (!data.billingContact.name?.trim()) {
+        billingErrors.name = 'Billing contact name is required.';
+      }
+      if (!data.billingContact.email?.trim()) {
+        billingErrors.email = 'Billing contact email is required.';
+      } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(data.billingContact.email.trim())) {
+        billingErrors.email = 'Please enter a valid email address (e.g., name@company.com).';
+      }
+      if (Object.keys(billingErrors).length) {
+        errors.billingContact = billingErrors;
+      }
+    } else {
+      errors.billingContact = {
+        name: 'Billing contact name is required.',
+        email: 'Billing contact email is required.',
+      };
+    }
   }
 
   // ===== CONTACT NUMBERS VALIDATION =====
@@ -84,28 +136,44 @@ export const companyInfoSchema = (data = {}) => {
     if (Object.keys(contactErrors).length) {
       errors.contactNumbers = contactErrors;
     }
+  } else {
+    errors.contactNumbers = {
+      primaryOfficeLine: 'Primary office line is required.',
+    };
   }
 
   if (Array.isArray(data.contactChannels)) {
-    const allowedTypes = new Set(['main', 'toll-free', 'fax', 'other', 'website']);
+    const allowedTypes = new Set([
+      'main',
+      'phone',
+      'toll-free',
+      'fax',
+      'website',
+      'group-email',
+      'linkedin',
+      'facebook',
+      'whatsapp',
+      'x-twitter',
+      'instagram',
+      'other',
+    ]);
+    const phoneTypes = new Set(['main', 'phone', 'toll-free', 'fax', 'whatsapp', 'other']);
     const channelErrors = [];
-    let hasValue = false;
+    let hasPhone = false;
 
     data.contactChannels.forEach((channel = {}, index) => {
       const entryErrors = {};
       const type = channel.type;
       const value = typeof channel.value === 'string' ? channel.value.trim() : channel.value;
+      const hasValue = Boolean(value);
 
-      if (!type || !allowedTypes.has(type)) {
+      if (hasValue && (!type || !allowedTypes.has(type))) {
         entryErrors.type = 'Select a valid contact type.';
       }
 
-      if (!value) {
-        entryErrors.value = 'Add a number or link for this contact method.';
-      } else {
-        hasValue = true;
-        if (type === 'website' && !/^https?:\/\//i.test(value)) {
-          entryErrors.value = 'Start website links with http:// or https://.';
+      if (hasValue) {
+        if (phoneTypes.has(type)) {
+          hasPhone = true;
         }
       }
 
@@ -114,8 +182,8 @@ export const companyInfoSchema = (data = {}) => {
       }
     });
 
-    if (!hasValue) {
-      channelErrors[0] = { ...(channelErrors[0] || {}), value: 'Add at least one contact method.' };
+    if (!hasPhone) {
+      channelErrors[0] = { ...(channelErrors[0] || {}), value: 'Add at least one phone number.' };
     }
 
     if (channelErrors.length) {
@@ -538,8 +606,6 @@ export const websiteAccessSchema = (data = {}) => {
         const url = typeof site.url === 'string' ? site.url.trim() : '';
         if (!url) {
           siteErr.url = 'Website URL is required.';
-        } else if (!/^https?:\/\//i.test(url)) {
-          siteErr.url = 'Include http:// or https:// in the website link.';
         }
 
         if (Object.keys(siteErr).length) {

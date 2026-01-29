@@ -80,6 +80,94 @@ const summarizeMemberContacts = (member) => {
   return parts.join(', ');
 };
 
+// Utility formatters used in review summaries
+const meetingTimeToMinutes = (value) => {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const str = String(value).trim();
+
+  const meridiemMatch = str.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  if (meridiemMatch) {
+    let hours = Number(meridiemMatch[1]);
+    const minutes = Number(meridiemMatch[2] || '0');
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return Number.POSITIVE_INFINITY;
+    if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) return Number.POSITIVE_INFINITY;
+    const meridiem = meridiemMatch[3].toUpperCase();
+    if (meridiem === 'PM' && hours !== 12) hours += 12;
+    if (meridiem === 'AM' && hours === 12) hours = 0;
+    return (hours * 60) + minutes;
+  }
+
+  const militaryMatch = str.match(/^(\d{1,2}):(\d{2})$/);
+  if (militaryMatch) {
+    const hours = Number(militaryMatch[1]);
+    const minutes = Number(militaryMatch[2]);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return Number.POSITIVE_INFINITY;
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return Number.POSITIVE_INFINITY;
+    return (hours * 60) + minutes;
+  }
+
+  return Number.POSITIVE_INFINITY;
+};
+
+const formatConsultationSlot = (slot) => {
+  if (!slot || (slot.date == null && slot.time == null)) return '';
+  const dateValue = slot.date ? String(slot.date).trim() : '';
+  const timeValue = slot.time ? String(slot.time).trim() : '';
+
+  let dateLabel = dateValue || 'Date TBD';
+  if (dateValue) {
+    const parsed = new Date(`${dateValue}T00:00:00`);
+    if (!Number.isNaN(parsed.getTime())) {
+      dateLabel = parsed.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+  }
+
+  const timeLabel = timeValue || 'Time TBD';
+  return `${dateLabel} at ${timeLabel}`;
+};
+
+const describeSchedule = (schedule) => {
+  if (!schedule || typeof schedule !== 'object') return 'Schedule details unavailable';
+
+  const recurrence = schedule.recurrence || '';
+  const start = schedule.startTime ? String(schedule.startTime).trim() : '';
+  const end = schedule.endTime ? String(schedule.endTime).trim() : '';
+  const window = start || end ? `${start || 'Start'}${end ? ` – ${end}` : ''}` : '';
+
+  const extras = [];
+  const days = Array.isArray(schedule.selectedDays) ? schedule.selectedDays : [];
+  if (recurrence === 'On Date' && schedule.specificDate) {
+    extras.push(`Date: ${schedule.specificDate}`);
+  }
+  if (days.length) {
+    extras.push(`Days: ${days.join(', ')}`);
+  }
+  if (recurrence === 'Every Month' && schedule.monthDay) {
+    extras.push(`Day ${schedule.monthDay}`);
+  }
+  if (schedule.notes) {
+    extras.push(String(schedule.notes));
+  }
+
+  const parts = [recurrence, window, ...extras].filter(Boolean);
+  return parts.length ? parts.join(' • ') : 'Schedule details unavailable';
+};
+
+const formatAttachmentSize = (size) => {
+  const bytes = Number(size);
+  if (!Number.isFinite(bytes) || bytes < 0) return 'Unknown size';
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
+};
+
 // Small Card wrapper used in the review view (title + optional Edit action)
 const Card = ({ title, onEdit, children, sx = {} }) => (
   <Paper variant="outlined" sx={{ p: 2, ...sx }}>
@@ -517,7 +605,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Office Hours"
-              onEdit={() => history.push(WIZARD_ROUTES.OFFICE_REACH)}
+              onEdit={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
                 {Object.entries(eh).map(([day, v]) => (
@@ -739,7 +827,7 @@ const ReviewStep = () => {
           {mounted && (
             <Card
               title="Daily Summary Preferences"
-              onEdit={() => history.push(WIZARD_ROUTES.OFFICE_REACH)}
+              onEdit={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}
             >
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Row

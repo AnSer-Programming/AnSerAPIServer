@@ -9,14 +9,9 @@ import {
   Alert, 
   Button,
   Typography,
-  Stepper,
-  Step,
-  StepLabel,
   Grid,
   Card,
   CardContent,
-  Chip,
-  LinearProgress,
   Fade,
   useTheme,
   CircularProgress,
@@ -25,7 +20,6 @@ import {
   ScheduleOutlined,
   EventOutlined,
   WebOutlined,
-  CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
   PhoneInTalk,
@@ -38,7 +32,7 @@ import { useHistory } from 'react-router-dom';
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
-import { WIZARD_STEPS, STEP_LABELS, WIZARD_ROUTES } from '../constants/routes';
+import { WIZARD_ROUTES } from '../constants/routes';
 import OfficeHoursSection from '../sections/OfficeHoursSection';
 import WebsiteAccessSection from '../sections/WebsiteAccessSection';
 import SpecialEventsSection from '../sections/SpecialEventsSection';
@@ -106,29 +100,6 @@ const OfficeReach = () => {
     history.push(WIZARD_ROUTES.FINAL_DETAILS);
   };
 
-  // Calculate completion percentage
-  const getCompletionPercentage = () => {
-    const officeHours = companyInfo.officeHours || {};
-    const websiteAccess = companyInfo.websiteAccess || {};
-    
-    const fields = [
-      officeHours.monday?.open,
-      officeHours.tuesday?.open,
-      officeHours.wednesday?.open,
-      officeHours.thursday?.open,
-      officeHours.friday?.open,
-      companyInfo.timeZone,
-      websiteAccess.hasWebsite !== undefined,
-    ];
-    
-    const completed = fields.filter(field => field !== undefined && field !== '').length;
-    return Math.round((completed / fields.length) * 100);
-  };
-
-  const progress = getCompletionPercentage();
-  const steps = (WIZARD_STEPS || []).map((s) => STEP_LABELS[s] || s);
-  const activeStep = Math.max((WIZARD_STEPS || []).indexOf('office-reach'), 0);
-
   const sectionCards = [
     {
       id: 'hours',
@@ -190,84 +161,6 @@ const OfficeReach = () => {
     <Box sx={sharedStyles.layout.pageWrapper}>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
-        {/* Header Section */}
-        <Fade in timeout={600}>
-          <Paper role="region" aria-labelledby="officereach-title"
-            elevation={2}
-            sx={{
-              p: { xs: 2, md: 3 },
-              mb: 4,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-              border: `1px solid ${theme.palette.primary.main}20`,
-            }}
-          >
-            <Box sx={{ mb: 3 }}>
-              <Typography
-                id="officereach-title"
-                component="h1"
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  color: theme.palette.primary.main,
-                  mb: 1,
-                }}
-              >
-                What is it that you want from us?
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
-                Outline when you need us available and where expectations change throughout the day.
-              </Typography>
-
-              {/* Progress Stepper */}
-              <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
-                {steps.map((label, index) => (
-                  <Step key={label}>
-                    <StepLabel
-                      sx={{
-                        '& .MuiStepLabel-label': {
-                          fontSize: '0.875rem',
-                          fontWeight: index === activeStep ? 600 : 400,
-                        },
-                      }}
-                    >
-                      {label}
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-
-              {/* Progress Bar */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ flexGrow: 1 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 4,
-                        background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main})`,
-                      },
-                    }}
-                  />
-                </Box>
-                <Chip
-                  icon={<CheckCircleOutlined />}
-                  label={`${progress}% Complete`}
-                  color={progress > 70 ? 'success' : progress > 30 ? 'warning' : 'default'}
-                  size="small"
-                />
-              </Box>
-            </Box>
-          </Paper>
-        </Fade>
-
         {/* Section Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {sectionCards.map((section, index) => (

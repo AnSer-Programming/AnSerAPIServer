@@ -1,5 +1,26 @@
-import React from 'react';
-import { Box, TextField, Button, Paper, Typography, Grid, Checkbox, FormControlLabel, MenuItem, Select, List, ListItem, ListItemText } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Grid,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  Select,
+  List,
+  ListItem,
+  ListItemText,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Chip,
+  Stack,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useWizard } from '../context_API/WizardContext';
 import FieldRow from '../components/FieldRow';
 
@@ -11,13 +32,19 @@ const OnCallDepartmentsSection = ({ errors = [], onCall = {}, setOnCall = () => 
   const team = Array.isArray(formData.onCall?.team) ? formData.onCall.team : [];
 
   // Convert legacy row shape to new shape safely when rendering
-  const normalizedRows = rows.map((r) => ({
-    id: r.id || generateId(),
-    department: r.department || r.name || '',
-    members: Array.isArray(r.members) ? r.members : [],
-    contact: r.contact || r.contact || '',
-    contactMemberId: r.contactMemberId || null,
-  }));
+  const normalizedRows = useMemo(() => (
+    rows.map((r) => {
+      const legacyId = r.id ?? (r.department || r.name || '');
+      return {
+        id: legacyId || generateId(),
+        department: r.department || r.name || '',
+        members: Array.isArray(r.members) ? r.members : [],
+        contact: r.contact ?? '',
+        contactMemberId: r.contactMemberId || null,
+      };
+    })
+  ), [rows]);
+  const rowIds = useMemo(() => normalizedRows.map((row) => row.id), [normalizedRows]);
 
   const persist = (next) => {
     updateSection('onCall', { ...formData.onCall, departments: next });
@@ -29,11 +56,10 @@ const OnCallDepartmentsSection = ({ errors = [], onCall = {}, setOnCall = () => 
   };
 
   const addRow = () => {
-    const next = [
-      ...normalizedRows,
-      { id: generateId(), department: '', members: [], contact: '', contactMemberId: null },
-    ];
+    const nextRow = { id: generateId(), department: '', members: [], contact: '', contactMemberId: null };
+    const next = [...normalizedRows, nextRow];
     persist(next);
+    setExpandedTeams(new Set([nextRow.id]));
   };
 
   const removeRow = (index) => {
@@ -51,66 +77,126 @@ const OnCallDepartmentsSection = ({ errors = [], onCall = {}, setOnCall = () => 
     persist(next);
   };
 
+  const [expandedTeams, setExpandedTeams] = useState(() => new Set());
+
+  useEffect(() => {
+    setExpandedTeams((prev) => {
+      const prevSet = prev || new Set();
+      const next = new Set(rowIds.filter((id) => prevSet.has(id)));
+      if (prevSet.size === next.size) {
+        let same = true;
+        prevSet.forEach((id) => {
+          if (!next.has(id)) same = false;
+        });
+        if (same) return prevSet;
+      }
+      return next;
+    });
+  }, [rowIds]);
+
+  useEffect(() => {
+    if (rows.some((row) => !row.id)) {
+      persist(normalizedRows);
+    }
+  }, [rows]);
+
   return (
     <Box sx={{ mt: 3 }}>
-      <Typography variant="h6">Teams</Typography>
+      <Typography variant="h6">Team Setup</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Define teams (departments/roles) and check which team members belong to each team.
       </Typography>
 
       <Box sx={{ display: 'grid', gap: 2 }}>
         {normalizedRows.map((row, idx) => (
-          <Paper key={row.id} variant="outlined" sx={{ p: 2 }}>
-            <Grid container spacing={2} alignItems="flex-start">
-              <Grid item xs={12} md={4}>
-                <FieldRow helperText={errors[idx]?.department}>
-                  <TextField
-                    label="Team / Department"
-                    value={row.department}
-                    onChange={(e) => setRow(idx, { department: e.target.value })}
-                    fullWidth
-                    error={!!errors[idx]?.department}
-                  />
-                </FieldRow>
-                <Box sx={{ mt: 1 }}>
-                  <Select
-                    value={row.contactMemberId || ''}
-                    onChange={(e) => setRow(idx, { contactMemberId: e.target.value || null })}
-                    displayEmpty
-                    fullWidth
-                  >
-                    <MenuItem value="">No default contact</MenuItem>
-                    {team.map((m) => (
-                      <MenuItem key={m.id} value={m.id}>{m.name || m.id}</MenuItem>
-                    ))}
-                  </Select>
+          <Accordion
+            key={row.id}
+            variant="outlined"
+            expanded={expandedTeams.has(row.id)}
+            TransitionProps={{ unmountOnExit: true }}
+            onChange={() => {
+              setExpandedTeams((prev) => {
+                const next = new Set(prev);
+                if (next.has(row.id)) next.delete(row.id);
+                else next.add(row.id);
+                return next;
+              });
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    {row.department?.trim() || `Team ${idx + 1}`}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {row.members?.length || 0} member{row.members?.length === 1 ? '' : 's'}
+                  </Typography>
                 </Box>
-              </Grid>
+                {!!errors[idx]?.department && (
+                  <Chip label="Name required" color="error" size="small" />
+                )}
+                <IconButton
+                  color="error"
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeRow(idx);
+                  }}
+                  sx={{ ml: 1 }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Stack>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2} alignItems="flex-start">
+                <Grid item xs={12} md={4}>
+                  <FieldRow helperText={errors[idx]?.department}>
+                    <TextField
+                      label="Team / Department"
+                      value={row.department}
+                      onChange={(e) => setRow(idx, { department: e.target.value })}
+                      fullWidth
+                      error={!!errors[idx]?.department}
+                    />
+                  </FieldRow>
+                  <Box sx={{ mt: 1 }}>
+                    <Select
+                      value={row.contactMemberId || ''}
+                      onChange={(e) => setRow(idx, { contactMemberId: e.target.value || null })}
+                      displayEmpty
+                      fullWidth
+                    >
+                      <MenuItem value="">No default contact</MenuItem>
+                      {team.map((m) => (
+                        <MenuItem key={m.id} value={m.id}>{m.name || m.id}</MenuItem>
+                      ))}
+                    </Select>
+                  </Box>
+                </Grid>
 
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>Members</Typography>
-                <List dense>
-                  {team.map((member) => (
-                    <ListItem key={member.id} sx={{ py: 0 }}>
-                      <FormControlLabel
-                        control={(
-                          <Checkbox
-                            checked={Array.isArray(row.members) && row.members.includes(member.id)}
-                            onChange={() => toggleMember(idx, member.id)}
-                          />
-                        )}
-                        label={<ListItemText primary={member.name || member.id} secondary={member.title || ''} />}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
+                <Grid item xs={12} md={8}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Members</Typography>
+                  <List dense>
+                    {team.map((member) => (
+                      <ListItem key={member.id} sx={{ py: 0 }}>
+                        <FormControlLabel
+                          control={(
+                            <Checkbox
+                              checked={Array.isArray(row.members) && row.members.includes(member.id)}
+                              onChange={() => toggleMember(idx, member.id)}
+                            />
+                          )}
+                          label={<ListItemText primary={member.name || member.id} secondary={member.title || ''} />}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Grid>
               </Grid>
-
-              <Grid item xs={12} md={2}>
-                <Button color="error" size="small" onClick={() => removeRow(idx)}>Remove</Button>
-              </Grid>
-            </Grid>
-          </Paper>
+            </AccordionDetails>
+          </Accordion>
         ))}
       </Box>
 

@@ -9,12 +9,7 @@ import {
   Alert,
   Button,
   Typography,
-  Stepper,
-  Step,
-  StepLabel,
   Grid,
-  Chip,
-  LinearProgress,
   Fade,
   useTheme,
   CircularProgress,
@@ -26,13 +21,12 @@ import {
   BusinessOutlined,
   PeopleOutlined,
   ContactPhoneOutlined,
-  CheckCircleOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useHistory } from 'react-router-dom';
-import { WIZARD_ROUTES, WIZARD_STEPS, STEP_LABELS } from '../constants/routes';
+import { WIZARD_ROUTES } from '../constants/routes';
 
 // Navbar handled by WizardLayout
 // Footer handled by WizardLayout
@@ -53,12 +47,12 @@ const ClientSetUp = () => {
 
   const ci = formData.companyInfo || {};
 
-  const mirrorFields = {
-    physicalLocation: 'mailingAddress',
-    physicalCity: 'mailingCity',
-    physicalState: 'mailingState',
-    physicalPostalCode: 'mailingPostalCode',
-    suiteOrUnit: 'mailingSuite',
+  const billingMirrorFields = {
+    physicalLocation: 'billingAddress',
+    physicalCity: 'billingCity',
+    physicalState: 'billingState',
+    physicalPostalCode: 'billingPostalCode',
+    suiteOrUnit: 'billingSuite',
   };
 
   const data = {
@@ -69,12 +63,12 @@ const ClientSetUp = () => {
     physicalCity: ci.physicalCity ?? '',
     physicalState: ci.physicalState ?? '',
     physicalPostalCode: ci.physicalPostalCode ?? '',
-    mailingAddress: ci.mailingAddress ?? '',
-    mailingSuite: ci.mailingSuite ?? '',
-    mailingCity: ci.mailingCity ?? '',
-    mailingState: ci.mailingState ?? '',
-    mailingPostalCode: ci.mailingPostalCode ?? '',
-    mailingSameAsPhysical: ci.mailingSameAsPhysical ?? false,
+    billingAddress: ci.billingAddress ?? '',
+    billingSuite: ci.billingSuite ?? '',
+    billingCity: ci.billingCity ?? '',
+    billingState: ci.billingState ?? '',
+    billingPostalCode: ci.billingPostalCode ?? '',
+    billingSameAsPhysical: ci.billingSameAsPhysical ?? false,
     additionalLocations: Array.isArray(ci.additionalLocations) ? ci.additionalLocations : [],
     contactNumbers: {
       primaryOfficeLine: ci.contactNumbers?.primaryOfficeLine ?? '',
@@ -107,6 +101,105 @@ const ClientSetUp = () => {
   const [snack, setSnack] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
+  const ALLOWED_ERROR_KEYS = new Set([
+    'businessName',
+    'company',
+    'physicalLocation',
+    'suiteOrUnit',
+    'physicalCity',
+    'physicalState',
+    'physicalPostalCode',
+    'billingAddress',
+    'billingSuite',
+    'billingCity',
+    'billingState',
+    'billingPostalCode',
+    'billingSameAsPhysical',
+    'additionalLocations',
+    'contactNumbers',
+    'contactChannels',
+    'primaryContact',
+    'billingContact',
+    'officePersonnel',
+    'timeZone',
+  ]);
+
+  const ALLOWED_NESTED_KEYS = {
+    primaryContact: new Set(['name', 'title', 'phone', 'email']),
+    billingContact: new Set(['name', 'title', 'phone', 'email', 'purchaseOrder', 'notes']),
+    contactNumbers: new Set(['primaryOfficeLine', 'tollFree', 'secondaryLine', 'fax', 'officeEmail', 'website']),
+  };
+
+  const filterCompanySetupErrors = (errs) => {
+    if (!errs || typeof errs !== 'object') return errs;
+    const filtered = {};
+
+    Object.entries(errs).forEach(([key, value]) => {
+      if (!ALLOWED_ERROR_KEYS.has(key)) return;
+
+      const allowedNested = ALLOWED_NESTED_KEYS[key];
+      if (allowedNested && value && typeof value === 'object' && !Array.isArray(value)) {
+        const nested = Object.fromEntries(
+          Object.entries(value).filter(([nestedKey]) => allowedNested.has(nestedKey))
+        );
+        if (Object.keys(nested).length > 0) {
+          filtered[key] = nested;
+        }
+        return;
+      }
+
+      filtered[key] = value;
+    });
+
+    return Object.keys(filtered).length ? filtered : null;
+  };
+
+  const FIELD_LABELS = {
+    businessName: 'Business Name',
+    company: 'Business Name',
+    physicalLocation: 'Physical Address',
+    physicalCity: 'Physical City',
+    physicalState: 'Physical State',
+    physicalPostalCode: 'Physical Postal Code',
+    'primaryContact.name': 'Primary Contact Name',
+    'primaryContact.phone': 'Primary Contact Phone',
+    'primaryContact.email': 'Primary Contact Email',
+    'billingContact.name': 'Billing Contact Name',
+    'billingContact.email': 'Billing Contact Email',
+    'contactNumbers.primaryOfficeLine': 'Primary Office Line',
+    contactChannels: 'Public Contact Channels',
+    additionalLocations: 'Additional Locations',
+  };
+
+  const normalizeErrorPath = (path) => path.replace(/\.\d+/g, '').replace(/\[\d+\]/g, '');
+
+  const collectErrorPaths = (value, prefix = '') => {
+    if (!value) return [];
+    if (typeof value === 'string') return [prefix];
+    if (Array.isArray(value)) {
+      return value.flatMap((item, index) =>
+        collectErrorPaths(item, prefix ? `${prefix}.${index}` : `${index}`)
+      );
+    }
+    if (typeof value === 'object') {
+      return Object.entries(value).flatMap(([key, child]) =>
+        collectErrorPaths(child, prefix ? `${prefix}.${key}` : key)
+      );
+    }
+    return [prefix];
+  };
+
+  const getMissingFields = (errs = {}) => {
+    const paths = collectErrorPaths(errs).filter(Boolean);
+    const labels = paths.map((path) => {
+      const normalized = normalizeErrorPath(path);
+      if (normalized.startsWith('contactChannels')) return FIELD_LABELS.contactChannels;
+      if (normalized.startsWith('additionalLocations')) return FIELD_LABELS.additionalLocations;
+      return FIELD_LABELS[normalized] || FIELD_LABELS[path] || normalized;
+    });
+    return Array.from(new Set(labels)).filter(Boolean);
+  };
+
   useEffect(() => {
     const prevTitle = document.title;
     document.title = 'Client setup — AnSer Communications';
@@ -130,11 +223,11 @@ const ClientSetUp = () => {
   const merge = (patch) => updateSection('companyInfo', patch);
 
   const setBasics = (patch) => {
-    const shouldMirror = ci.mailingSameAsPhysical ?? data.mailingSameAsPhysical;
+    const shouldMirrorBilling = ci.billingSameAsPhysical ?? data.billingSameAsPhysical;
     const nextPatch = { ...patch };
 
-    if (shouldMirror) {
-      Object.entries(mirrorFields).forEach(([source, target]) => {
+    if (shouldMirrorBilling) {
+      Object.entries(billingMirrorFields).forEach(([source, target]) => {
         if (Object.prototype.hasOwnProperty.call(patch, source)) {
           nextPatch[target] = patch[source];
         }
@@ -144,20 +237,20 @@ const ClientSetUp = () => {
     merge(nextPatch);
   };
 
-  const handleMailingSameAsPhysicalChange = (checked) => {
+  const handleBillingSameAsPhysicalChange = (checked) => {
     if (checked) {
       merge({
-        mailingSameAsPhysical: true,
-        mailingAddress: data.physicalLocation || '',
-        mailingSuite: data.suiteOrUnit || '',
-        mailingCity: data.physicalCity || '',
-        mailingState: data.physicalState || '',
-        mailingPostalCode: data.physicalPostalCode || '',
+        billingSameAsPhysical: true,
+        billingAddress: data.physicalLocation || '',
+        billingSuite: data.suiteOrUnit || '',
+        billingCity: data.physicalCity || '',
+        billingState: data.physicalState || '',
+        billingPostalCode: data.physicalPostalCode || '',
       });
       return;
     }
 
-    merge({ mailingSameAsPhysical: false });
+    merge({ billingSameAsPhysical: false });
   };
 
   const handleAdditionalLocationsChange = (list) => {
@@ -167,51 +260,27 @@ const ClientSetUp = () => {
   const handleSave = async () => {
     setSaving(true);
     markStepVisited('company-info');
-    
+
     // Simulate save delay for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // validate with the most up-to-date data shape
-    const errs = validateSection('companyInfo', { ...formData.companyInfo, ...data });
-    
-    // Show validation feedback but don't block navigation
+    const rawErrors = validateSection('companyInfo', { ...formData.companyInfo, ...data });
+    const errs = filterCompanySetupErrors(rawErrors);
+
+    setSaving(false);
+
+    // Block navigation if required fields are missing
     if (errs) {
       setErrors(errs);
       setSnack(true);
-    } else {
-      setErrors({});
+      return; // Don't proceed if there are validation errors
     }
-    
-    setSaving(false);
-    
-  // Always proceed to next step — new order: go to Answer Calls
-  history.push(WIZARD_ROUTES.ANSWER_CALLS);
+
+    setErrors({});
+    // Only proceed to next step if validation passes
+    history.push(WIZARD_ROUTES.ANSWER_CALLS);
   };
-
-  // Calculate completion percentage
-  const getCompletionPercentage = () => {
-    const checks = [
-      Boolean(data.businessName && data.businessName.trim()),
-      Boolean(data.physicalLocation && data.physicalLocation.trim()),
-      Boolean(data.physicalCity && data.physicalCity.trim()),
-      Boolean(data.primaryContact.name && data.primaryContact.name.trim()),
-      Boolean(data.primaryContact.phone && data.primaryContact.phone.trim()),
-      data.billingSameAsPrimary
-        ? true
-        : Boolean(data.billingContact.email && data.billingContact.email.trim()),
-      Array.isArray(data.contactChannels)
-        ? data.contactChannels.some((channel) => channel && channel.value && channel.value.trim())
-        : false,
-    ];
-
-    const completed = checks.filter(Boolean).length;
-    return Math.round((completed / checks.length) * 100);
-  };
-
-  const progress = getCompletionPercentage();
-
-  // Derive step labels from constants to avoid drift
-  const steps = (WIZARD_STEPS || []).slice(0, 4).map((s) => STEP_LABELS[s] || s);
 
   const sectionCards = [
     {
@@ -246,8 +315,8 @@ const ClientSetUp = () => {
           data={data}
           onChange={setBasics}
           errors={errors}
-          mailingSameAsPhysical={data.mailingSameAsPhysical}
-          onMailingSameAsPhysicalChange={handleMailingSameAsPhysicalChange}
+          billingSameAsPhysical={data.billingSameAsPhysical}
+          onBillingSameAsPhysicalChange={handleBillingSameAsPhysicalChange}
           onAdditionalLocationsChange={handleAdditionalLocationsChange}
         />
       ),
@@ -258,85 +327,6 @@ const ClientSetUp = () => {
     <Box sx={sharedStyles.layout.pageWrapper}>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
-        {/* Header Section */}
-        <Fade in timeout={600}>
-          <Paper
-            elevation={2}
-            role="region" aria-labelledby="clientsetup-title"
-            sx={{
-              p: { xs: 2, md: 3 },
-              mb: 4,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-              border: `1px solid ${theme.palette.primary.main}20`,
-            }}
-          >
-              <Box sx={{ mb: 3 }}>
-              <Typography
-                id="clientsetup-title"
-                component="h1"
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  color: theme.palette.primary.main,
-                  mb: 1,
-                }}
-              >
-                Basic Info
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
-                Let’s start with the basics we need.
-              </Typography>
-
-              {/* Progress Stepper */}
-              <Stepper activeStep={0} alternativeLabel sx={{ mb: 2 }}>
-                {steps.map((label, index) => (
-                  <Step key={label}>
-                    <StepLabel
-                      sx={{
-                        '& .MuiStepLabel-label': {
-                          fontSize: '0.875rem',
-                          fontWeight: index === 0 ? 600 : 400,
-                        },
-                      }}
-                    >
-                      {label}
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-
-              {/* Progress Bar */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ flexGrow: 1 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 4,
-                        background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main})`,
-                      },
-                    }}
-                  />
-                </Box>
-                <Chip
-                  icon={<CheckCircleOutlined />}
-                  label={`${progress}% Complete`}
-                  color={progress > 70 ? 'success' : progress > 30 ? 'warning' : 'default'}
-                  size="small"
-                />
-              </Box>
-            </Box>
-          </Paper>
-        </Fade>
-
         {/* Section Accordions */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {sectionCards.map((section, index) => (
@@ -440,17 +430,30 @@ const ClientSetUp = () => {
 
       <Snackbar
         open={snack}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={() => setSnack(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          severity={Object.keys(errors).length ? 'warning' : 'success'}
+          severity={Object.keys(errors).length ? 'error' : 'success'}
           sx={{ width: '100%' }}
         >
-          {Object.keys(errors).length
-            ? 'Some fields need attention — you can continue and fix them later.'
-            : 'Draft saved successfully!'}
+          {Object.keys(errors).length ? (
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Please complete all required fields before continuing.
+              </Typography>
+              <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                {getMissingFields(errors).map((label) => (
+                  <li key={label}>
+                    <Typography variant="body2">{label}</Typography>
+                  </li>
+                ))}
+              </Box>
+            </Box>
+          ) : (
+            'Draft saved successfully!'
+          )}
         </Alert>
       </Snackbar>
     </Box>
