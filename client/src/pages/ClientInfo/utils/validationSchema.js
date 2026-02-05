@@ -471,18 +471,6 @@ export const summaryPreferencesSchema = (data = {}) => {
     errors.dailyRecapEnabled = 'Select yes or no for daily recaps.';
   }
 
-  const realTime = Array.isArray(data.realTimeChannels) ? data.realTimeChannels : [];
-  if (data.dailyRecapEnabled === false && realTime.length === 0) {
-    errors.realTimeChannels = 'Select at least one real-time delivery method.';
-  }
-  if (realTime.length) {
-    const allowed = new Set(['email', 'text', 'fax']);
-    const invalid = realTime.filter((item) => !allowed.has(item));
-    if (invalid.length) {
-      errors.realTimeChannels = 'Real-time methods must be Email, Text, or Fax.';
-    }
-  }
-
   if (data.reportSpamHangups != null && typeof data.reportSpamHangups !== 'boolean') {
     errors.reportSpamHangups = 'Choose yes or no for hang-up reporting.';
   }
@@ -776,33 +764,8 @@ export const onCallProceduresSchema = (data = {}) => {
 // On Call: Escalation List
 // ------------------------------
 export const onCallEscalationSchema = (steps = []) => {
-  if (!Array.isArray(steps)) return null;
-  if (steps.length === 0) {
-    return { base: 'Add at least one escalation contact.' };
-  }
-
-  const errors = [];
-  steps.forEach((step = {}, index) => {
-    const stepErrors = {};
-    if (!step.name || !step.name.toString().trim()) {
-      stepErrors.name = 'Name is required.';
-    }
-    if (!step.contact || !step.contact.toString().trim()) {
-      stepErrors.contact = 'Provide the best contact details.';
-    }
-    if (step.window && step.window.toString().length > 120) {
-      stepErrors.window = 'Keep the time window under 120 characters.';
-    }
-    if (step.notes && step.notes.toString().length > 500) {
-      stepErrors.notes = 'Notes must be 500 characters or less.';
-    }
-
-    if (Object.keys(stepErrors).length) {
-      errors[index] = stepErrors;
-    }
-  });
-
-  return errors.length ? errors : null;
+  // Escalation plan is optional in the current flow.
+  return null;
 };
 
 // ------------------------------

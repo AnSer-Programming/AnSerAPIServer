@@ -69,6 +69,119 @@ const BUSINESS_CATEGORY_EXAMPLES = {
   Other: ['General inquiry'],
 };
 
+const splitTopLevel = (value, delimiter = ' / ') => {
+  const parts = [];
+  let buffer = '';
+  let depth = 0;
+
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth = Math.max(0, depth - 1);
+
+    if (depth === 0 && value.slice(i, i + delimiter.length) === delimiter) {
+      if (buffer.trim()) parts.push(buffer.trim());
+      buffer = '';
+      i += delimiter.length - 1;
+      continue;
+    }
+
+    buffer += ch;
+  }
+
+  if (buffer.trim()) parts.push(buffer.trim());
+  return parts;
+};
+
+const findSeparatorOutsideParens = (value, separators) => {
+  let depth = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth = Math.max(0, depth - 1);
+    if (depth !== 0) continue;
+
+    for (const sep of separators) {
+      if (value.slice(i, i + sep.length) === sep) {
+        return { index: i, sep };
+      }
+    }
+  }
+
+  return null;
+};
+
+const expandParentheticalOptions = (value) => {
+  const start = value.indexOf('(');
+  if (start === -1) return [value];
+
+  let depth = 0;
+  let end = -1;
+  for (let i = start; i < value.length; i += 1) {
+    const ch = value[i];
+    if (ch === '(') depth += 1;
+    if (ch === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    }
+  }
+
+  if (end === -1) return [value];
+
+  const inside = value.slice(start + 1, end);
+  const insideParts = splitTopLevel(inside);
+  if (insideParts.length <= 1) return [value];
+
+  const prefix = value.slice(0, start).trimEnd();
+  const suffix = value.slice(end + 1).trimStart();
+
+  return insideParts.map((part) => {
+    const core = prefix ? `${prefix} (${part.trim()})` : `(${part.trim()})`;
+    return suffix ? `${core} ${suffix}` : core;
+  });
+};
+
+const splitReason = (raw) => {
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return [];
+
+  const dashSeparators = [' - ', ' – ', ' — '];
+  const dashMatch = findSeparatorOutsideParens(trimmed, dashSeparators);
+  if (dashMatch) {
+    const prefix = trimmed.slice(0, dashMatch.index).trim();
+    const rest = trimmed.slice(dashMatch.index + dashMatch.sep.length).trim();
+    if (prefix && rest) {
+      const restParts = splitTopLevel(rest);
+      if (restParts.length > 1) {
+        return restParts.flatMap((part) => expandParentheticalOptions(`${prefix} - ${part.trim()}`));
+      }
+    }
+  }
+
+  return splitTopLevel(trimmed).flatMap(expandParentheticalOptions);
+};
+
+const normalizeSuggestionList = (list = []) => {
+  const seen = new Set();
+  const output = [];
+
+  list.forEach((item) => {
+    splitReason(item).forEach((entry) => {
+      const cleaned = entry.replace(/\s+/g, ' ').trim();
+      if (!cleaned) return;
+      const key = cleaned.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      output.push(cleaned);
+    });
+  });
+
+  return output;
+};
+
 const makeId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const AnswerCallsNew = () => {
@@ -161,6 +274,11 @@ const AnswerCallsNew = () => {
   const setSection = (patch) => updateSection('answerCalls', { ...section, ...patch });
 
   const handleBusinessTypeChange = (e) => setSection({ businessType: e.target.value });
+
+  // Prefer the richer master reasons when available (client_facing array), fallback to small set
+  const rawExamples = BUSINESS_REASONS[businessType]?.client_facing || BUSINESS_CATEGORY_EXAMPLES[businessType] || [];
+  const examples = normalizeSuggestionList(rawExamples);
+  const exampleMap = new Map(examples.map((example) => [example.toLowerCase(), example]));
 
   const addCategory = () => {
     // minimize existing categories and add a new expanded one
@@ -275,20 +393,22 @@ const AnswerCallsNew = () => {
 
   const handleCategoryFreeInputChange = (id, newValue) => {
     // when user picks or types in the combined field
-    const allExamples = BUSINESS_REASONS[businessType]?.client_facing || BUSINESS_CATEGORY_EXAMPLES[businessType] || [];
-    const isSuggestion = typeof newValue === 'string' && allExamples.includes(newValue);
+    const rawValue = typeof newValue === 'string' ? newValue : '';
+    const normalizedValue = rawValue.trim();
+    const matchedExample = normalizedValue ? exampleMap.get(normalizedValue.toLowerCase()) : '';
+    const isSuggestion = Boolean(matchedExample);
     
     const fieldKey = `${id}-customName`;
     
     // Update local buffer
-    setEditingBuffers(prev => ({ ...prev, [fieldKey]: newValue || '' }));
+    setEditingBuffers(prev => ({ ...prev, [fieldKey]: rawValue }));
     
     // Schedule commit (will be cancelled if user continues typing)
-    scheduleCommit(id, 'customName', newValue || '', 600);
+    scheduleCommit(id, 'customName', rawValue, 600);
     
     // Also update selectedCommon immediately if it's a suggestion
     if (isSuggestion) {
-      updateCategory(id, { selectedCommon: newValue });
+      updateCategory(id, { selectedCommon: matchedExample });
     } else {
       updateCategory(id, { selectedCommon: '' });
     }
@@ -306,9 +426,6 @@ const AnswerCallsNew = () => {
     const list = (examples || []).filter((e) => !used.includes(e) || (categories.find((c) => c.id === catId)?.selectedCommon === e));
     return list;
   };
-
-  // Prefer the richer master reasons when available (client_facing array), fallback to small set
-  const examples = (BUSINESS_REASONS[businessType]?.client_facing) || BUSINESS_CATEGORY_EXAMPLES[businessType] || [];
 
   return (
     <Box sx={sharedStyles.layout.pageWrapper}>

@@ -36,6 +36,7 @@ const OnCallDepartmentsSection = ({ errors = [], onCall = {}, setOnCall = () => 
     rows.map((r) => {
       const legacyId = r.id ?? (r.department || r.name || '');
       return {
+        ...r,
         id: legacyId || generateId(),
         department: r.department || r.name || '',
         members: Array.isArray(r.members) ? r.members : [],

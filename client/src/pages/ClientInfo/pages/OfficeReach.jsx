@@ -9,23 +9,27 @@ import {
   Alert, 
   Button,
   Typography,
-  Grid,
-  Card,
-  CardContent,
+  Stack,
   Fade,
   useTheme,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   ScheduleOutlined,
   EventOutlined,
+  AccessTime,
   WebOutlined,
   NavigateNextRounded,
   NavigateBeforeRounded,
   PhoneInTalk,
-  Summarize,
   FilterAlt,
+  Summarize,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 import { useHistory } from 'react-router-dom';
 // Navbar handled by WizardLayout
 // Footer handled by WizardLayout
@@ -34,11 +38,12 @@ import { useWizard } from '../context_API/WizardContext';
 import { createSharedStyles } from '../utils/sharedStyles';
 import { WIZARD_ROUTES } from '../constants/routes';
 import OfficeHoursSection from '../sections/OfficeHoursSection';
+import PlannedServiceTimesSection from '../sections/PlannedServiceTimesSection';
 import WebsiteAccessSection from '../sections/WebsiteAccessSection';
 import SpecialEventsSection from '../sections/SpecialEventsSection';
 import BusinessHoursOverflowSection from '../sections/BusinessHoursOverflowSection';
-import DailyRecapSection from '../sections/DailyRecapSection';
 import CallFilteringSection from '../sections/CallFilteringSection';
+import SummaryPreferencesSection from '../sections/SummaryPreferencesSection';
 
 const OfficeReach = () => {
   const { darkMode } = useClientInfoTheme();
@@ -49,10 +54,17 @@ const OfficeReach = () => {
   const [snack, setSnack] = useState(false);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({});
+  const sectionHeaderBg = darkMode
+    ? alpha(theme.palette.primary.main, 0.12)
+    : alpha(theme.palette.primary.main, 0.06);
+  const handleSectionToggle = (id) => (_event, isExpanded) => {
+    setExpandedSections((prev) => ({ ...prev, [id]: isExpanded }));
+  };
 
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = 'Other Info — AnSer Communications';
+    document.title = 'Other Info - AnSer Communications';
     let meta = document.querySelector('meta[name="description"]');
     let created = false;
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
@@ -96,7 +108,7 @@ const OfficeReach = () => {
     
     setSaving(false);
 
-    // Always proceed to next step — new order: go to Final Details
+    // Always proceed to next step - new order: go to Final Details
     history.push(WIZARD_ROUTES.FINAL_DETAILS);
   };
 
@@ -106,13 +118,14 @@ const OfficeReach = () => {
       title: 'Office Hours',
       icon: <ScheduleOutlined />,
       description: 'When your office is open and available',
-      component: (
-        <OfficeHoursSection
-          data={companyInfo}
-          errors={errors.officeHours || {}}
-          lunchErrors={errors.lunch || {}}
-        />
-      ),
+      component: <OfficeHoursSection />,
+    },
+    {
+      id: 'planned-times',
+      title: "Planned Times to Use AnSer's Services",
+      icon: <AccessTime />,
+      description: 'When you expect to use AnSer outside your standard hours',
+      component: <PlannedServiceTimesSection />,
     },
     ...(showSpecialEvents ? [{
       id: 'events',
@@ -128,6 +141,13 @@ const OfficeReach = () => {
       ),
     }] : []),
     {
+      id: 'summary-preferences',
+      title: 'Daily Summary & Recap Preferences',
+      icon: <Summarize />,
+      description: 'Control delivery options and recap schedule preferences',
+      component: <SummaryPreferencesSection errors={errors.summaryPreferences || {}} />,
+    },
+    {
       id: 'website',
       title: 'Website Access',
       icon: <WebOutlined />,
@@ -142,13 +162,6 @@ const OfficeReach = () => {
       component: <BusinessHoursOverflowSection errors={errors.businessHoursOverflow || {}} />,
     },
     {
-      id: 'recap',
-      title: 'Daily Recap Reports',
-      icon: <Summarize />,
-      description: 'Automated daily summaries of call activity',
-      component: <DailyRecapSection errors={errors.dailyRecap || {}} />,
-    },
-    {
       id: 'filtering',
       title: 'Call Filtering',
       icon: <FilterAlt />,
@@ -161,67 +174,88 @@ const OfficeReach = () => {
     <Box sx={sharedStyles.layout.pageWrapper}>
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
+        <Fade in timeout={600}>
+          <Paper
+            elevation={2}
+            role="region"
+            aria-labelledby="other-info-title"
+            sx={{
+              p: { xs: 2, md: 3 },
+              mb: 2,
+              background: darkMode
+                ? `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}06 100%)`
+                : `linear-gradient(135deg, ${theme.palette.primary.main}06 0%, ${theme.palette.secondary.main}02 100%)`,
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+            }}
+          >
+            <Typography id="other-info-title" component="h1" variant="h5" sx={{ fontWeight: 700, mb: 0.5, color: theme.palette.primary.main }}>
+              Other Info
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Configure office hours, website access, and special events for your AnSer setup.
+            </Typography>
+          </Paper>
+        </Fade>
+
         {/* Section Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Stack spacing={3} sx={{ mb: 4 }}>
           {sectionCards.map((section, index) => (
-            <Grid item xs={12} key={section.id}>
-              <Fade in timeout={800 + index * 200}>
-                <Card
-                  elevation={2}
+            <Fade in timeout={800 + index * 150} key={section.id}>
+              <Accordion
+                expanded={!!expandedSections[section.id]}
+                onChange={handleSectionToggle(section.id)}
+                disableGutters
+                sx={{
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow: 'none',
+                  overflow: 'hidden',
+                  '&:before': { display: 'none' },
+                  '&:hover': {
+                    boxShadow: theme.shadows[3],
+                  },
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
                   sx={{
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: theme.shadows[6],
-                      transform: 'translateY(-2px)',
+                    px: { xs: 2, md: 3 },
+                    py: 2,
+                    bgcolor: sectionHeaderBg,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    '& .MuiAccordionSummary-content': {
+                      my: 0,
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
-                    {/* Section Header */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box
                       sx={{
-                        p: 3,
-                        pb: 2,
-                        background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        color: theme.palette.primary.main,
+                        '& svg': { fontSize: 24 },
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box
-                          sx={{
-                            color: theme.palette.primary.main,
-                            '& svg': { fontSize: 28 },
-                          }}
-                        >
-                          {section.icon}
-                        </Box>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, mb: 0.5 }}
-                          >
-                            {section.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            {section.description}
-                          </Typography>
-                        </Box>
-                      </Box>
+                      {section.icon}
                     </Box>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
+                        {section.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {section.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </AccordionSummary>
 
-                    {/* Section Content */}
-                    <Box sx={{ p: 3 }}>
-                      {section.component}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
+                <AccordionDetails sx={{ p: { xs: 2, md: 3 } }}>
+                  {section.component}
+                </AccordionDetails>
+              </Accordion>
+            </Fade>
           ))}
-        </Grid>
+        </Stack>
 
         {/* Navigation */}
         <Fade in timeout={1400}>
@@ -287,7 +321,7 @@ const OfficeReach = () => {
           sx={{ width: '100%' }}
         >
           {Object.keys(errors).length
-            ? 'Some fields need attention — you can continue and fix them later.'
+            ? 'Some fields need attention - you can continue and fix them later.'
             : 'Draft saved successfully!'}
         </Alert>
       </Snackbar>

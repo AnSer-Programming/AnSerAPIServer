@@ -117,7 +117,6 @@ const DEFAULTS = {
       alwaysSendEvenIfNoMessages: false,
       reportSpamHangups: undefined,
       dailyRecapEnabled: null,
-      realTimeChannels: [],
       recap: {
         includeNoMessages: false,
         delivery: { email: false, fax: false, other: false },
@@ -559,15 +558,6 @@ export const WizardProvider = ({ children }) => {
             ? 'No'
             : 'Not specified';
         summary += `  • Daily Recap: ${recapAnswer}\n`;
-        const channelLabels = {
-          email: 'Email',
-          text: 'Text',
-          fax: 'Fax',
-        };
-        const channels = Array.isArray(prefs.realTimeChannels)
-          ? prefs.realTimeChannels.map((ch) => channelLabels[ch] || ch.toString().toUpperCase())
-          : [];
-        summary += `  • Real-time Messages: ${channels.length ? channels.join(', ') : 'Not specified'}\n`;
       }
 
       const websiteAccess = info.websiteAccess || {};

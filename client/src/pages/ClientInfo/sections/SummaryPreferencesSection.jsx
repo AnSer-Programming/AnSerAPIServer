@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
+  Box,
   Checkbox,
   TextField,
   Button,
@@ -16,6 +17,7 @@ import {
   Chip,
   Stack,
   Grid,
+  Collapse,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
@@ -50,7 +52,6 @@ function SummaryPreferencesSection({ errors = {} }) {
     alwaysSendEvenIfNoMessages: false,
     reportSpamHangups: undefined,
     dailyRecapEnabled: null,
-    realTimeChannels: [],
     recap: {
       includeNoMessages: false,
       delivery: { email: false, fax: false, other: false },
@@ -65,10 +66,8 @@ function SummaryPreferencesSection({ errors = {} }) {
   const recapSchedule = summary.recapSchedule || {};
   const [pendingAdd, setPendingAdd] = useState({}); // per-day temp time input
   const [summaryEmailError, setSummaryEmailError] = useState('');
-  const realTimeChannels = Array.isArray(summary.realTimeChannels) ? summary.realTimeChannels : [];
   const recapErrors = errors || {};
   const dailyRecapError = recapErrors.dailyRecapEnabled;
-  const realTimeError = recapErrors.realTimeChannels;
 
   // Validate comma/semicolon separated email list
   const validateEmailList = (emailString) => {
@@ -116,7 +115,7 @@ function SummaryPreferencesSection({ errors = {} }) {
       [day]: { enabled, times: enabled ? cur.times : [] },
     };
     setPrefs({ recapSchedule: next });
-    // propagate Monday enable state to Tue–Fri if sameTimeWeekdays
+    // propagate Monday enable state to Tue-Fri if sameTimeWeekdays
     if (summary.sameTimeWeekdays && day === 'monday') {
       const mon = next.monday;
       ['tuesday', 'wednesday', 'thursday', 'friday'].forEach((d) => {
@@ -131,7 +130,7 @@ function SummaryPreferencesSection({ errors = {} }) {
     const dayObj = recapSchedule[day] || { enabled: true, times: [] };
     if (dayObj.times.includes(time)) return;
     const next = { ...recapSchedule, [day]: { enabled: true, times: [...dayObj.times, time].sort() } };
-    // mirror M–F if needed
+    // mirror M-F if needed
     if (summary.sameTimeWeekdays && day === 'monday') {
       ['tuesday', 'wednesday', 'thursday', 'friday'].forEach((d) => {
         next[d] = { enabled: next.monday.enabled, times: [...next.monday.times] };
@@ -146,7 +145,7 @@ function SummaryPreferencesSection({ errors = {} }) {
     if (!dayObj) return;
     const nextTimes = dayObj.times.filter((_, i) => i !== idx);
     const next = { ...recapSchedule, [day]: { ...dayObj, times: nextTimes } };
-    // mirror M–F if needed
+    // mirror M-F if needed
     if (summary.sameTimeWeekdays && day === 'monday') {
       ['tuesday', 'wednesday', 'thursday', 'friday'].forEach((d) => {
         next[d] = { enabled: next.monday.enabled, times: [...next.monday.times] };
@@ -181,20 +180,6 @@ function SummaryPreferencesSection({ errors = {} }) {
 
   const handleDailyRecapChange = (value) => {
     setPrefs({ dailyRecapEnabled: value });
-    if (value === true && realTimeChannels.length === 0) {
-      setPrefs({ realTimeChannels: ['email'] });
-    }
-  };
-
-  const handleRealTimeToggle = (channel) => (event) => {
-    const checked = event.target.checked;
-    const next = new Set(realTimeChannels);
-    if (checked) {
-      next.add(channel);
-    } else {
-      next.delete(channel);
-    }
-    setPrefs({ realTimeChannels: Array.from(next) });
   };
 
   return (
@@ -210,10 +195,8 @@ function SummaryPreferencesSection({ errors = {} }) {
       <Typography
         variant="h6"
         sx={{
-          color: (t) => t.palette.error.main,
           fontWeight: 700,
-          textDecoration: 'underline',
-          letterSpacing: 0.25,
+          color: 'text.primary',
           mb: 1.5,
         }}
       >
@@ -221,7 +204,7 @@ function SummaryPreferencesSection({ errors = {} }) {
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={12}>
           <Typography sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
             Do you want a daily recap of all messages?
           </Typography>
@@ -253,47 +236,10 @@ function SummaryPreferencesSection({ errors = {} }) {
             </Typography>
           )}
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Typography sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
-            How would you like your real-time messages?
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="flex-start">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={realTimeChannels.includes('email')}
-                  onChange={handleRealTimeToggle('email')}
-                />
-              }
-              label="Email"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={realTimeChannels.includes('text')}
-                  onChange={handleRealTimeToggle('text')}
-                />
-              }
-              label="Text"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={realTimeChannels.includes('fax')}
-                  onChange={handleRealTimeToggle('fax')}
-                />
-              }
-              label="Fax"
-            />
-          </Stack>
-          {realTimeError && (
-            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
-              {realTimeError}
-            </Typography>
-          )}
-        </Grid>
       </Grid>
 
+      <Collapse in={summary.dailyRecapEnabled !== false} timeout="auto" unmountOnExit>
+        <Box sx={{ mt: 1 }}>
       {/* Delivery method */}
       <Typography sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
         How would you like your daily summary delivered?
@@ -395,12 +341,12 @@ function SummaryPreferencesSection({ errors = {} }) {
         }
         label={
           <span>
-            Same time every day Mon–Fri <em>(uses Monday’s times)</em>
+            Same time every day Mon-Fri <em>(uses Monday's times)</em>
           </span>
         }
       />
       <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', mb: 1.5 }}>
-        Weekend isn’t included — add Sat/Sun below if you want weekend recaps.
+        Weekend isn't included - add Sat/Sun below if you want weekend recaps.
       </Typography>
 
       {/* Schedule table */}
@@ -450,7 +396,7 @@ function SummaryPreferencesSection({ errors = {} }) {
                     <Stack direction="column" spacing={1} alignItems="center">
                       <Stack direction="row" spacing={0.75} flexWrap="wrap" justifyContent="center">
                         {cell.times.length === 0 && (
-                          <Typography variant="caption" color="text.disabled">—</Typography>
+                          <Typography variant="caption" color="text.disabled">-</Typography>
                         )}
                         {cell.times.map((t, idx) => (
                           <Chip
@@ -531,7 +477,7 @@ function SummaryPreferencesSection({ errors = {} }) {
               onChange={() => setPrefs({ reportSpamHangups: true })}
             />
           }
-          label="YES, include them"
+          label="Yes, include them"
         />
         <FormControlLabel
           control={
@@ -540,9 +486,11 @@ function SummaryPreferencesSection({ errors = {} }) {
               onChange={() => setPrefs({ reportSpamHangups: false })}
             />
           }
-          label="NO, discard"
+          label="No, discard"
         />
       </Stack>
+        </Box>
+      </Collapse>
     </Paper>
   );
 }

@@ -100,12 +100,73 @@ export const validateSection = (section, data) => {
 
 export const validateAll = (formData) => {
   const errors = {};
+  const onCallDepartments = Array.isArray(formData?.onCall?.departments)
+    ? formData.onCall.departments
+    : [];
 
   for (const [key, fn] of Object.entries(validators)) {
     // Avoid duplicating on-call errors: skip the aggregate in validateAll
     if (key === 'onCall') continue;
 
     const parts = key.split('.');
+    if (key === 'onCall.scheduleType' && onCallDepartments.length) {
+      const deptErrors = {};
+      onCallDepartments.forEach((dept, idx) => {
+        const scheduleData = {
+          scheduleType: dept.scheduleType ?? formData?.onCall?.scheduleType,
+          fixedOrder: Array.isArray(dept.fixedOrder)
+            ? dept.fixedOrder
+            : (formData?.onCall?.fixedOrder || []),
+        };
+        const err = fn(scheduleData);
+        if (err) {
+          const keyId = dept.id ?? dept.department ?? dept.name ?? idx;
+          deptErrors[keyId] = err;
+        }
+      });
+      if (Object.keys(deptErrors).length) {
+        errors.onCall = errors.onCall || {};
+        errors.onCall.scheduleType = deptErrors;
+      }
+      continue;
+    }
+
+    if (key === 'onCall.rotation' && onCallDepartments.length) {
+      const deptErrors = {};
+      onCallDepartments.forEach((dept, idx) => {
+        const rotationData = dept.rotation || formData?.onCall?.rotation || {};
+        const err = fn(rotationData);
+        if (err) {
+          const keyId = dept.id ?? dept.department ?? dept.name ?? idx;
+          deptErrors[keyId] = err;
+        }
+      });
+      if (Object.keys(deptErrors).length) {
+        errors.onCall = errors.onCall || {};
+        errors.onCall.rotation = deptErrors;
+      }
+      continue;
+    }
+
+    if (key === 'onCall.escalation' && onCallDepartments.length) {
+      const deptErrors = {};
+      onCallDepartments.forEach((dept, idx) => {
+        const escalationData = Array.isArray(dept.escalation)
+          ? dept.escalation
+          : (formData?.onCall?.escalation || []);
+        const err = fn(escalationData);
+        if (err) {
+          const keyId = dept.id ?? dept.department ?? dept.name ?? idx;
+          deptErrors[keyId] = err;
+        }
+      });
+      if (Object.keys(deptErrors).length) {
+        errors.onCall = errors.onCall || {};
+        errors.onCall.escalation = deptErrors;
+      }
+      continue;
+    }
+
     const value = key === 'onCall.scheduleType'
       ? formData.onCall
       : parts.reduce((obj, part) => obj?.[part], formData);
