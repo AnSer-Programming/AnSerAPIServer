@@ -171,12 +171,9 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
     setDraggedIndex(null);
   };
 
-  const cardBg = alpha(theme.palette.primary.main, 0.04);
-  const cardBorder = alpha(theme.palette.primary.main, 0.15);
-
   return (
-    <Paper sx={{ p: 3, borderRadius: 2, border: `1px solid ${cardBorder}`, backgroundColor: cardBg }}>
-      <Stack spacing={3}>
+    <Box sx={{ px: 1 }}>
+      <Stack spacing={2.5}>
         {/* Title */}
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
@@ -187,7 +184,7 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
           </Typography>
         </Box>
 
-        <Divider />
+        <Divider sx={{ borderColor: alpha(theme.palette.divider, 0.6) }} />
 
         {/* Schedule Type Selection */}
         <Box>
@@ -245,12 +242,20 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
             )}
         </Box>
 
-        <Divider />
+        <Divider sx={{ borderColor: alpha(theme.palette.divider, 0.6) }} />
 
         {/* Rotating Schedule - Info Message */}
         {scheduleType === 'rotating' && (
-          <Alert severity="info">
-            Rotating on-call schedule builder is available with IIS integration. Configure your team members and escalation steps above first.
+          <Alert
+            severity="info"
+            variant="outlined"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.06),
+              borderColor: alpha(theme.palette.info.main, 0.3),
+              '& .MuiAlert-icon': { color: theme.palette.info.main },
+            }}
+          >
+            Rotating on-call schedule builder is available with IIS integration. Configure your team members in Team Setup first.
           </Alert>
         )}
 
@@ -381,7 +386,7 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
               </Stack>
             )}
 
-            <Box sx={{ border: `1px dashed ${cardBorder}`, p: 2, borderRadius: 1, mb: 2 }}>
+            <Box sx={{ border: `1px dashed ${alpha(theme.palette.primary.main, 0.12)}`, p: 2, borderRadius: 1.5, mb: 2, backgroundColor: alpha(theme.palette.common.white, 0.6) }}>
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -389,7 +394,7 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
                   </Typography>
                   {teamMembers.length === 0 ? (
                     <Alert severity="info">
-                      Add on-call team members above to enable quick selection here.
+                      Add on-call team members in Team Setup to enable quick selection here.
                     </Alert>
                   ) : availableMembers.length === 0 ? (
                     <Alert severity="success">
@@ -455,12 +460,20 @@ const OnCallScheduleSection = ({ errors = {}, onCall: onCallProp, setOnCall: set
 
         {/* No Schedule - Info */}
         {scheduleType === 'no-schedule' && (
-          <Alert severity="info">
-            We'll always reach your primary contact first. After-hours contact details will come from the team members you've configured above.
+          <Alert
+            severity="info"
+            variant="outlined"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.06),
+              borderColor: alpha(theme.palette.info.main, 0.3),
+              '& .MuiAlert-icon': { color: theme.palette.info.main },
+            }}
+          >
+            We'll always reach your primary contact first. After-hours contact details will come from the team members you've configured in Team Setup.
           </Alert>
         )}
       </Stack>
-    </Paper>
+    </Box>
   );
 };
 

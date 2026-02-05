@@ -76,6 +76,16 @@ const normalizeEmailList = (value) => {
   return [''];
 };
 
+const normalizePhoneList = (value) => {
+  if (Array.isArray(value)) {
+    return value.length ? value : [''];
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return [value.trim()];
+  }
+  return [''];
+};
+
 const CallRouting = () => {
   const theme = useTheme();
   const { darkMode } = useClientInfoTheme();
@@ -173,6 +183,69 @@ const CallRouting = () => {
   }, [formData.companyInfo, teamMembers]);
 
   const [emailMenuAnchor, setEmailMenuAnchor] = useState({});
+  const [phoneMenuAnchor, setPhoneMenuAnchor] = useState({});
+
+  const contactPhoneOptions = useMemo(() => {
+    const options = new Map();
+    const addOption = (phone, label) => {
+      if (!phone || typeof phone !== 'string') return;
+      const trimmed = phone.trim();
+      if (!trimmed) return;
+      const key = trimmed.replace(/\D/g, '');
+      if (!key) return;
+      if (!options.has(key)) {
+        options.set(key, { value: trimmed, label: label || trimmed });
+      }
+    };
+
+    const companyInfo = formData.companyInfo || {};
+    if (companyInfo.primaryContact?.phone) {
+      const name = companyInfo.primaryContact?.name;
+      addOption(companyInfo.primaryContact.phone, name ? `${name} - ${companyInfo.primaryContact.phone}` : companyInfo.primaryContact.phone);
+    }
+    if (companyInfo.billingContact?.phone) {
+      const name = companyInfo.billingContact?.name;
+      addOption(companyInfo.billingContact.phone, name ? `${name} - ${companyInfo.billingContact.phone}` : companyInfo.billingContact.phone);
+    }
+    if (companyInfo.contactNumbers?.primaryOfficeLine) {
+      addOption(companyInfo.contactNumbers.primaryOfficeLine, `Office - ${companyInfo.contactNumbers.primaryOfficeLine}`);
+    }
+    if (companyInfo.contactNumbers?.tollFree) {
+      addOption(companyInfo.contactNumbers.tollFree, `Toll-Free - ${companyInfo.contactNumbers.tollFree}`);
+    }
+    if (companyInfo.contactNumbers?.secondaryLine) {
+      addOption(companyInfo.contactNumbers.secondaryLine, `Secondary - ${companyInfo.contactNumbers.secondaryLine}`);
+    }
+
+    if (Array.isArray(companyInfo.contactChannels)) {
+      const phoneTypes = new Set(['main', 'phone', 'toll-free', 'fax', 'whatsapp', 'other']);
+      companyInfo.contactChannels.forEach((channel) => {
+        if (!channel) return;
+        const type = channel.type || '';
+        if (!phoneTypes.has(type)) return;
+        const label = type ? type.replace(/-/g, ' ') : 'Phone';
+        addOption(channel.value, `${label} - ${channel.value}`);
+      });
+    }
+
+    teamMembers.forEach((member) => {
+      const name = member.name || 'Team Member';
+      const addMemberPhones = (values, labelPrefix) => {
+        const list = Array.isArray(values) ? values : (values ? [values] : []);
+        list.forEach((value, idx) => {
+          if (!value || !String(value).trim()) return;
+          const label = `${name} - ${labelPrefix}${list.length > 1 ? ` ${idx + 1}` : ''}`;
+          addOption(String(value), label);
+        });
+      };
+
+      addMemberPhones(member.cellPhone, 'Cell');
+      addMemberPhones(member.textCell, 'Text');
+      addMemberPhones(member.homePhone, 'Home');
+    });
+
+    return Array.from(options.values());
+  }, [formData.companyInfo, teamMembers]);
 
   const openEmailMenu = (key, event) => {
     setEmailMenuAnchor((prev) => ({ ...prev, [key]: event.currentTarget }));
@@ -180,6 +253,14 @@ const CallRouting = () => {
 
   const closeEmailMenu = (key) => {
     setEmailMenuAnchor((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const openPhoneMenu = (key, event) => {
+    setPhoneMenuAnchor((prev) => ({ ...prev, [key]: event.currentTarget }));
+  };
+
+  const closePhoneMenu = (key) => {
+    setPhoneMenuAnchor((prev) => ({ ...prev, [key]: null }));
   };
 
   // Get current routing assignments
@@ -231,6 +312,44 @@ const CallRouting = () => {
       return changed ? next : prev;
     });
   }, [assignments]);
+
+  // Normalize deprecated final actions to supported options
+  useEffect(() => {
+    if (!assignments.length) return;
+    const allowedFinalActions = ['repeat-until-delivered', 'repeat-times', 'hold-checkin', 'hold', 'delivered'];
+    const allowedRepeatActions = ['hold-checkin', 'hold', 'delivered'];
+    let changed = false;
+
+    const updatedAssignments = assignments.map((assignment) => {
+      let next = assignment;
+
+      if (next.finalAction && !allowedFinalActions.includes(next.finalAction)) {
+        next = { ...next, finalAction: 'repeat-until-delivered' };
+        changed = true;
+      }
+
+      if (next.afterHoursFinalAction && !allowedFinalActions.includes(next.afterHoursFinalAction)) {
+        next = { ...next, afterHoursFinalAction: 'repeat-until-delivered' };
+        changed = true;
+      }
+
+      if (next.repeatFinalAction && !allowedRepeatActions.includes(next.repeatFinalAction)) {
+        next = { ...next, repeatFinalAction: 'hold' };
+        changed = true;
+      }
+
+      if (next.afterHoursRepeatFinalAction && !allowedRepeatActions.includes(next.afterHoursRepeatFinalAction)) {
+        next = { ...next, afterHoursRepeatFinalAction: 'hold' };
+        changed = true;
+      }
+
+      return next;
+    });
+
+    if (changed) {
+      updateSection('callRouting', { categoryAssignments: updatedAssignments });
+    }
+  }, [assignments, updateSection]);
 
   const handleAccordionChange = (categoryId) => (event, isExpanded) => {
     setExpandedCategories(prev => ({
@@ -512,28 +631,36 @@ const CallRouting = () => {
     const finalActionField = isAfterHours ? 'afterHoursFinalAction' : 'finalAction';
     const repeatCountField = isAfterHours ? 'afterHoursRepeatCount' : 'repeatCount';
     const repeatFinalActionField = isAfterHours ? 'afterHoursRepeatFinalAction' : 'repeatFinalAction';
-    const escalateToField = isAfterHours ? 'afterHoursEscalateTo' : 'escalateTo';
-    const escalationNotesField = isAfterHours ? 'afterHoursEscalationNotes' : 'escalationNotes';
     const confirmationField = isAfterHours ? 'afterHoursSendConfirmation' : 'sendConfirmationAfterDelivery';
-    const confirmTextField = isAfterHours ? 'afterHoursConfirmationViaText' : 'confirmationViaText';
-    const confirmEmailField = isAfterHours ? 'afterHoursConfirmationViaEmail' : 'confirmationViaEmail';
-    const confirmPhoneField = isAfterHours ? 'afterHoursConfirmationPhone' : 'confirmationPhone';
-    const confirmEmailValueField = isAfterHours ? 'afterHoursConfirmationEmail' : 'confirmationEmail';
-    const errorKey = isAfterHours ? `${assignment.categoryId}-ah` : assignment.categoryId;
-    const emailValues = normalizeEmailList(assignment[confirmEmailValueField]);
-    const emailErrorMap = confirmationErrors[errorKey]?.email;
-    const emailErrors = emailErrorMap && typeof emailErrorMap === 'object' ? emailErrorMap : {};
-    const selectedEmailSet = new Set(
-      emailValues.map((email) => email.trim().toLowerCase()).filter(Boolean)
-    );
-    const availableEmailOptions = contactEmailOptions.filter(
-      (option) => !selectedEmailSet.has(option.value.toLowerCase())
-    );
+      const confirmTextField = isAfterHours ? 'afterHoursConfirmationViaText' : 'confirmationViaText';
+      const confirmEmailField = isAfterHours ? 'afterHoursConfirmationViaEmail' : 'confirmationViaEmail';
+      const confirmPhoneField = isAfterHours ? 'afterHoursConfirmationPhone' : 'confirmationPhone';
+      const confirmEmailValueField = isAfterHours ? 'afterHoursConfirmationEmail' : 'confirmationEmail';
+      const errorKey = isAfterHours ? `${assignment.categoryId}-ah` : assignment.categoryId;
+      const emailValues = normalizeEmailList(assignment[confirmEmailValueField]);
+      const phoneValues = normalizePhoneList(assignment[confirmPhoneField]);
+      const emailErrorMap = confirmationErrors[errorKey]?.email;
+      const emailErrors = emailErrorMap && typeof emailErrorMap === 'object' ? emailErrorMap : {};
+      const phoneErrorMap = confirmationErrors[errorKey]?.phone;
+      const phoneErrors = phoneErrorMap && typeof phoneErrorMap === 'object'
+        ? phoneErrorMap
+        : (typeof phoneErrorMap === 'string' ? { 0: phoneErrorMap } : {});
+      const selectedEmailSet = new Set(
+        emailValues.map((email) => email.trim().toLowerCase()).filter(Boolean)
+      );
+      const availableEmailOptions = contactEmailOptions.filter(
+        (option) => !selectedEmailSet.has(option.value.toLowerCase())
+      );
+      const availablePhoneOptions = contactPhoneOptions;
+      const allowedFinalActions = ['repeat-until-delivered', 'repeat-times', 'hold-checkin', 'hold', 'delivered'];
+      const finalActionValue = allowedFinalActions.includes(assignment[finalActionField])
+        ? assignment[finalActionField]
+        : 'repeat-until-delivered';
 
-    const setEmailErrorForIndex = (index, message) => {
-      setConfirmationErrors((prev) => {
-        const current = prev[errorKey] || {};
-        const nextEmailErrors = current.email && typeof current.email === 'object' ? { ...current.email } : {};
+      const setEmailErrorForIndex = (index, message) => {
+        setConfirmationErrors((prev) => {
+          const current = prev[errorKey] || {};
+          const nextEmailErrors = current.email && typeof current.email === 'object' ? { ...current.email } : {};
 
         if (message) {
           nextEmailErrors[index] = message;
@@ -554,22 +681,63 @@ const CallRouting = () => {
         }
 
         return { ...prev, [errorKey]: nextEntry };
-      });
-    };
+        });
+      };
 
-    const clearEmailErrorsForKey = () => {
-      setConfirmationErrors((prev) => {
-        const current = prev[errorKey];
-        if (!current || !current.email) return prev;
-        const nextEntry = { ...current };
-        delete nextEntry.email;
-        if (!nextEntry.phone) {
-          const { [errorKey]: _removed, ...rest } = prev;
-          return rest;
-        }
-        return { ...prev, [errorKey]: nextEntry };
-      });
-    };
+      const setPhoneErrorForIndex = (index, message) => {
+        setConfirmationErrors((prev) => {
+          const current = prev[errorKey] || {};
+          const nextPhoneErrors = current.phone && typeof current.phone === 'object' ? { ...current.phone } : {};
+
+          if (message) {
+            nextPhoneErrors[index] = message;
+          } else {
+            delete nextPhoneErrors[index];
+          }
+
+          const nextEntry = { ...current };
+          if (Object.keys(nextPhoneErrors).length) {
+            nextEntry.phone = nextPhoneErrors;
+          } else {
+            delete nextEntry.phone;
+          }
+
+          if (!nextEntry.phone && !nextEntry.email) {
+            const { [errorKey]: _removed, ...rest } = prev;
+            return rest;
+          }
+
+          return { ...prev, [errorKey]: nextEntry };
+        });
+      };
+
+      const clearEmailErrorsForKey = () => {
+        setConfirmationErrors((prev) => {
+          const current = prev[errorKey];
+          if (!current || !current.email) return prev;
+          const nextEntry = { ...current };
+          delete nextEntry.email;
+          if (!nextEntry.phone) {
+            const { [errorKey]: _removed, ...rest } = prev;
+            return rest;
+          }
+          return { ...prev, [errorKey]: nextEntry };
+        });
+      };
+
+      const clearPhoneErrorsForKey = () => {
+        setConfirmationErrors((prev) => {
+          const current = prev[errorKey];
+          if (!current || !current.phone) return prev;
+          const nextEntry = { ...current };
+          delete nextEntry.phone;
+          if (!nextEntry.email) {
+            const { [errorKey]: _removed, ...rest } = prev;
+            return rest;
+          }
+          return { ...prev, [errorKey]: nextEntry };
+        });
+      };
 
     return (
       <>
@@ -734,7 +902,7 @@ const CallRouting = () => {
               <FormControl fullWidth size="small">
                 <InputLabel>Final Action</InputLabel>
                 <Select
-                  value={assignment[finalActionField] || 'repeat-until-delivered'}
+                  value={finalActionValue}
                   onChange={(e) => {
                     const nextValue = e.target.value;
                     handleAssignmentChange(assignment.categoryId, finalActionField, nextValue);
@@ -746,7 +914,6 @@ const CallRouting = () => {
                 >
                   <MenuItem value="repeat-until-delivered">Repeat Steps Until Delivered</MenuItem>
                   <MenuItem value="repeat-times">Repeat Steps X Times</MenuItem>
-                  <MenuItem value="repeat-then-escalate">Repeat Steps Then Escalate</MenuItem>
                   <MenuItem value="hold-checkin">Hold for Check-In</MenuItem>
                   <MenuItem value="hold">Hold</MenuItem>
                   <MenuItem value="delivered">Consider Delivered</MenuItem>
@@ -755,7 +922,7 @@ const CallRouting = () => {
             </Grid>
 
             {/* Show repeat count field if "Repeat Steps X Times" is selected */}
-            {assignment[finalActionField] === 'repeat-times' && (
+            {finalActionValue === 'repeat-times' && (
               <>
                 <Grid item xs={12} md={6}>
                   <TextField
@@ -771,67 +938,18 @@ const CallRouting = () => {
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth size="small">
                     <InputLabel>After Repeats</InputLabel>
-                    <Select
-                      value={assignment[repeatFinalActionField] || 'hold'}
-                      onChange={(e) => handleAssignmentChange(assignment.categoryId, repeatFinalActionField, e.target.value)}
-                      label="After Repeats"
-                    >
-                      <MenuItem value="repeat-until-delivered">Repeat Steps Until Delivered</MenuItem>
-                      <MenuItem value="repeat-then-escalate">Repeat Steps Then Escalate</MenuItem>
-                      <MenuItem value="hold-checkin">Hold for Check-In</MenuItem>
-                      <MenuItem value="hold">Hold</MenuItem>
-                      <MenuItem value="delivered">Consider Delivered</MenuItem>
-                    </Select>
+                      <Select
+                        value={assignment[repeatFinalActionField] || 'hold'}
+                        onChange={(e) => handleAssignmentChange(assignment.categoryId, repeatFinalActionField, e.target.value)}
+                        label="After Repeats"
+                      >
+                        <MenuItem value="hold-checkin">Hold for Check-In</MenuItem>
+                        <MenuItem value="hold">Hold</MenuItem>
+                        <MenuItem value="delivered">Consider Delivered</MenuItem>
+                      </Select>
                   </FormControl>
                 </Grid>
               </>
-            )}
-
-            {/* Show escalation step if "Repeat Steps Then Escalate" is selected */}
-            {(assignment[finalActionField] === 'repeat-then-escalate'
-              || (assignment[finalActionField] === 'repeat-times'
-                && assignment[repeatFinalActionField] === 'repeat-then-escalate')) && (
-              <Grid item xs={12}>
-                <Paper variant="outlined" sx={{ p: 2, mt: 1, bgcolor: alpha(theme.palette.error.main, 0.05) }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 2, color: theme.palette.error.main }}>
-                    Escalation Contact
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <FormControl fullWidth size="small">
-                        <InputLabel>Escalate To</InputLabel>
-                        <Select
-                          value={assignment[escalateToField] || ''}
-                          onChange={(e) => handleAssignmentChange(assignment.categoryId, escalateToField, e.target.value)}
-                          label="Escalate To"
-                        >
-                          <MenuItem value="">
-                            <em>-- Select escalation contact --</em>
-                          </MenuItem>
-                          <MenuItem value="office">
-                            <strong>Office / General Contact</strong>
-                          </MenuItem>
-                          {teamMembers.map((member) => (
-                            <MenuItem key={`${prefix}esc-${member.id}`} value={member.id}>
-                              {member.name} {member.role && `(${member.role})`}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Escalation Notes"
-                        value={assignment[escalationNotesField] || ''}
-                        onChange={(e) => handleAssignmentChange(assignment.categoryId, escalationNotesField, e.target.value)}
-                        placeholder="e.g., Urgent - all attempts failed"
-                      />
-                    </Grid>
-                  </Grid>
-                </Paper>
-              </Grid>
             )}
 
             {/* Confirmation after delivery option */}
@@ -874,37 +992,114 @@ const CallRouting = () => {
                     />
                   </Stack>
                   <Grid container spacing={2}>
-                    {assignment[confirmTextField] && (
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          label="Phone Number for Text Confirmation"
-                          value={assignment[confirmPhoneField] || ''}
-                          onChange={(e) => {
-                            handleAssignmentChange(assignment.categoryId, confirmPhoneField, e.target.value);
-                            if (confirmationErrors[errorKey]?.phone && isValidPhone(e.target.value)) {
-                              setConfirmationErrors(prev => ({
-                                ...prev,
-                                [errorKey]: { ...prev[errorKey], phone: '' }
-                              }));
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const value = e.target.value;
-                            if (value && !isValidPhone(value)) {
-                              setConfirmationErrors(prev => ({
-                                ...prev,
-                                [errorKey]: { ...prev[errorKey], phone: getPhoneError(value) }
-                              }));
-                            }
-                          }}
-                          placeholder="e.g., 206-555-1234"
-                          error={!!confirmationErrors[errorKey]?.phone}
-                          helperText={confirmationErrors[errorKey]?.phone}
-                        />
-                      </Grid>
-                    )}
+                      {assignment[confirmTextField] && (
+                        <Grid item xs={12} md={6}>
+                          <Stack spacing={1}>
+                            {phoneValues.map((phone, index) => {
+                              const errorMsg = phoneErrors[index] || '';
+                              return (
+                                <Box key={`${confirmPhoneField}-${index}`} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <TextField
+                                    fullWidth
+                                    size="small"
+                                    label={phoneValues.length > 1 ? `Text Number ${index + 1}` : 'Phone Number for Text Confirmation'}
+                                    value={phone}
+                                    onChange={(e) => {
+                                      const nextList = [...phoneValues];
+                                      nextList[index] = e.target.value;
+                                      handleAssignmentChange(assignment.categoryId, confirmPhoneField, nextList);
+                                      if (errorMsg && isValidPhone(e.target.value)) {
+                                        setPhoneErrorForIndex(index, '');
+                                      }
+                                    }}
+                                    onBlur={(e) => {
+                                      const value = e.target.value;
+                                      if (value && !isValidPhone(value)) {
+                                        setPhoneErrorForIndex(index, getPhoneError(value));
+                                      } else {
+                                        setPhoneErrorForIndex(index, '');
+                                      }
+                                    }}
+                                    placeholder="e.g., 206-555-1234"
+                                    error={Boolean(errorMsg)}
+                                    helperText={errorMsg}
+                                  />
+                                  {phoneValues.length > 1 && (
+                                    <IconButton
+                                      onClick={() => {
+                                        const nextList = phoneValues.filter((_, i) => i !== index);
+                                        handleAssignmentChange(
+                                          assignment.categoryId,
+                                          confirmPhoneField,
+                                          nextList.length ? nextList : ['']
+                                        );
+                                        clearPhoneErrorsForKey();
+                                      }}
+                                      color="error"
+                                      size="small"
+                                      sx={{ p: 0.5 }}
+                                    >
+                                      <RemoveIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                </Box>
+                              );
+                            })}
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Button
+                                size="small"
+                                variant="text"
+                                startIcon={<AddIcon />}
+                                onClick={() => {
+                                  handleAssignmentChange(
+                                    assignment.categoryId,
+                                    confirmPhoneField,
+                                    [...phoneValues, '']
+                                  );
+                                }}
+                              >
+                                Add number
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={(e) => openPhoneMenu(errorKey, e)}
+                                disabled={availablePhoneOptions.length === 0}
+                              >
+                                Add from contacts
+                              </Button>
+                            </Stack>
+                            <Menu
+                              anchorEl={phoneMenuAnchor[errorKey]}
+                              open={Boolean(phoneMenuAnchor[errorKey])}
+                              onClose={() => closePhoneMenu(errorKey)}
+                            >
+                              {availablePhoneOptions.length === 0 && (
+                                <MenuItem disabled>No contact phone numbers available</MenuItem>
+                              )}
+                              {availablePhoneOptions.map((option) => (
+                                <MenuItem
+                                  key={option.value}
+                                  onClick={() => {
+                                    const hasOnlyEmpty = phoneValues.length === 1 && !phoneValues[0].trim();
+                                    handleAssignmentChange(
+                                      assignment.categoryId,
+                                      confirmPhoneField,
+                                      hasOnlyEmpty ? [option.value] : [...phoneValues, option.value]
+                                    );
+                                    if (confirmationErrors[errorKey]?.phone && isValidPhone(option.value)) {
+                                      clearPhoneErrorsForKey();
+                                    }
+                                    closePhoneMenu(errorKey);
+                                  }}
+                                >
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </Stack>
+                        </Grid>
+                      )}
                     {assignment[confirmEmailField] && (
                       <Grid item xs={12} md={6}>
                         <Stack spacing={1}>

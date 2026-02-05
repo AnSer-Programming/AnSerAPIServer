@@ -10,10 +10,14 @@ import {
   Fade,
   Chip,
   Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   NavigateNextRounded,
   NavigateBeforeRounded,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -25,20 +29,9 @@ import { useWizard } from '../context_API/WizardContext';
 import { WIZARD_ROUTES } from '../constants/routes';
 
 import EnhancedOnCallTeamSection from '../sections/EnhancedOnCallTeamSection';
-import EscalationMatrixSection from '../sections/EscalationMatrixSection';
 import OnCallDepartmentsSection from '../sections/OnCallDepartmentsSection';
 import OnCallRotationSection from '../sections/OnCallRotationSection';
 import OnCallScheduleSection from '../sections/OnCallScheduleSection';
-
-const createEscalationStep = (overrides = {}) => ({
-  id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  name: '',
-  role: '',
-  contact: '',
-  window: '',
-  notes: '',
-  ...overrides,
-});
 
 const DEFAULT_ONCALL = {
   rotation: {
@@ -95,41 +88,14 @@ const OnCall = () => {
   const { updateSection, validateSection, markStepVisited, getSection } = useWizard();
 
   const onCall = getSection('onCall') || DEFAULT_ONCALL;
-  const legacyEscalationMatrix = getSection('escalationMatrix') || [];
-  const escalationPlan = Array.isArray(onCall.escalation) ? onCall.escalation : [];
   const setOnCall = (patch) => updateSection('onCall', { ...onCall, ...patch });
-
-  const legacyEscalationImported = React.useRef(false);
-
-  React.useEffect(() => {
-    if (legacyEscalationImported.current) return;
-
-    if (escalationPlan.length > 0) {
-      legacyEscalationImported.current = true;
-      return;
-    }
-
-    if (!Array.isArray(legacyEscalationMatrix) || legacyEscalationMatrix.length === 0) {
-      return;
-    }
-
-    const converted = legacyEscalationMatrix.map((row = {}, index) => {
-      const fallbackName = row.contactInfo?.toString().trim() || `Level ${row.level || index + 1}`;
-      const windowLabel = row.minutes ? `Escalate after ${row.minutes} minute${row.minutes === 1 ? '' : 's'}` : '';
-      const roleLabel = row.contactMethod ? row.contactMethod.toString().toUpperCase() : '';
-      return createEscalationStep({
-        name: fallbackName,
-        role: roleLabel,
-        contact: row.contactInfo?.toString() || '',
-        window: windowLabel,
-        notes: '',
-      });
-    });
-
-    updateSection('onCall', { ...onCall, escalation: converted });
-    updateSection('escalationMatrix', []);
-    legacyEscalationImported.current = true;
-  }, [escalationPlan.length, legacyEscalationMatrix, onCall, updateSection]);
+  const departments = Array.isArray(onCall.departments) ? onCall.departments : [];
+  const groupKeys = React.useMemo(() => (
+    departments.map((dept, idx) => (
+      dept.id != null ? String(dept.id) : `team-${idx}`
+    ))
+  ), [departments]);
+  const [expandedGroups, setExpandedGroups] = React.useState({});
 
   const [snack, setSnack] = React.useState({ open: false, msg: '', severity: 'success' });
   const [errors, setErrors] = React.useState({});
@@ -177,13 +143,44 @@ const OnCall = () => {
   useEffect(() => {
     setErrors({});
   }, [currentStepKey]);
+  const prevStepKey = React.useRef(currentStepKey);
+  useEffect(() => {
+    const stepChanged = prevStepKey.current !== currentStepKey;
+    if (stepChanged && currentStepKey === 'escalation') {
+      setExpandedGroups(() => {
+        const next = {};
+        groupKeys.forEach((key) => { next[key] = false; });
+        return next;
+      });
+    }
+    prevStepKey.current = currentStepKey;
+  }, [currentStepKey, groupKeys]);
+  useEffect(() => {
+    setExpandedGroups((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      groupKeys.forEach((key) => {
+        if (next[key] === undefined) {
+          next[key] = false;
+          changed = true;
+        }
+      });
+      Object.keys(next).forEach((key) => {
+        if (!groupKeys.includes(key)) {
+          delete next[key];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [groupKeys]);
   useEffect(() => {
     const prevTitle = document.title;
     document.title = 'On-call setup — AnSer Communications';
     let meta = document.querySelector('meta[name="description"]');
     let created = false;
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; created = true; }
-    meta.content = 'Configure on-call rotations, escalation rules, and notifications for your team.';
+    meta.content = 'Configure on-call rotations and schedules for your team.';
     if (created) document.head.appendChild(meta);
     return () => {
       document.title = prevTitle;
@@ -192,8 +189,8 @@ const OnCall = () => {
   }, []);
 
   const teamCount = onCall.team?.length || 0;
-  const departmentCount = onCall.departments?.length || 0;
-  const escalationCount = escalationPlan.length;
+  const departmentCount = departments.length;
+  const scheduleTeamCount = departments.length;
 
   const stepConfig = {
     members: {
@@ -234,26 +231,80 @@ const OnCall = () => {
     },
     escalation: {
       title: 'Step 3 - Escalation & Rotation Details',
-      description: 'Define escalation contacts, rotation schedule, and timing when primary contacts are unavailable.',
-      complete: escalationCount > 0,
-      chipLabel: escalationCount > 0 ? 'Complete' : `${escalationCount} steps`,
+      description: 'Define rotation schedule and timing for each team.',
+      complete: scheduleTeamCount > 0,
+      chipLabel: scheduleTeamCount > 0 ? 'Complete' : `${scheduleTeamCount} teams`,
       content: (
-        <Stack spacing={3}>
-          <EscalationMatrixSection
-            steps={escalationPlan}
-            onChange={(next) => setOnCall({ escalation: next })}
-            errors={errors.escalation || []}
-          />
-          <OnCallScheduleSection
-            onCall={onCall}
-            setOnCall={setOnCall}
-            errors={errors.scheduleType || {}}
-          />
-          <OnCallRotationSection
-            data={onCall.rotation || {}}
-            onChange={(next) => setOnCall({ rotation: next })}
-            errors={errors.rotation || {}}
-          />
+        <Stack spacing={2}>
+          {departments.length === 0 ? (
+            <Alert severity="info">
+              Add at least one team in Team Setup before configuring rotation details.
+            </Alert>
+          ) : (
+            departments.map((dept, idx) => {
+              const groupKey = groupKeys[idx];
+              const groupLabel = dept.department || dept.name || `Team ${idx + 1}`;
+              const groupRotation = dept.rotation || onCall.rotation || {};
+              const groupSchedule = {
+                scheduleType: dept.scheduleType ?? onCall.scheduleType,
+                fixedOrder: Array.isArray(dept.fixedOrder) ? dept.fixedOrder : onCall.fixedOrder || [],
+                team: onCall.team || [],
+              };
+              const groupErrors = {
+                scheduleType: errors.scheduleType?.[groupKey] || {},
+                rotation: errors.rotation?.[groupKey] || {},
+              };
+
+              return (
+                <Accordion
+                  key={groupKey}
+                  variant="outlined"
+                  expanded={expandedGroups[groupKey] || false}
+                  TransitionProps={{ unmountOnExit: true }}
+                  onChange={(_event, isExpanded) => {
+                    setExpandedGroups((prev) => ({ ...prev, [groupKey]: isExpanded }));
+                  }}
+                >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {groupLabel}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {dept.members?.length || 0} member{dept.members?.length === 1 ? '' : 's'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 1, pb: 2 }}>
+                    <Stack spacing={2}>
+                      <OnCallScheduleSection
+                        onCall={groupSchedule}
+                        setOnCall={(patch) => {
+                          const nextDepartments = departments.map((d, dIdx) => (
+                            dIdx === idx ? { ...d, ...patch } : d
+                          ));
+                          setOnCall({ departments: nextDepartments });
+                        }}
+                        errors={groupErrors.scheduleType}
+                      />
+                      <OnCallRotationSection
+                        data={groupRotation}
+                        onChange={(next) => {
+                          const nextDepartments = departments.map((d, dIdx) => (
+                            dIdx === idx ? { ...d, rotation: next } : d
+                          ));
+                          setOnCall({ departments: nextDepartments });
+                        }}
+                        errors={groupErrors.rotation}
+                      />
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })
+          )}
         </Stack>
       ),
       backRoute: WIZARD_ROUTES.ON_CALL_TEAMS,
@@ -261,13 +312,23 @@ const OnCall = () => {
       nextLabel: 'Next: Call Routing',
       errorKey: null,
       validateFn: () => {
-        const escalationErrors = validateSection?.('onCall.escalation', escalationPlan);
-        const rotationErrors = validateSection?.('onCall.rotation', onCall.rotation || {});
-        const scheduleTypeErrors = validateSection?.('onCall.scheduleType', onCall);
+        const rotationErrors = {};
+        const scheduleTypeErrors = {};
+        departments.forEach((dept, idx) => {
+          const key = groupKeys[idx];
+          const groupRotation = dept.rotation || onCall.rotation || {};
+          const groupSchedule = {
+            scheduleType: dept.scheduleType ?? onCall.scheduleType,
+            fixedOrder: Array.isArray(dept.fixedOrder) ? dept.fixedOrder : onCall.fixedOrder || [],
+          };
+          const rotErr = validateSection?.('onCall.rotation', groupRotation);
+          const schedErr = validateSection?.('onCall.scheduleType', groupSchedule);
+          if (rotErr) rotationErrors[key] = rotErr;
+          if (schedErr) scheduleTypeErrors[key] = schedErr;
+        });
         const collected = {};
-        if (escalationErrors) collected.escalation = escalationErrors;
-        if (rotationErrors) collected.rotation = rotationErrors;
-        if (scheduleTypeErrors) collected.scheduleType = scheduleTypeErrors;
+        if (Object.keys(rotationErrors).length) collected.rotation = rotationErrors;
+        if (Object.keys(scheduleTypeErrors).length) collected.scheduleType = scheduleTypeErrors;
         return Object.keys(collected).length ? collected : null;
       },
     },

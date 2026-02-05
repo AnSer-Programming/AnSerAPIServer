@@ -55,7 +55,13 @@ const normalizeStep = (step = {}) => {
   };
 };
 
-const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] }) => {
+const EscalationMatrixSection = ({
+  steps = [],
+  onChange = () => {},
+  errors = [],
+  forcedDepartmentId = null,
+  hideDepartmentSelect = false,
+}) => {
   const theme = useTheme();
   const { darkMode } = useClientInfoTheme();
   const { formData } = useWizard();
@@ -238,19 +244,28 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
                   />
                 </FieldRow>
                 {/* Department select */}
-                <Select
-                  value={step.departmentId || ''}
-                  onChange={(e) => handleChange(index, 'departmentId', e.target.value || null)}
-                  displayEmpty
-                  fullWidth
-                >
-                  <MenuItem value="">No department</MenuItem>
-                  {departments.map((d) => (
-                    <MenuItem key={d.id || d.department} value={d.id || d.department}>{d.department || d.name}</MenuItem>
-                  ))}
-                </Select>
+                {!hideDepartmentSelect && (
+                  <Select
+                    value={step.departmentId || ''}
+                    onChange={(e) => handleChange(index, 'departmentId', e.target.value || null)}
+                    displayEmpty
+                    fullWidth
+                  >
+                    <MenuItem value="">No department</MenuItem>
+                    {departments.map((d) => (
+                      <MenuItem key={d.id || d.department} value={d.id || d.department}>{d.department || d.name}</MenuItem>
+                    ))}
+                  </Select>
+                )}
                 {/* Choose roster member (filtered by department) or enter custom contact */}
                 <Box>
+                  {(() => {
+                    const activeDeptId = forcedDepartmentId || step.departmentId || '';
+                    const memberIds = activeDeptId
+                      ? (departments.find((d) => d.id === activeDeptId || d.department === activeDeptId || d.name === activeDeptId)?.members || [])
+                      : team.map((m) => m.id);
+
+                    return (
                   <Select
                     value={step.contactMemberId || ''}
                     onChange={(e) => {
@@ -268,10 +283,7 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
                     fullWidth
                   >
                     <MenuItem value="">Custom contact (enter below)</MenuItem>
-                    {(step.departmentId
-                      ? (departments.find((d) => (d.id || d.department) === step.departmentId)?.members || [])
-                      : team.map((m) => m.id)
-                    ).map((memberId) => {
+                    {memberIds.map((memberId) => {
                       const member = team.find((m) => m.id === memberId) || {};
                       return (
                         <MenuItem key={memberId} value={memberId}>
@@ -280,6 +292,8 @@ const EscalationMatrixSection = ({ steps = [], onChange = () => {}, errors = [] 
                       );
                     })}
                   </Select>
+                    );
+                  })()}
                   {!step.contactMemberId && (
                     <FieldRow helperText={rowErrors.contact || ''}>
                       <TextField
@@ -380,6 +394,8 @@ EscalationMatrixSection.propTypes = {
   ),
   onChange: PropTypes.func.isRequired,
   errors: PropTypes.arrayOf(PropTypes.any),
+  forcedDepartmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  hideDepartmentSelect: PropTypes.bool,
 };
 
 export default EscalationMatrixSection;

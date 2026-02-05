@@ -261,7 +261,6 @@ const StartNewClient = () => {
         alwaysSendEvenIfNoMessages: true,
         reportSpamHangups: false,
         dailyRecapEnabled: true,
-        realTimeChannels: ['email'],
         recap: {
           includeNoMessages: true,
           delivery: { email: true, fax: false, other: false },

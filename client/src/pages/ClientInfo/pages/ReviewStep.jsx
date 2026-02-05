@@ -391,9 +391,6 @@ const ReviewStep = () => {
       recipients: {
         emails: emailRecipients,
         faxNumbers: faxRecipients,
-        realTimeChannels: Array.isArray(summaryPreferences.realTimeChannels)
-          ? summaryPreferences.realTimeChannels
-          : [],
       },
       preferences: {
         dailyRecapEnabled: summaryPreferences.dailyRecapEnabled,
@@ -838,27 +835,6 @@ const ReviewStep = () => {
                       : ci.summaryPreferences?.dailyRecapEnabled === false
                         ? 'No'
                         : 'Not specified'
-                  }
-                />
-                <Row
-                  label="Real-time message delivery"
-                  value={
-                    Array.isArray(ci.summaryPreferences?.realTimeChannels) && ci.summaryPreferences.realTimeChannels.length
-                      ? ci.summaryPreferences.realTimeChannels
-                          .map((channel) => {
-                            switch (channel) {
-                              case 'email':
-                                return 'Email';
-                              case 'text':
-                                return 'Text';
-                              case 'fax':
-                                return 'Fax';
-                              default:
-                                return channel;
-                            }
-                          })
-                          .join(', ')
-                      : 'Not specified'
                   }
                 />
               </Box>
