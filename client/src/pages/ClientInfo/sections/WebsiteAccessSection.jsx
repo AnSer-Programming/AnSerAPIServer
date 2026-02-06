@@ -23,11 +23,15 @@ export default function WebsiteAccessSection({ errors = {} }) {
 
   const companyInfo = formData.companyInfo || {};
   const websiteAccess = companyInfo.websiteAccess || { hasWebsite: null };
+  const hasWebsite = websiteAccess.hasWebsite;
 
   const handleChange = (value) => {
+    const nextHasWebsite = value === 'yes';
     updateSection('companyInfo', {
       websiteAccess: {
-        hasWebsite: value === 'yes',
+        ...websiteAccess,
+        hasWebsite: nextHasWebsite,
+        required: nextHasWebsite,
       },
     });
   };
@@ -57,7 +61,7 @@ export default function WebsiteAccessSection({ errors = {} }) {
 
       <FormControl component="fieldset" error={Boolean(errors.hasWebsite)} fullWidth>
         <RadioGroup
-          value={websiteAccess.hasWebsite === null ? '' : websiteAccess.hasWebsite ? 'yes' : 'no'}
+          value={hasWebsite === true ? 'yes' : hasWebsite === false ? 'no' : ''}
           onChange={(e) => handleChange(e.target.value)}
         >
           <FormControlLabel
@@ -78,7 +82,7 @@ export default function WebsiteAccessSection({ errors = {} }) {
               p: 2, 
               borderRadius: 2,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              bgcolor: websiteAccess.hasWebsite === true ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+              bgcolor: hasWebsite === true ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
             }}
           />
           <FormControlLabel
@@ -98,7 +102,7 @@ export default function WebsiteAccessSection({ errors = {} }) {
               p: 2, 
               borderRadius: 2,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              bgcolor: websiteAccess.hasWebsite === false ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+              bgcolor: hasWebsite === false ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
             }}
           />
         </RadioGroup>
@@ -109,16 +113,16 @@ export default function WebsiteAccessSection({ errors = {} }) {
           </Alert>
         )}
 
-        {websiteAccess.hasWebsite !== null && (
+        {hasWebsite === true || hasWebsite === false ? (
           <Alert 
             severity="info" 
             sx={{ mt: 2 }}
           >
-            {websiteAccess.hasWebsite 
+            {hasWebsite 
               ? 'Great! We will note that your company has a website.' 
               : 'No problem. We will note that your company does not have a website.'}
           </Alert>
-        )}
+        ) : null}
       </FormControl>
     </Box>
   );

@@ -423,6 +423,8 @@ const EnhancedOnCallTeamSection = ({ onCall = {}, setOnCall = () => {}, errors =
                 label={contacts.length > 1 ? `${label} ${index + 1}` : label}
                 placeholder={placeholderMap[contactType] || ''}
                 value={contact}
+                type={contactType === 'email' ? 'email' : 'text'}
+                inputMode={contactType === 'email' ? 'email' : (isPhoneType ? 'tel' : 'text')}
                 onChange={(e) => {
                   updateContactMethod(member.id, contactType, index, e.target.value);
                   // Clear validation error if user is typing and value becomes valid

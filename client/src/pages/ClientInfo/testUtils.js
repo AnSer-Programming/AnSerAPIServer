@@ -9,8 +9,8 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { WizardProvider } from '../context_API/WizardContext';
-import { ClientInfoThemeProvider } from '../context_API/ClientInfoThemeContext';
+import { WizardProvider } from './context_API/WizardContext';
+import { ClientInfoThemeProvider } from './context_API/ClientInfoThemeContext';
 
 // =============================================================================
 // TEST THEME
@@ -133,7 +133,6 @@ export const mockFormData = {
   answerCalls: mockAnswerCalls,
   onCall: mockOnCall,
   attachments: [],
-  fastTrack: { enabled: false },
 };
 
 // =============================================================================

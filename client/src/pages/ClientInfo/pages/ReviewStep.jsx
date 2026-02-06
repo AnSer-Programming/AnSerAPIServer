@@ -28,6 +28,8 @@ import { WIZARD_ROUTES } from '../constants/routes';
 import { sendSummaryEmail } from '../context_API/ClientWizardAPI';
 import InfoPagePreview from '../components/InfoPagePreview';
 import logger from '../utils/logger';
+import { deriveObservedHolidayDates } from '../utils/holidayDates';
+import { to12HourLabel } from '../utils/timeFormatting';
 
 // Mapping for meeting types used in the Final Details / Review step
 const MEETING_TYPE_MAP = {
@@ -127,7 +129,7 @@ const formatConsultationSlot = (slot) => {
     }
   }
 
-  const timeLabel = timeValue || 'Time TBD';
+  const timeLabel = timeValue ? to12HourLabel(timeValue) : 'Time TBD';
   return `${dateLabel} at ${timeLabel}`;
 };
 
@@ -137,7 +139,9 @@ const describeSchedule = (schedule) => {
   const recurrence = schedule.recurrence || '';
   const start = schedule.startTime ? String(schedule.startTime).trim() : '';
   const end = schedule.endTime ? String(schedule.endTime).trim() : '';
-  const window = start || end ? `${start || 'Start'}${end ? ` – ${end}` : ''}` : '';
+  const startLabel = start ? to12HourLabel(start) : '';
+  const endLabel = end ? to12HourLabel(end) : '';
+  const window = startLabel || endLabel ? `${startLabel || 'Start'}${endLabel ? ` - ${endLabel}` : ''}` : '';
 
   const extras = [];
   const days = Array.isArray(schedule.selectedDays) ? schedule.selectedDays : [];
@@ -238,7 +242,7 @@ const ReviewStep = () => {
   }, []);
 
   // Memoize form data sections to prevent unnecessary recalculations
-  const { ci, ac, oc, escalationPlan, attachments, notificationRules, departments, consultation, fastTrack, fastTrackEnabled } = useMemo(() => {
+  const { ci, ac, oc, escalationPlan, attachments, notificationRules, departments, consultation } = useMemo(() => {
     const ci = formData.companyInfo || {};
     const ac = formData.answerCalls || { routine: {}, urgent: {}, callTypes: [] };
     const oc = formData.onCall || {
@@ -260,8 +264,6 @@ const ReviewStep = () => {
       notificationRules: oc.notificationRules || {},
       departments: oc.departments || [],
       consultation: ci.consultationMeeting || {},
-      fastTrack: formData.fastTrack || {},
-      fastTrackEnabled: formData.fastTrack?.enabled === true,
     };
   }, [formData]);
 
@@ -301,9 +303,11 @@ const ReviewStep = () => {
   const lunch = ci.lunchHours || {};
   const summaryPreferences = ci.summaryPreferences || {};
 
-  // Memoize holiday formatting
+  // Merge legacy holiday dates with planned-times holiday selections for review output.
   const formattedObservedHolidays = useMemo(() => {
-    const observedHolidayDates = Array.isArray(ci.holidays) ? ci.holidays : [];
+    const legacyHolidayDates = Array.isArray(ci.holidays) ? ci.holidays : [];
+    const plannedHolidayDates = deriveObservedHolidayDates(ci.plannedTimes?.holidays || {});
+    const observedHolidayDates = Array.from(new Set([...legacyHolidayDates, ...plannedHolidayDates]));
     return observedHolidayDates
       .map((date) => {
         const parsed = new Date(`${date}T00:00:00Z`);
@@ -315,7 +319,7 @@ const ReviewStep = () => {
         });
       })
       .filter(Boolean);
-  }, [ci.holidays]);
+  }, [ci.holidays, ci.plannedTimes]);
 
   const websiteAccess = ci.websiteAccess || {};
   const websiteRequiredLabel = websiteAccess.required ? 'Yes' : 'No';
@@ -399,7 +403,6 @@ const ReviewStep = () => {
         sendEvenIfQuiet: summaryPreferences.alwaysSendEvenIfNoMessages,
         reportSpamHangups: summaryPreferences.reportSpamHangups,
       },
-      fastTrackEnabled,
       sendInternallyOnly,
       summaryText,
       formData,
@@ -475,7 +478,7 @@ const ReviewStep = () => {
     : [
         rot.frequency ? `Frequency: ${rot.frequency}` : null,
         rot.whenChanges ? `When: ${rot.whenChanges}` : null,
-        rot.changeBeginsTime ? `Begins: ${rot.changeBeginsTime}` : null,
+        rot.changeBeginsTime ? `Begins: ${to12HourLabel(rot.changeBeginsTime)}` : null,
         rot.dayOrDate ? `Day/Date: ${rot.dayOrDate}` : null,
         rot.otherExplain ? `Other: ${rot.otherExplain}` : null,
       ].filter(Boolean).join(' • ');
@@ -608,12 +611,12 @@ const ReviewStep = () => {
                 {Object.entries(eh).map(([day, v]) => (
                   <Typography key={day} variant="body2">
                     <strong style={{ textTransform: 'capitalize' }}>{day}:</strong>{' '}
-                    {v?.closed ? 'Closed' : `${v?.open} – ${v?.close}`}
+                    {v?.closed ? 'Closed' : `${to12HourLabel(v?.open)} - ${to12HourLabel(v?.close)}`}
                   </Typography>
                 ))}
                 <Typography variant="body2">
                   <strong>Lunch:</strong>{' '}
-                  {lunch?.enabled ? `${lunch.open} – ${lunch.close}` : 'None'}
+                  {lunch?.enabled ? `${to12HourLabel(lunch.open)} - ${to12HourLabel(lunch.close)}` : 'None'}
                 </Typography>
               </Box>
               <Divider sx={{ my: 1.5 }} />

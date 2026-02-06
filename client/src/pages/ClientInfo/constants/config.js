@@ -162,30 +162,3 @@ export const CALL_TYPE_LABELS = {
   billingQuestion: 'Billing Question',
 };
 
-// =============================================================================
-// WIZARD STEPS
-// =============================================================================
-
-export const WIZARD_STEPS = [
-  'company-info',
-  'answer-calls',
-  'on-call',
-  'team-setup',
-  'escalation-details',
-  'call-routing',
-  'office-reach',
-  'final-details',
-  'review',
-];
-
-export const WIZARD_STEP_LABELS = {
-  'company-info': 'Company Information',
-  'answer-calls': 'Answer Calls',
-  'on-call': 'On-Call Setup',
-  'team-setup': 'Team Setup',
-  'escalation-details': 'Escalation & Rotation Details',
-  'call-routing': 'Call Routing',
-  'office-reach': 'Other Info',
-  'final-details': 'Final Details',
-  'review': 'Review & Submit',
-};

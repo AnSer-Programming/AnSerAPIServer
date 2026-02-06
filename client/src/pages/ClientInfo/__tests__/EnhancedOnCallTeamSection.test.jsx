@@ -2,10 +2,10 @@ import React from 'react';
 import { screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import EnhancedOnCallTeamSection from '../sections/EnhancedOnCallTeamSection';
-import { renderWithProviders } from './testUtils';
+import { renderWithProviders } from '../testUtils';
 
 describe('EnhancedOnCallTeamSection', () => {
-  it('lists Text Cell immediately after each Cell Phone in escalation contact method dropdown', () => {
+  it('lists Text Cell immediately after each Cell Phone in escalation contact method dropdown', async () => {
     const onCall = {
       team: [
         {
@@ -28,10 +28,12 @@ describe('EnhancedOnCallTeamSection', () => {
       <EnhancedOnCallTeamSection onCall={onCall} setOnCall={jest.fn()} />
     );
 
-    const contactSelect = screen.getByLabelText('Contact Method');
+    fireEvent.click(screen.getByText('Jamie Lee'));
+
+    const [contactSelect] = screen.getAllByRole('combobox');
     fireEvent.mouseDown(contactSelect);
 
-    const listbox = screen.getByRole('listbox');
+    const listbox = await screen.findByRole('listbox');
     const options = within(listbox).getAllByRole('option');
     const labels = options.map((option) => option.textContent);
 

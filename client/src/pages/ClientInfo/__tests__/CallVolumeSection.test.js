@@ -6,7 +6,7 @@ import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CallVolumeSection from '../components/CallVolumeSection';
-import { renderWithProviders, createMockOnChange } from './testUtils';
+import { renderWithProviders, createMockOnChange } from '../testUtils';
 
 describe('CallVolumeSection', () => {
   describe('Rendering', () => {
