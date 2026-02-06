@@ -1,4 +1,4 @@
-// src/pages/ClientInfo/shared_layout_routing/ClientInfoNavbar.jsx
+﻿// src/pages/ClientInfo/shared_layout_routing/ClientInfoNavbar.jsx
 import React, { useState, useMemo } from 'react';
 import {
   AppBar, Toolbar, IconButton, Button, Box, Typography,
@@ -13,35 +13,10 @@ import { useTheme, alpha } from '@mui/material/styles';
 
 import { useClientInfoTheme } from '../context_API/ClientInfoThemeContext';
 import { useWizard } from '../context_API/WizardContext';
+import { WIZARD_BASE, WIZARD_STEPS, WIZARD_LINKS, CLIENTINFO_NAV_ITEMS } from '../constants/routes';
 
 // Import the logo as a module (so bundler resolves the path)
 import AnSerLogo from '../../../assets/img/ClientInfo/AnSerLogoStar.png';
-
-// Wizard config
-const WIZARD_BASE = '/ClientInfoReact/NewFormWizard';
-// New order: Company Information → Answer Calls → On Call → Team Setup → Escalation & Rotation Details → Call Routing → Other Info → Final Details → Review
-const WIZARD_STEPS = ['company-info', 'answer-calls', 'on-call', 'team-setup', 'escalation-details', 'call-routing', 'office-reach', 'final-details', 'review'];
-
-const NAV_ITEMS = [
-  { label: 'HOME', to: '/ClientInfoReact' },
-  { label: 'COMPANY INFORMATION', to: `${WIZARD_BASE}/company-info` },
-  { label: 'HOW TO ANSWER YOUR CALLS', to: `${WIZARD_BASE}/answer-calls` },
-  { label: 'ON-CALL SETUP', to: `${WIZARD_BASE}/on-call` },
-  { label: 'OTHER INFO', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'FINAL DETAILS', to: `${WIZARD_BASE}/final-details` },
-];
-
-const WIZARD_LINKS = [
-  { label: 'Company Information', to: `${WIZARD_BASE}/company-info` },
-  { label: 'Answer Calls', to: `${WIZARD_BASE}/answer-calls` },
-  { label: 'On Call Setup', to: `${WIZARD_BASE}/on-call` },
-  { label: 'Team Setup', to: `${WIZARD_BASE}/team-setup` },
-  { label: 'Escalation & Rotation Details', to: `${WIZARD_BASE}/escalation-details` },
-  { label: 'Call Routing', to: `${WIZARD_BASE}/call-routing` },
-  { label: 'Other Info', to: `${WIZARD_BASE}/office-reach` },
-  { label: 'Final Details', to: `${WIZARD_BASE}/final-details` },
-  { label: 'Review & Submit', to: `${WIZARD_BASE}/review` },
-];
 
 const getSlugFromPath = (pathname) => {
   const m = pathname.match(/NewFormWizard\/(.*?)(?:\/|$)/);
@@ -92,7 +67,7 @@ const ClientInfoNavbar = () => {
           </Box>
 
           {/* TOP NAV: hide it entirely on wizard routes */}
-          {!onlyShowWizardBar && NAV_ITEMS.map(({ label, to }) => {
+          {!onlyShowWizardBar && CLIENTINFO_NAV_ITEMS.map(({ label, to }) => {
             const active = isActive(to);
             return (
               <Button
@@ -211,7 +186,7 @@ const ClientInfoNavbar = () => {
                         border: visited ? 'none' : `1px solid ${alpha(theme.palette.common.white, 0.12)}`,
                       }}
                     >
-                      {visited ? '✓' : ''}
+                      {visited ? '\u2713' : ''}
                     </Box>
                     <Box component="span" sx={{ lineHeight: 1 }}>{label}</Box>
                   </Button>
@@ -227,7 +202,7 @@ const ClientInfoNavbar = () => {
         <Box sx={{ width: 280 }} role="presentation">
           <List dense>
             {/* Show page nav in drawer always */}
-            {NAV_ITEMS.map(({ label, to }) => (
+            {CLIENTINFO_NAV_ITEMS.map(({ label, to }) => (
               <ListItemButton
                 key={to}
                 component={RouterLink}
@@ -259,5 +234,6 @@ const ClientInfoNavbar = () => {
 };
 
 export default ClientInfoNavbar;
+
 
 

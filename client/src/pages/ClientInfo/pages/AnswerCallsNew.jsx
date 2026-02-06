@@ -19,6 +19,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { Add as AddIcon, Delete as DeleteIcon, NavigateNext, NavigateBefore, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
@@ -189,7 +191,7 @@ const AnswerCallsNew = () => {
   const { darkMode } = useClientInfoTheme();
   const sharedStyles = createSharedStyles(theme, darkMode);
   const history = useHistory();
-  const { getSection, updateSection, markStepVisited } = useWizard();
+  const { getSection, updateSection, markStepVisited, validateSection } = useWizard();
 
   // Persisted section shape: { businessType: '', categories: [{ id, selectedCommon, customName, details }] }
   const section = getSection('answerCalls') || {};
@@ -211,6 +213,7 @@ const AnswerCallsNew = () => {
   // Confirmation dialog for category removal
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
 
   // Focus-guard: local editing buffers to prevent mid-edit clobbering
   const [editingBuffers, setEditingBuffers] = useState({});
@@ -272,6 +275,26 @@ const AnswerCallsNew = () => {
   }, []);
 
   const setSection = (patch) => updateSection('answerCalls', { ...section, ...patch });
+
+  const getFirstValidationMessage = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const message = getFirstValidationMessage(item);
+        if (message) return message;
+      }
+      return '';
+    }
+    if (typeof value === 'object') {
+      for (const item of Object.values(value)) {
+        const message = getFirstValidationMessage(item);
+        if (message) return message;
+      }
+      return '';
+    }
+    return '';
+  };
 
   const handleBusinessTypeChange = (e) => setSection({ businessType: e.target.value });
 
@@ -412,6 +435,20 @@ const AnswerCallsNew = () => {
     } else {
       updateCategory(id, { selectedCommon: '' });
     }
+  };
+
+  const onNext = () => {
+    markStepVisited?.('answer-calls');
+    const validationErrors = validateSection?.('answerCalls', section);
+
+    if (validationErrors) {
+      const message = getFirstValidationMessage(validationErrors)
+        || 'Please complete required answer-calls fields before continuing.';
+      setSnack({ open: true, msg: message, severity: 'error' });
+      return;
+    }
+
+    history.push(WIZARD_ROUTES.ON_CALL);
   };
 
   const handleCategoryAccordionChange = (id) => (_, isExpanded) => {
@@ -588,7 +625,7 @@ const AnswerCallsNew = () => {
         {/* Footer navigation */}
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
           <Button startIcon={<NavigateBefore />} variant="outlined" onClick={() => history.push(WIZARD_ROUTES.COMPANY_INFO)}>Back</Button>
-          <Button endIcon={<NavigateNext />} variant="contained" onClick={() => history.push(WIZARD_ROUTES.ON_CALL)}>Next: On Call Setup</Button>
+          <Button endIcon={<NavigateNext />} variant="contained" onClick={onNext}>Next: On Call Setup</Button>
         </Box>
       </Container>
 
@@ -614,6 +651,17 @@ const AnswerCallsNew = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={3000}
+        onClose={() => setSnack((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snack.severity} sx={{ width: '100%' }}>
+          {snack.msg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

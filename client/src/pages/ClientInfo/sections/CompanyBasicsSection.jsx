@@ -40,17 +40,19 @@ const CONTACT_TYPE_OPTIONS = [
   { value: 'x-twitter', label: 'X (Twitter)' },
   { value: 'instagram', label: 'Instagram' },
 ];
+const LEGACY_PHONE_TYPES = new Set(['main', 'other']);
 
 const uid = () => `channel-${Math.random().toString(36).slice(2, 8)}-${Date.now().toString(36)}`;
 
 const normalizeChannel = (channel) => {
   if (!channel || typeof channel !== 'object') {
-    return { id: uid(), type: 'main', value: '' };
+    return { id: uid(), type: 'phone', value: '' };
   }
 
-  const allowed = CONTACT_TYPE_OPTIONS.some((option) => option.value === channel.type)
-    ? channel.type
-    : 'main';
+  const normalizedType = LEGACY_PHONE_TYPES.has(channel.type) ? 'phone' : channel.type;
+  const allowed = CONTACT_TYPE_OPTIONS.some((option) => option.value === normalizedType)
+    ? normalizedType
+    : 'phone';
 
   // Defensive: if the incoming channel.value accidentally equals the human
   // label for the selected type (e.g., value === 'WhatsApp'), treat it as
@@ -374,7 +376,7 @@ const CompanyBasicsSection = ({
   };
 
   const handleAddChannel = () => {
-    syncChannels([...channels, normalizeChannel({ type: 'other', value: '' })]);
+    syncChannels([...channels, normalizeChannel({ type: 'phone', value: '' })]);
   };
 
   const handleRemoveChannel = (index) => {
@@ -798,10 +800,13 @@ const CompanyBasicsSection = ({
             const channelError = Array.isArray(errors.contactChannels) ? errors.contactChannels[index] || {} : {};
             const typeOptions = CONTACT_TYPE_OPTIONS;
             const isWebsite = channel.type === 'website';
+            const isGroupEmail = channel.type === 'group-email';
             const selectedType = typeOptions.find((o) => o.value === channel.type);
             const labelText = selectedType ? selectedType.label : (isWebsite ? 'Link' : 'Value');
             const channelId = channel.id || `channel-${index}`;
             const isPhoneType = ['phone', 'toll-free', 'fax', 'whatsapp'].includes(channel.type);
+            const fieldType = isGroupEmail ? 'email' : (isWebsite ? 'url' : 'text');
+            const fieldInputMode = isWebsite ? 'url' : (isGroupEmail ? 'email' : (isPhoneType ? 'tel' : 'text'));
             const phoneError = channelPhoneErrors[channelId] || '';
 
             return (
@@ -836,6 +841,7 @@ const CompanyBasicsSection = ({
                     label={labelText}
                     placeholder={labelText}
                     fullWidth
+                    type={fieldType}
                     value={(() => {
                       // If the stored value accidentally equals the human label, render empty
                       const v = channel.value || '';
@@ -855,8 +861,7 @@ const CompanyBasicsSection = ({
                     }}
                     onBlur={(e) => { handleChannelBlur(index)(e); setFocusedChannelId(null); }}
                     onFocus={() => setFocusedChannelId(channel.id || `channel-${index}`)}
-                    // Use text input mode for alphanumeric support; websites keep 'url'
-                    inputMode={isWebsite ? 'url' : 'text'}
+                    inputMode={fieldInputMode}
                     error={Boolean(channelError.value || phoneError)}
                     helperText={phoneError || channelNotes[channel.id] || channelError.value}
                     InputProps={

@@ -22,7 +22,9 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
 import FieldRow from '../components/FieldRow';
+import TwelveHourTimeField from '../components/TwelveHourTimeField';
 import { EMAIL_REGEX } from '../utils/emailValidation';
+import { to12HourLabel } from '../utils/timeFormatting';
 
 const DAYS = [
   { key: 'monday', label: 'Mon' },
@@ -262,6 +264,8 @@ function SummaryPreferencesSection({ errors = {} }) {
             <TextField
               value={summary.email || ''}
               size="small"
+              type="email"
+              inputMode="email"
               placeholder="Email(s) - separate multiple with commas"
               onChange={(e) => {
                 setPrefs({ email: e.target.value });
@@ -293,6 +297,8 @@ function SummaryPreferencesSection({ errors = {} }) {
             <TextField
               value={summary.faxNumber || ''}
               size="small"
+              type="tel"
+              inputMode="tel"
               placeholder="Fax Number"
               onChange={(e) => setPrefs({ faxNumber: e.target.value.replace(/[^\d\-()+ ]/g, '').slice(0, 18) })}
               fullWidth
@@ -401,7 +407,7 @@ function SummaryPreferencesSection({ errors = {} }) {
                         {cell.times.map((t, idx) => (
                           <Chip
                             key={`${d.key}-${t}-${idx}`}
-                            label={t}
+                            label={to12HourLabel(t)}
                             onDelete={() => removeTime(d.key, idx)}
                             size="small"
                             variant="outlined"
@@ -411,14 +417,14 @@ function SummaryPreferencesSection({ errors = {} }) {
                       </Stack>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <FieldRow>
-                          <TextField
-                            type="time"
+                          <TwelveHourTimeField
                             size="small"
                             value={pending || DEFAULT_TIME}
-                            onChange={(e) => setPendingAdd((p) => ({ ...p, [d.key]: e.target.value }))}
+                            onChange={(nextValue) => setPendingAdd((p) => ({ ...p, [d.key]: nextValue }))}
                             disabled={!cell.enabled}
                             sx={{ width: 120, bgcolor: (t) => bgInput(t) }}
-                            inputProps={{ step: 300, style: { padding: '6px 8px' } }}
+                            stepMinutes={5}
+                            includeEmptyOption={false}
                           />
                         </FieldRow>
                         <Button

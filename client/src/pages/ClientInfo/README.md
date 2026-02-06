@@ -1,40 +1,41 @@
-## Client Info Portal Routes
+﻿## Client Info Portal Routes
 
 The portal is structured as a single-page application under `/ClientInfoReact`, with a combination of public and protected routes.
 
 ### Public Routes
-- `/ClientInfoReact` or `/ClientInfoReact/Auth` — Login & Register page
-- `/ClientInfoReact/ForgotPassword` — Reset password page
+- `/ClientInfoReact` or `/ClientInfoReact/Auth` â€” Login & Register page
+- `/ClientInfoReact/ForgotPassword` â€” Reset password page
 
 ### Protected Routes (require login)
 #### Core
-- `/ClientInfoReact/StartNewClient` — Dashboard for new & returning clients
-- `/ClientInfoReact/SiteOverview` — Application overview & architecture
-- `/ClientInfoReact/AccountInformation` — View/edit account info
-- `/ClientInfoReact/OnboardingComplete` — Confirmation after setup
-- `/ClientInfoReact/ATools` — Admin tools page
+- `/ClientInfoReact/StartNewClient` â€” Dashboard for new & returning clients
+- `/ClientInfoReact/SiteOverview` â€” Application overview & architecture
+- `/ClientInfoReact/AccountInformation` â€” View/edit account info
+- `/ClientInfoReact/OnboardingComplete` â€” Confirmation after setup
+- `/ClientInfoReact/ATools` â€” Admin tools page
 
 #### Documents & Services
-- `/ClientInfoReact/Documents/WelcomePacket` — Download welcome packet
-- `/ClientInfoReact/Documents/Signed` — View signed documents
-- `/ClientInfoReact/Documents/Upload` — Upload additional paperwork
-- `/ClientInfoReact/ServiceChanges` — Request service changes
+- `/ClientInfoReact/Documents/WelcomePacket` â€” Download welcome packet
+- `/ClientInfoReact/Documents/Signed` â€” View signed documents
+- `/ClientInfoReact/Documents/Upload` â€” Upload additional paperwork
+- `/ClientInfoReact/ServiceChanges` â€” Request service changes
 
 #### Reports
-- `/ClientInfoReact/Reports/CallLogs` — Call logs & summary
-- `/ClientInfoReact/Reports/Monthly` — Monthly service usage report
+- `/ClientInfoReact/Reports/CallLogs` â€” Call logs & summary
+- `/ClientInfoReact/Reports/Monthly` â€” Monthly service usage report
 
 #### Support
-- `/ClientInfoReact/Support/Ticket` — Open support ticket
-- `/ClientInfoReact/Support/ContactManager` — Contact account manager
+- `/ClientInfoReact/Support/Ticket` â€” Open support ticket
+- `/ClientInfoReact/Support/ContactManager` â€” Contact account manager
 
 #### Settings
-- `/ClientInfoReact/Settings/Password` — Change password
-- `/ClientInfoReact/Settings/Notifications` — Notification preferences
-- `/ClientInfoReact/Settings/Users` — Manage authorized users
+- `/ClientInfoReact/Settings/Password` â€” Change password
+- `/ClientInfoReact/Settings/Notifications` â€” Notification preferences
+- `/ClientInfoReact/Settings/Users` â€” Manage authorized users
 
 #### Onboarding Wizard
-- `/ClientInfoReact/NewFormWizard/...` — Step-by-step onboarding wizard
+- `/ClientInfoReact/NewFormWizard/...` â€” Step-by-step onboarding wizard
 
-#### 🪪 Fallback
-- Any other route → 404 NotFound page
+#### Fallback
+- Any unmatched wizard route redirects to the start screen.
+

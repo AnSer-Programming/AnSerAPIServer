@@ -10,7 +10,7 @@ import {
   callVolumeSchema,
   websiteAccessSchema,
   callTypesSchema,
-  fastTrackSchema,
+  callRoutingSchema,
 
   // Legacy on-call schemas (kept for compatibility if still used anywhere)
   onCallDepartmentsSchema,
@@ -27,9 +27,6 @@ import {
   onCallSchedulesSchema,
   onCallScheduleTypeSchema,
   onCallEscalationSchema,
-
-  // Final Details schema
-  finalDetailsSchema,
 } from './validationSchema';
 
 // Aggregate validator so validateSection('onCall', onCall) works.
@@ -63,6 +60,7 @@ export const validators = {
   // --- Answer Calls ---
   answerCalls: answerCallsSchema,
   'answerCalls.callTypes': callTypesSchema,
+  callRouting: callRoutingSchema,
 
   // --- Escalation / Personnel / Preferences ---
   escalationMatrix: escalationMatrixSchema,
@@ -73,7 +71,6 @@ export const validators = {
   'companyInfo.consultationMeeting': consultationMeetingSchema,
   attachments: attachmentsSchema,
   'metrics.callVolume': callVolumeSchema,
-  fastTrack: fastTrackSchema,
 
   // --- NEW: On Call (aggregate + sub-keys) ---
   onCall: onCallAggregate,
@@ -84,10 +81,6 @@ export const validators = {
   'onCall.schedules': onCallSchedulesSchema,
   'onCall.scheduleType': onCallScheduleTypeSchema,
   'onCall.escalation': onCallEscalationSchema,
-
-  // --- Final Details ---
-  finalDetails: finalDetailsSchema,
-
   // --- Legacy: On Call (compat) ---
   'onCall.departments': onCallDepartmentsSchema,
   'onCall.notificationRules': notificationRulesSchema,
@@ -169,7 +162,9 @@ export const validateAll = (formData) => {
 
     const value = key === 'onCall.scheduleType'
       ? formData.onCall
-      : parts.reduce((obj, part) => obj?.[part], formData);
+      : key === 'officeReach'
+        ? formData.companyInfo
+        : parts.reduce((obj, part) => obj?.[part], formData);
     const err = fn(value);
 
     if (err) {

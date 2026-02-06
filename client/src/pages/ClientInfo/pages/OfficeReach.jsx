@@ -51,7 +51,7 @@ const OfficeReach = () => {
   const theme = useTheme();
   const sharedStyles = createSharedStyles(theme, darkMode);
   const { formData, validateSection, markStepVisited, updateSection } = useWizard();
-  const [snack, setSnack] = useState(false);
+  const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
@@ -76,16 +76,11 @@ const OfficeReach = () => {
     };
   }, []);
 
-  // Keep companyInfo reference to preserve holidays/specialEvents/officeHours/websiteAccess state
+  // Keep companyInfo reference to preserve office-related state.
   const companyInfo = formData.companyInfo || {};
   const specialEvents = Array.isArray(companyInfo.specialEvents) ? companyInfo.specialEvents : [];
-  const plannedTimes = companyInfo.plannedTimes || {};
-  const holidays = (typeof plannedTimes.holidays === 'object' && plannedTimes.holidays) || {};
-  const showSpecialEvents = !!(
-    holidays.otherHolidays ||
-    (Array.isArray(holidays.customDates) && holidays.customDates.length) ||
-    specialEvents.length
-  );
+  // Always render the Special Events section so first-time users can add entries.
+  const showSpecialEvents = true;
 
   const setEvents = (events) => updateSection('companyInfo', { specialEvents: events });
 
@@ -97,11 +92,16 @@ const OfficeReach = () => {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const errs = validateSection('officeReach', companyInfo);
-    
-    // Show validation feedback but don't block navigation
+
     if (errs) {
       setErrors(errs);
-      setSnack(true);
+      setSaving(false);
+      setSnack({
+        open: true,
+        msg: 'Please complete required fields in Other Info before continuing.',
+        severity: 'error',
+      });
+      return;
     } else {
       setErrors({});
     }
@@ -281,7 +281,7 @@ const OfficeReach = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Button
                 variant="outlined"
-                onClick={() => setSnack(true)}
+                onClick={() => setSnack({ open: true, msg: 'Draft saved successfully!', severity: 'success' })}
                 disabled={saving}
                 aria-label={saving ? 'Saving draft' : 'Save draft'}
                 aria-live="polite"
@@ -311,18 +311,16 @@ const OfficeReach = () => {
 
 
       <Snackbar
-        open={snack}
+        open={snack.open}
         autoHideDuration={3000}
-        onClose={() => setSnack(false)}
+        onClose={() => setSnack((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          severity={Object.keys(errors).length ? 'warning' : 'success'}
+          severity={snack.severity}
           sx={{ width: '100%' }}
         >
-          {Object.keys(errors).length
-            ? 'Some fields need attention - you can continue and fix them later.'
-            : 'Draft saved successfully!'}
+          {snack.msg}
         </Alert>
       </Snackbar>
     </Box>
