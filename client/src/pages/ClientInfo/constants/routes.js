@@ -1,12 +1,10 @@
-// 📁 src/pages/ClientInfo/constants/routes.js
-// Centralized route constants to avoid typos and improve maintainability
+﻿// src/pages/ClientInfo/constants/routes.js
+// Centralized route constants to avoid typos and improve maintainability.
 
 export const WIZARD_BASE = '/ClientInfoReact/NewFormWizard';
 
 export const WIZARD_ROUTES = {
   BASE: '/ClientInfoReact',
-  ADMIN_INVITE: '/ClientInfoReact/admin-invite',
-  INVITE: (token) => `/ClientInfoReact/invite/${token}`,
 
   // Wizard steps
   COMPANY_INFO: `${WIZARD_BASE}/company-info`,
@@ -20,26 +18,29 @@ export const WIZARD_ROUTES = {
   REVIEW: `${WIZARD_BASE}/review`,
 };
 
-export const WIZARD_STEPS = [
-  'company-info',
-  'answer-calls',
-  'on-call',
-  'team-setup',
-  'escalation-details',
-  'call-routing',
-  'office-reach',
-  'final-details',
-  'review'
+export const WIZARD_LINKS = [
+  { slug: 'company-info', label: 'Company Information', to: WIZARD_ROUTES.COMPANY_INFO },
+  { slug: 'answer-calls', label: 'Answer Calls', to: WIZARD_ROUTES.ANSWER_CALLS },
+  { slug: 'on-call', label: 'On Call Setup', to: WIZARD_ROUTES.ON_CALL },
+  { slug: 'team-setup', label: 'Team Setup', to: WIZARD_ROUTES.ON_CALL_TEAMS },
+  { slug: 'escalation-details', label: 'Escalation & Rotation Details', to: WIZARD_ROUTES.ON_CALL_ESCALATION },
+  { slug: 'call-routing', label: 'Call Routing', to: WIZARD_ROUTES.CALL_ROUTING },
+  { slug: 'office-reach', label: 'Other Info', to: WIZARD_ROUTES.OFFICE_REACH },
+  { slug: 'final-details', label: 'Final Details', to: WIZARD_ROUTES.FINAL_DETAILS },
+  { slug: 'review', label: 'Review & Submit', to: WIZARD_ROUTES.REVIEW },
 ];
 
-export const STEP_LABELS = {
-  'company-info': 'Company Information',
-  'answer-calls': 'Answer Calls',
-  'on-call': 'On Call Setup',
-  'team-setup': 'Team Setup',
-  'escalation-details': 'Escalation & Rotation Details',
-  'call-routing': 'Call Routing',
-  'office-reach': 'Other Info',
-  'final-details': 'Final Details',
-  'review': 'Review & Submit'
-};
+export const WIZARD_STEPS = WIZARD_LINKS.map(({ slug }) => slug);
+
+export const STEP_LABELS = Object.fromEntries(
+  WIZARD_LINKS.map(({ slug, label }) => [slug, label])
+);
+
+export const CLIENTINFO_NAV_ITEMS = [
+  { label: 'HOME', to: WIZARD_ROUTES.BASE },
+  { label: 'COMPANY INFORMATION', to: WIZARD_ROUTES.COMPANY_INFO },
+  { label: 'HOW TO ANSWER YOUR CALLS', to: WIZARD_ROUTES.ANSWER_CALLS },
+  { label: 'ON-CALL SETUP', to: WIZARD_ROUTES.ON_CALL },
+  { label: 'OTHER INFO', to: WIZARD_ROUTES.OFFICE_REACH },
+  { label: 'FINAL DETAILS', to: WIZARD_ROUTES.FINAL_DETAILS },
+];

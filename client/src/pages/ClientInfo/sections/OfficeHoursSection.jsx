@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import {
   Checkbox,
-  TextField,
   Button,
   Box,
   Typography,
@@ -20,6 +19,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useWizard } from '../context_API/WizardContext';
+import TwelveHourTimeField from '../components/TwelveHourTimeField';
 
 const DAYS = [
   { key: 'monday', label: 'Mon' },
@@ -174,20 +174,20 @@ const OfficeHoursSection = () => {
                     const value = (dayObj?.open ?? DEFAULT_OPEN);
                     return (
                       <TableCell key={d.key + 'open'}>
-                        <TextField
-                          type="time"
+                        <TwelveHourTimeField
                           size="small"
                           value={value}
                           disabled={!!dayObj?.closed}
-                          onChange={e => setDay(d.key, 'open', e.target.value)}
+                          onChange={(nextValue) => setDay(d.key, 'open', nextValue)}
+                          stepMinutes={5}
+                          includeEmptyOption={false}
                           sx={{
                             bgcolor: (t) => (!!dayObj?.closed ? bgDisabled(t) : bgInput(t)),
-                            width: '120px',
+                            width: '130px',
                             borderRadius: 1,
                             border: '1px solid',
                             borderColor: 'divider'
                           }}
-                          inputProps={{ step: 300, style: { fontSize: 15, padding: '6px 8px' } }}
                         />
                       </TableCell>
                     );
@@ -203,20 +203,20 @@ const OfficeHoursSection = () => {
                     const value = (dayObj?.close ?? DEFAULT_CLOSE);
                     return (
                       <TableCell key={d.key + 'close'}>
-                        <TextField
-                          type="time"
+                        <TwelveHourTimeField
                           size="small"
                           value={value}
                           disabled={!!dayObj?.closed}
-                          onChange={e => setDay(d.key, 'close', e.target.value)}
+                          onChange={(nextValue) => setDay(d.key, 'close', nextValue)}
+                          stepMinutes={5}
+                          includeEmptyOption={false}
                           sx={{
                             bgcolor: (t) => (!!dayObj?.closed ? bgDisabled(t) : bgInput(t)),
-                            width: '120px',
+                            width: '130px',
                             borderRadius: 1,
                             border: '1px solid',
                             borderColor: 'divider'
                           }}
-                          inputProps={{ step: 300, style: { fontSize: 15, padding: '6px 8px' } }}
                         />
                       </TableCell>
                     );
@@ -257,38 +257,38 @@ const OfficeHoursSection = () => {
                             <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary', mb: 0.3 }}>
                               Start
                             </Typography>
-                            <TextField
-                              type="time"
+                            <TwelveHourTimeField
                               size="small"
                               value={lunch.open || '12:00'}
-                              onChange={e => setLunch({ open: e.target.value })}
+                              onChange={(nextValue) => setLunch({ open: nextValue })}
+                              stepMinutes={5}
+                              includeEmptyOption={false}
                               sx={{
-                                width: 120,
+                                width: 130,
                                 borderRadius: 1,
                                 border: '1px solid',
                                 borderColor: 'divider',
                                 bgcolor: (t) => bgInput(t)
                               }}
-                              inputProps={{ step: 300, style: { fontSize: 15, padding: '6px 8px' } }}
                             />
                           </Box>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary', mb: 0.3 }}>
                               End
                             </Typography>
-                            <TextField
-                              type="time"
+                            <TwelveHourTimeField
                               size="small"
                               value={lunch.close || '13:00'}
-                              onChange={e => setLunch({ close: e.target.value })}
+                              onChange={(nextValue) => setLunch({ close: nextValue })}
+                              stepMinutes={5}
+                              includeEmptyOption={false}
                               sx={{
-                                width: 120,
+                                width: 130,
                                 borderRadius: 1,
                                 border: '1px solid',
                                 borderColor: 'divider',
                                 bgcolor: (t) => bgInput(t)
                               }}
-                              inputProps={{ step: 300, style: { fontSize: 15, padding: '6px 8px' } }}
                             />
                           </Box>
                         </Box>

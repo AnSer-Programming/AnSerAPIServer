@@ -1,11 +1,12 @@
 import React, { createContext, useReducer, useContext, useCallback, useMemo } from 'react';
 import useAutosave from '../utils/useAutosave';
 import logger from '../utils/logger';
+import { deriveObservedHolidayDates } from '../utils/holidayDates';
 import {
   validateSection as rawValidateSection,
   validateAll as rawValidateAll,
 } from '../utils/validators';
-import * as mockInviteService from './mockInviteService';
+import { WIZARD_STEPS } from '../constants/routes';
 
 const WizardContext = createContext(null);
 
@@ -19,12 +20,12 @@ const DEFAULTS = {
     physicalCity: '',
     physicalState: '',
     physicalPostalCode: '',
-    mailingAddress: '',
-    mailingSuite: '',
-    mailingCity: '',
-    mailingState: '',
-    mailingPostalCode: '',
-    mailingSameAsPhysical: false,
+    billingAddress: '',
+    billingSuite: '',
+    billingCity: '',
+    billingState: '',
+    billingPostalCode: '',
+    billingSameAsPhysical: false,
     additionalLocations: [],
     contactNumbers: {
       primaryOfficeLine: '',
@@ -198,36 +199,6 @@ const DEFAULTS = {
       notes: '',
     },
   },
-  fastTrack: {
-    enabled: false,
-    highCallVolumeExpected: false,
-    payment: {
-      cardholderName: '',
-      cardBrand: '',
-      cardLast4: '',
-      billingZip: '',
-      rushFeeAccepted: false,
-      authorization: false,
-      notes: '',
-    },
-    onCallContacts: [
-      { id: 'contact-1', name: '', role: '', phone: '', email: '', availability: 'Daytime (Week 1)' },
-      { id: 'contact-2', name: '', role: '', phone: '', email: '', availability: 'Evening (Week 1)' },
-    ],
-    callTypeSlots: [
-      { id: 'urgent', label: 'Urgent / Emergencies', instructions: '', afterHoursNotes: '' },
-      { id: 'routine', label: 'Routine / Standard', instructions: '', afterHoursNotes: '' },
-      { id: 'overflow', label: 'Overflow / Backup', instructions: '', afterHoursNotes: '' },
-      { id: 'custom', label: 'Custom Requests', instructions: '', afterHoursNotes: '' },
-    ],
-    meeting: {
-      platform: 'teams',
-      date: '',
-      time: '',
-      timezone: '',
-      notes: '',
-    },
-  },
   attachments: [],
 };
 
@@ -242,6 +213,47 @@ const deepClone = (value) => {
     }, {});
   }
   return value;
+};
+
+const normalizeCompanyInfoModel = (companyInfo = {}) => {
+  const normalized = { ...companyInfo };
+
+  if (normalized.billingAddress == null && normalized.mailingAddress != null) {
+    normalized.billingAddress = normalized.mailingAddress;
+  }
+  if (normalized.billingSuite == null && normalized.mailingSuite != null) {
+    normalized.billingSuite = normalized.mailingSuite;
+  }
+  if (normalized.billingCity == null && normalized.mailingCity != null) {
+    normalized.billingCity = normalized.mailingCity;
+  }
+  if (normalized.billingState == null && normalized.mailingState != null) {
+    normalized.billingState = normalized.mailingState;
+  }
+  if (normalized.billingPostalCode == null && normalized.mailingPostalCode != null) {
+    normalized.billingPostalCode = normalized.mailingPostalCode;
+  }
+  if (normalized.billingSameAsPhysical == null && normalized.mailingSameAsPhysical != null) {
+    normalized.billingSameAsPhysical = normalized.mailingSameAsPhysical;
+  }
+
+  delete normalized.mailingAddress;
+  delete normalized.mailingSuite;
+  delete normalized.mailingCity;
+  delete normalized.mailingState;
+  delete normalized.mailingPostalCode;
+  delete normalized.mailingSameAsPhysical;
+
+  return normalized;
+};
+
+const normalizeFormDataModel = (formData = {}) => {
+  if (!formData || typeof formData !== 'object') return formData;
+  if (!formData.companyInfo || typeof formData.companyInfo !== 'object') return formData;
+  return {
+    ...formData,
+    companyInfo: normalizeCompanyInfoModel(formData.companyInfo),
+  };
 };
 
 const initialState = {
@@ -259,12 +271,15 @@ const reducer = (state, action) => {
       const nextSection = Array.isArray(payload)
         ? payload
         : { ...(base || {}), ...payload };
+      const normalizedSection = section === 'companyInfo' && !Array.isArray(nextSection)
+        ? normalizeCompanyInfoModel(nextSection)
+        : nextSection;
 
       return {
         ...state,
         formData: {
           ...state.formData,
-          [section]: nextSection,
+          [section]: normalizedSection,
         },
       };
     }
@@ -277,10 +292,14 @@ const reducer = (state, action) => {
         },
       };
     case 'LOAD_DRAFT':
-      return {
-        ...state,
-        ...action.payload,
-      };
+      {
+        const payload = action.payload || {};
+        return {
+          ...state,
+          ...payload,
+          formData: normalizeFormDataModel(payload.formData || {}),
+        };
+      }
     default:
       return state;
   }
@@ -292,17 +311,87 @@ const STEP_DATA_KEYS = {
   'on-call': 'onCall',
   'team-setup': 'onCall',
   'escalation-details': 'onCall',
-  'final-details': 'finalDetails',
+  'call-routing': 'callRouting',
+  'office-reach': 'companyInfo',
+  'final-details': 'companyInfo.consultationMeeting',
 };
 
-const STEP_SLUG_BY_KEY = Object.keys(STEP_DATA_KEYS).reduce((acc, slug) => {
-  acc[STEP_DATA_KEYS[slug]] = slug;
-  return acc;
-}, {});
+const STEP_SLUG_BY_KEY = {
+  companyInfo: 'company-info',
+  answerCalls: 'answer-calls',
+  onCall: 'on-call',
+  callRouting: 'call-routing',
+  officeReach: 'office-reach',
+  finalDetails: 'final-details',
+  'companyInfo.consultationMeeting': 'final-details',
+};
+
+const STEP_VALIDATION_KEYS = {
+  'company-info': ['companyInfo'],
+  'answer-calls': ['answerCalls'],
+  'on-call': ['onCall.team'],
+  'team-setup': ['onCall.departments'],
+  'escalation-details': ['onCall.rotation', 'onCall.scheduleType'],
+  'call-routing': ['callRouting'],
+  'office-reach': ['officeReach'],
+  'final-details': ['companyInfo.consultationMeeting', 'attachments'],
+};
 
 const normalizeStepSlug = (step) => {
   if (STEP_DATA_KEYS[step]) return step;
   return STEP_SLUG_BY_KEY[step] || step;
+};
+
+const getValueByPath = (source, path) => {
+  if (!path || typeof path !== 'string') return undefined;
+  return path.split('.').reduce((acc, key) => acc?.[key], source);
+};
+
+const hasAnyData = (value) => {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number' || typeof value === 'boolean') return true;
+  if (typeof value === 'object') {
+    return Object.values(value).some((entry) => hasAnyData(entry));
+  }
+  return false;
+};
+
+const hasFinalDetailsData = (formData = {}) => {
+  const consultation = getValueByPath(formData, 'companyInfo.consultationMeeting') || {};
+  const attachments = Array.isArray(formData.attachments) ? formData.attachments : [];
+
+  const hasSlots = Array.isArray(consultation.selectedDateTimes) && consultation.selectedDateTimes.length > 0;
+  const hasContactMeta = hasAnyData({
+    contactPerson: consultation.contactPerson,
+    contactEmail: consultation.contactEmail,
+    contactPhone: consultation.contactPhone,
+    notes: consultation.notes,
+  });
+  const hasNonDefaultMeetingType = Boolean(
+    consultation.meetingType && consultation.meetingType !== 'video'
+  );
+
+  return hasSlots || hasContactMeta || hasNonDefaultMeetingType || attachments.length > 0;
+};
+
+const flattenValidationErrors = (value, prefix = '') => {
+  if (!value) return [];
+  if (typeof value === 'string') {
+    return [{ field: prefix || 'base', message: value }];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((entry, index) => (
+      flattenValidationErrors(entry, prefix ? `${prefix}.${index}` : String(index))
+    ));
+  }
+  if (typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, entry]) => (
+      flattenValidationErrors(entry, prefix ? `${prefix}.${key}` : key)
+    ));
+  }
+  return [];
 };
 
 export const WizardProvider = ({ children }) => {
@@ -325,37 +414,6 @@ export const WizardProvider = ({ children }) => {
 
   const validateSection = useCallback((section, data) => rawValidateSection(section, data), []);
   const validateAll = useCallback((formData) => rawValidateAll(formData), []);
-
-  // Initialize wizard state from an invite token.
-  // This uses the local mockInviteService by default. When moving to a server,
-  // replace the mock calls with real fetches (examples commented below).
-  const initializeFromInvite = useCallback(async (token) => {
-    const inviteRes = await mockInviteService.getInviteByToken(token);
-    if (!inviteRes.ok) {
-      throw new Error('Invalid or expired token');
-    }
-    const { clientId, targetStep, formData: inviteForm } = inviteRes.data;
-
-    // If invite payload included a snapshot, seed it directly.
-    if (inviteForm && Object.keys(inviteForm).length) {
-      dispatch({ type: 'LOAD_DRAFT', payload: { formData: inviteForm, visitedSteps: {} } });
-    } else {
-      // Otherwise attempt to fetch full wizard state (mocked here).
-      const stateRes = await mockInviteService.getWizardStateByClientId(clientId, token);
-      if (stateRes.ok && stateRes.data) {
-        dispatch({ type: 'LOAD_DRAFT', payload: stateRes.data });
-      }
-    }
-
-    // Example real server calls (commented):
-    // const inviteResp = await fetch(`/api/wizard/invite/${token}`);
-    // if (!inviteResp.ok) throw new Error('Invalid or expired token');
-    // const inviteJson = await inviteResp.json();
-    // const serverState = await fetch(`/api/wizard/state?token=${token}&clientId=${inviteJson.clientId}`);
-    // if (serverState.ok) { const js = await serverState.json(); dispatch({ type: 'LOAD_DRAFT', payload: js }); }
-
-    return targetStep || 'start';
-  }, []);
 
   // Helper to read a section with a safe default shape when missing.
   const mergeDefaults = (defaults, value) => {
@@ -386,35 +444,44 @@ export const WizardProvider = ({ children }) => {
   
   // Get completion percentage for entire form
   const getOverallProgress = useCallback(() => {
-    const sections = ['companyInfo', 'answerCalls', 'onCall', 'callRouting', 'finalDetails'];
-    const completedSections = sections.filter(section => {
-      const sectionData = state.formData[section];
-      if (!sectionData) return false;
-      
-      // Basic completion check - has any data
-      const hasData = Object.values(sectionData).some(value => {
-        if (typeof value === 'string') return value.trim().length > 0;
-        if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
-        return value !== null && value !== undefined;
-      });
-      
-      return hasData;
-    });
+    const sectionChecks = [
+      () => hasAnyData(state.formData.companyInfo),
+      () => hasAnyData(state.formData.answerCalls),
+      () => hasAnyData(state.formData.onCall),
+      () => hasAnyData(state.formData.callRouting),
+      () => hasFinalDetailsData(state.formData),
+    ];
+    const completedSections = sectionChecks.filter((check) => check());
     
-    return Math.round((completedSections.length / sections.length) * 100);
+    return Math.round((completedSections.length / sectionChecks.length) * 100);
   }, [state.formData]);
 
   // Get validation errors for a specific step
   const getStepErrors = useCallback((step) => {
-    const sectionData = state.formData[step] || {};
-    const errors = rawValidateSection(step, sectionData);
-    if (!errors) return [];
-    return Object.entries(errors).map(([field, message]) => ({ field, message }));
+    const normalizedStep = normalizeStepSlug(step);
+
+    if (normalizedStep === 'review') {
+      return flattenValidationErrors(rawValidateAll(state.formData));
+    }
+
+    const validationKeys = STEP_VALIDATION_KEYS[normalizedStep] || [normalizedStep];
+    return validationKeys.flatMap((validationKey) => {
+      let sectionData;
+      if (validationKey === 'officeReach') {
+        sectionData = state.formData.companyInfo || {};
+      } else if (validationKey === 'onCall.scheduleType') {
+        sectionData = state.formData.onCall || {};
+      } else {
+        sectionData = getValueByPath(state.formData, validationKey);
+      }
+      const errors = rawValidateSection(validationKey, sectionData);
+      return flattenValidationErrors(errors, validationKey);
+    });
   }, [state.formData]);
 
   // Check if a step can be proceeded to (previous steps completed)
   const canProceedToStep = useCallback((targetStep) => {
-    const stepOrder = ['company-info', 'answer-calls', 'on-call', 'team-setup', 'escalation-details', 'call-routing', 'office-reach', 'final-details'];
+    const stepOrder = WIZARD_STEPS;
     const normalizedTarget = normalizeStepSlug(targetStep);
     const targetIndex = stepOrder.indexOf(normalizedTarget);
     
@@ -424,12 +491,17 @@ export const WizardProvider = ({ children }) => {
     // Check if all previous steps have been visited and have minimal data
     for (let i = 0; i < targetIndex; i++) {
       const step = stepOrder[i];
-      const dataKey = STEP_DATA_KEYS[step] || step;
-      const visited = state.visitedSteps[step] || state.visitedSteps[dataKey];
+      const dataPath = STEP_DATA_KEYS[step] || step;
+      const visited = state.visitedSteps[step] || state.visitedSteps[dataPath];
       if (!visited) return false;
       
-      const sectionData = state.formData[dataKey] || state.formData[step];
-      if (!sectionData || Object.keys(sectionData).length === 0) return false;
+      if (step === 'final-details') {
+        if (!hasFinalDetailsData(state.formData)) return false;
+        continue;
+      }
+
+      const sectionData = getValueByPath(state.formData, dataPath) ?? state.formData[step];
+      if (!hasAnyData(sectionData)) return false;
     }
     
     return true;
@@ -451,7 +523,7 @@ export const WizardProvider = ({ children }) => {
 
       summary += `Business Name: ${info.businessName || info.company || 'Not provided'}\n`;
       summary += `Physical Address: ${formatAddress(info.physicalLocation, info.suiteOrUnit, info.physicalCity, info.physicalState, info.physicalPostalCode)}\n`;
-      summary += `Mailing Address: ${info.mailingSameAsPhysical ? 'Same as physical' : formatAddress(info.mailingAddress, info.mailingSuite, info.mailingCity, info.mailingState, info.mailingPostalCode)}\n`;
+      summary += `Billing Address: ${info.billingSameAsPhysical ? 'Same as physical' : formatAddress(info.billingAddress, info.billingSuite, info.billingCity, info.billingState, info.billingPostalCode)}\n`;
 
       const primaryContact = info.primaryContact || {};
       const primaryLine = [primaryContact.name, primaryContact.phone, primaryContact.email].filter((value) => value && value.trim()).join(' | ');
@@ -532,8 +604,11 @@ export const WizardProvider = ({ children }) => {
         }
       }
 
-      if (Array.isArray(info.holidays) && info.holidays.length) {
-        const formattedHolidays = info.holidays
+      const legacyHolidayDates = Array.isArray(info.holidays) ? info.holidays : [];
+      const plannedHolidayDates = deriveObservedHolidayDates(info.plannedTimes?.holidays || {});
+      const mergedHolidayDates = Array.from(new Set([...legacyHolidayDates, ...plannedHolidayDates]));
+      if (mergedHolidayDates.length) {
+        const formattedHolidays = mergedHolidayDates
           .map((date) => {
             const parsed = new Date(`${date}T00:00:00Z`);
             if (Number.isNaN(parsed.getTime())) {
@@ -723,115 +798,6 @@ export const WizardProvider = ({ children }) => {
       summary += '\n';
     }
 
-    if (formData.fastTrack && formData.fastTrack.enabled) {
-      const ft = formData.fastTrack || {};
-      const payment = ft.payment || {};
-      const contacts = Array.isArray(ft.onCallContacts) ? ft.onCallContacts : [];
-  const slots = Array.isArray(ft.callTypeSlots) ? ft.callTypeSlots : [];
-  const meeting = ft.meeting || {};
-  const highCallVolume = Boolean(ft.highCallVolumeExpected);
-
-      const formatMeetingDate = (value) => {
-        if (!value) return 'Not provided';
-        const parsed = new Date(value);
-        if (Number.isNaN(parsed.getTime())) return value;
-        return parsed.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        });
-      };
-
-      const formatMeetingTime = (value) => {
-        if (!value) return 'Not provided';
-        const str = String(value).trim();
-        const meridiemMatch = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-        if (meridiemMatch) {
-          const hours = Number(meridiemMatch[1]) % 12 || 12;
-          const minutes = meridiemMatch[2];
-          const meridiem = meridiemMatch[3].toUpperCase();
-          return `${hours}:${minutes} ${meridiem}`;
-        }
-        const militaryMatch = str.match(/^(\d{1,2}):(\d{2})$/);
-        if (militaryMatch) {
-          let hour = Number(militaryMatch[1]);
-          const minutes = militaryMatch[2];
-          const meridiem = hour >= 12 ? 'PM' : 'AM';
-          hour = hour % 12 || 12;
-          return `${hour}:${minutes} ${meridiem}`;
-        }
-        return str;
-      };
-
-      summary += 'FAST TRACK LAUNCH:\n';
-
-      const paymentParts = [];
-      if (payment.cardholderName) paymentParts.push(payment.cardholderName);
-      if (payment.cardBrand) paymentParts.push(payment.cardBrand);
-      if (payment.cardLast4) paymentParts.push(`**** ${payment.cardLast4}`);
-      summary += `Payment: ${paymentParts.length ? paymentParts.join(' • ') : 'Details pending'}\n`;
-      summary += `Billing ZIP: ${payment.billingZip || 'Not provided'}\n`;
-      summary += `Rush fee accepted: ${payment.rushFeeAccepted ? 'Yes' : 'No'}\n`;
-      summary += `Authorization: ${payment.authorization ? 'Approved' : 'Pending'}\n`;
-      if (payment.notes) {
-        summary += `Payment notes: ${payment.notes}\n`;
-      }
-
-      summary += `High call volume expected: ${highCallVolume ? 'Yes (scale staffing during launch)' : 'No'}\n`;
-
-      if (contacts.length) {
-        summary += 'Launch contacts:\n';
-        contacts.forEach((contact, index) => {
-          if (!contact) return;
-          const label = contact.name || `Contact ${index + 1}`;
-          const details = [];
-          if (contact.role) details.push(contact.role);
-          if (contact.phone) details.push(`Phone: ${contact.phone}`);
-          if (contact.email) details.push(`Email: ${contact.email}`);
-          if (contact.availability) details.push(contact.availability);
-          summary += `  • ${label}${details.length ? ` — ${details.join(' | ')}` : ''}\n`;
-        });
-      }
-
-      if (slots.length) {
-        summary += 'Rapid call scenarios:\n';
-        slots.forEach((slot, index) => {
-          if (!slot) return;
-          const label = slot.label || slot.id || `Scenario ${index + 1}`;
-          const parts = [];
-          if (slot.instructions) parts.push(slot.instructions);
-          if (slot.afterHoursNotes) parts.push(`After-hours: ${slot.afterHoursNotes}`);
-          summary += `  • ${label}${parts.length ? ` — ${parts.join(' | ')}` : ''}\n`;
-        });
-      }
-
-      const meetingParts = [];
-      if (meeting.platform) {
-        const platformLabels = {
-          teams: 'Microsoft Teams',
-          zoom: 'Zoom',
-          phone: 'Phone Call',
-          'google-meet': 'Google Meet',
-          other: 'Other',
-        };
-        meetingParts.push(platformLabels[meeting.platform] || meeting.platform);
-      }
-      if (meeting.date || meeting.time) {
-        meetingParts.push(`${formatMeetingDate(meeting.date)} at ${formatMeetingTime(meeting.time)}`);
-      }
-      if (meeting.timezone) {
-        meetingParts.push(`Timezone: ${meeting.timezone}`);
-      }
-      if (meeting.notes) {
-        meetingParts.push(`Notes: ${meeting.notes}`);
-      }
-      if (meetingParts.length) {
-        summary += `Kickoff meeting: ${meetingParts.join(' | ')}\n`;
-      }
-
-      summary += '\n';
-    }
-
     if (formData.onCall) {
       const oc = formData.onCall;
       const escalation = Array.isArray(oc.escalation) ? oc.escalation : [];
@@ -925,8 +891,6 @@ export const WizardProvider = ({ children }) => {
   // Advanced validation with field dependencies
   const validateStepWithDependencies = useCallback((step) => {
     const basicErrors = getStepErrors(step);
-    // Add dependency-based validation here
-    // This would integrate with the useFieldDependencies hook
     return basicErrors;
   }, [getStepErrors]);
 
@@ -937,7 +901,6 @@ export const WizardProvider = ({ children }) => {
     updateSection,
     markStepVisited,
     loadDraft,
-    initializeFromInvite,
     validateSection,
     validateAll,
     getSection,
@@ -959,7 +922,6 @@ export const WizardProvider = ({ children }) => {
     updateSection,
     markStepVisited,
     loadDraft,
-    initializeFromInvite,
     validateSection,
     validateAll,
     getSection,
@@ -979,3 +941,11 @@ export const WizardProvider = ({ children }) => {
 };
 
 export const useWizard = () => useContext(WizardContext);
+
+export const __TESTING__ = {
+  STEP_DATA_KEYS,
+  normalizeStepSlug,
+  getValueByPath,
+  hasAnyData,
+  hasFinalDetailsData,
+};

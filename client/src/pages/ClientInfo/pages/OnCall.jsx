@@ -131,12 +131,12 @@ const OnCall = () => {
 
     if (Object.keys(collectedErrors).length) {
       setErrors(collectedErrors);
-      setSnack({ open: true, msg: 'Some fields need attention. You can continue and fix them later.', severity: 'warning' });
-    } else {
-      setErrors({});
-      setSnack({ open: true, msg: 'On-call details look good. Moving on!', severity: 'success' });
+      setSnack({ open: true, msg: 'Please complete required on-call fields before continuing.', severity: 'error' });
+      return;
     }
 
+    setErrors({});
+    setSnack({ open: true, msg: 'On-call details look good. Moving on!', severity: 'success' });
     history.push(nextRoute);
   }, [currentStepSlug, markStepVisited, history]);
 

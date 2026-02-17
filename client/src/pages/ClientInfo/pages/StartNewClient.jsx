@@ -655,6 +655,7 @@ const StartNewClient = () => {
     { icon: <GroupOutlined />, title: 'Team Setup', desc: 'Group on-call personnel into teams or departments' },
     { icon: <AccountTreeOutlined />, title: 'Escalation & Rotation Details', desc: 'Define escalation contacts, schedules, and coverage timing' },
     { icon: <RouteOutlined />, title: 'Call Routing', desc: 'Assign team members to call categories' },
+    { icon: <TimerOutlined />, title: 'Other Info', desc: 'Office hours, service timing, and delivery preferences' },
     { icon: <EventOutlined />, title: 'Final Details', desc: 'Choose availability and upload documents' },
     { icon: <ReviewsOutlined />, title: 'Review & Submit', desc: 'Confirm everything before we start' },
   ];

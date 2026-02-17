@@ -336,6 +336,7 @@ const ClientSetUp = () => {
                   defaultExpanded={false}
                   elevation={2}
                   sx={{
+                    bgcolor: theme.palette.background.paper,
                     '&:before': { display: 'none' },
                     '& .MuiAccordion-root': { boxShadow: 'none' },
                   }}
@@ -346,16 +347,21 @@ const ClientSetUp = () => {
                     id={`${section.id}-header`}
                     sx={{
                       p: 2,
-                      background: `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
+                      background: darkMode
+                        ? theme.palette.background.paper
+                        : `linear-gradient(135deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
                       borderBottom: `1px solid ${theme.palette.divider}`,
+                      '& .MuiAccordionSummary-expandIconWrapper': {
+                        color: theme.palette.text.secondary,
+                      },
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                      <Box sx={{ color: theme.palette.primary.main, '& svg': { fontSize: 28 } }}>
+                      <Box sx={{ color: darkMode ? theme.palette.info.main : theme.palette.primary.main, '& svg': { fontSize: 28 } }}>
                         {section.icon}
                       </Box>
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: theme.palette.text.primary }}>
                           {section.title}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">

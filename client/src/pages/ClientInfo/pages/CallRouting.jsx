@@ -55,6 +55,7 @@ import { createSharedStyles } from '../utils/sharedStyles';
 import { WIZARD_ROUTES } from '../constants/routes';
 import { isValidPhone, getPhoneError } from '../utils/phonePostalValidation';
 import { isValidEmail, getEmailError } from '../utils/emailValidation';
+import { syncCategoryAssignments } from '../utils/callRoutingAssignments';
 
 const escapeHtml = (value) => {
   if (value == null) return '';
@@ -91,7 +92,7 @@ const CallRouting = () => {
   const { darkMode } = useClientInfoTheme();
   const history = useHistory();
   const sharedStyles = createSharedStyles(theme, darkMode);
-  const { formData, updateSection, markStepVisited } = useWizard();
+  const { formData, updateSection, markStepVisited, validateSection } = useWizard();
 
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
   const [errors, setErrors] = useState({});
@@ -267,30 +268,13 @@ const CallRouting = () => {
   const callRouting = formData.callRouting || { categoryAssignments: [] };
   const assignments = callRouting.categoryAssignments || [];
 
-  // Initialize assignments if empty
+  // Keep routing assignments synced with call categories (add, remove, rename, reorder).
   useEffect(() => {
-    if (categories.length > 0 && assignments.length === 0) {
-      const initialAssignments = categories.map(cat => ({
-        categoryId: cat.id,
-        categoryName: cat.customName || cat.selectedCommon || 'Unnamed Category',
-        whenToContact: 'all-hours',
-        specialInstructions: '',
-        finalAction: 'repeat-until-delivered',
-        afterHoursFinalAction: 'repeat-until-delivered',
-        escalationSteps: [
-          {
-            id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            contactPerson: '',
-            contactMethod: 'call',
-            notes: '',
-            repeatSteps: false,
-            holdForCheckIn: false,
-          }
-        ],
-      }));
-      updateSection('callRouting', { categoryAssignments: initialAssignments });
+    const { changed, nextAssignments } = syncCategoryAssignments(categories, assignments);
+    if (changed) {
+      updateSection('callRouting', { categoryAssignments: nextAssignments });
     }
-  }, [categories.length, assignments.length]);
+  }, [categories, assignments, updateSection]);
 
   // Ensure any new category accordions start collapsed
   useEffect(() => {
@@ -493,27 +477,24 @@ const CallRouting = () => {
 
   const onNext = () => {
     markStepVisited('call-routing');
-    
-    // Validate that at least first step has contact assigned (unless it's "Consider Delivered")
-    const missingContacts = assignments.filter(a => 
-      !a.escalationSteps || 
-      a.escalationSteps.length === 0 || 
-      (!a.escalationSteps[0].contactPerson && a.escalationSteps[0].contactMethod !== 'delivered')
-    );
-    
-    if (missingContacts.length > 0) {
-      setSnack({ 
-        open: true, 
-        msg: `${missingContacts.length} categor${missingContacts.length === 1 ? 'y needs' : 'ies need'} at least one contact`, 
-        severity: 'warning' 
+    const routingErrors = validateSection?.('callRouting', { categoryAssignments: assignments });
+
+    if (routingErrors) {
+      setErrors(routingErrors);
+      setSnack({
+        open: true,
+        msg: 'Please complete required call routing fields before continuing.',
+        severity: 'error',
       });
-    } else {
-      setSnack({ 
-        open: true, 
-        msg: 'Call routing configured successfully!', 
-        severity: 'success' 
-      });
+      return;
     }
+
+    setErrors({});
+    setSnack({
+      open: true,
+      msg: 'Call routing configured successfully!',
+      severity: 'success',
+    });
 
     // Proceed to next step
     history.push(WIZARD_ROUTES.OFFICE_REACH);
@@ -929,6 +910,7 @@ const CallRouting = () => {
                     fullWidth
                     size="small"
                     type="number"
+                    inputMode="numeric"
                     label="Number of Times to Repeat"
                     value={assignment[repeatCountField] || 2}
                     onChange={(e) => handleAssignmentChange(assignment.categoryId, repeatCountField, parseInt(e.target.value) || 1)}
@@ -1002,6 +984,8 @@ const CallRouting = () => {
                                   <TextField
                                     fullWidth
                                     size="small"
+                                    type="tel"
+                                    inputMode="tel"
                                     label={phoneValues.length > 1 ? `Text Number ${index + 1}` : 'Phone Number for Text Confirmation'}
                                     value={phone}
                                     onChange={(e) => {
@@ -1110,6 +1094,8 @@ const CallRouting = () => {
                                 <TextField
                                   fullWidth
                                   size="small"
+                                  type="email"
+                                  inputMode="email"
                                   label={emailValues.length > 1 ? `Email Address ${index + 1}` : 'Email Address for Confirmation'}
                                   value={email}
                                   onChange={(e) => {

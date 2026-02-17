@@ -11,6 +11,7 @@ import {
   Stack,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
+import TwelveHourTimeField from '../components/TwelveHourTimeField';
 
 const OnCallRotationSection = ({ data = {}, onChange, errors = {} }) => {
   const theme = useTheme();
@@ -46,13 +47,12 @@ const OnCallRotationSection = ({ data = {}, onChange, errors = {} }) => {
 
         <Grid container spacing={2} sx={{ mb: 1 }}>
           <Grid item xs={12} md={4}>
-            <TextField
+            <TwelveHourTimeField
               label="On Call change begins at (Time)"
-              type="time"
               value={data.changeBeginsTime || ''}
-              onChange={(e) => set({ changeBeginsTime: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ step: 900 }} // 15-minute increments
+              onChange={(nextValue) => set({ changeBeginsTime: nextValue })}
+              stepMinutes={15}
+              emptyOptionLabel="Select time"
               fullWidth
               error={!!errors.changeBeginsTime}
               helperText={errors.changeBeginsTime}

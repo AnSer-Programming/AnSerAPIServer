@@ -4,7 +4,7 @@ import { IMaskInput } from 'react-imask';
 import PropTypes from 'prop-types';
 
 const PhoneMaskInput = React.forwardRef(function PhoneMaskInput(props, ref) {
-  const { onChange, type, ...other } = props;
+  const { onChange, type, name, ...other } = props;
 
   // Define masks for different input types
   const masks = {
@@ -25,7 +25,7 @@ const PhoneMaskInput = React.forwardRef(function PhoneMaskInput(props, ref) {
       {...other}
       mask={mask}
       inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
+      onAccept={(value) => onChange({ target: { name: name || '', value } })}
       overwrite
       placeholder={type.charAt(0).toUpperCase() + type.slice(1)} // Dynamically set placeholder based on type
     />
@@ -33,7 +33,7 @@ const PhoneMaskInput = React.forwardRef(function PhoneMaskInput(props, ref) {
 });
 
 PhoneMaskInput.propTypes = {
-  name: PropTypes.string.isRequired,
+  name: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   type: PropTypes.oneOf(['phone', 'twitter', 'facebook', 'linkedin', 'instagram', 'whatsapp', 'xTwitter', 'default']),
 };

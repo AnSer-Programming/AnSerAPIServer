@@ -47,6 +47,29 @@ const validateCallTypesObject = (callTypes) => {
   return Object.keys(errors).length ? errors : null;
 };
 
+const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_24H_REGEX = /^\d{2}:\d{2}$/;
+
+const asTrimmed = (value) => (value == null ? '' : String(value).trim());
+const isFilled = (value) => asTrimmed(value).length > 0;
+const isBoolean = (value) => typeof value === 'boolean';
+
+const isIsoDate = (value) => {
+  const text = asTrimmed(value);
+  if (!ISO_DATE_REGEX.test(text)) return false;
+  const parsed = new Date(`${text}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime());
+};
+
+const isTime24h = (value) => {
+  const text = asTrimmed(value);
+  if (!TIME_24H_REGEX.test(text)) return false;
+  const [hh, mm] = text.split(':').map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return false;
+  return hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59;
+};
+
 // ==============================
 //   COMPANY INFORMATION SCHEMA
 // ==============================
@@ -294,14 +317,238 @@ export const billingContactSchema = (data = {}) => {
 // ==============================
 //   OTHER INFO SCHEMA
 // ==============================
-export const officeReachSchema = (/* data = {} */) => {
-  // All fields optional for now
-  return null;
+export const officeReachSchema = (data = {}) => {
+  const errors = {};
 
-  // ===== EXAMPLE REQUIRED FIELDS =====
-  // const errors = {};
-  // if (!data.primaryOfficeLine?.trim()) errors.primaryOfficeLine = 'Primary office line is required.';
-  // return Object.keys(errors).length ? errors : null;
+  if (!isFilled(data.timeZone)) {
+    errors.timeZone = 'Select your office time zone.';
+  }
+
+  const officeHours = data.officeHours && typeof data.officeHours === 'object' ? data.officeHours : {};
+  const officeHoursErrors = {};
+  let hasOpenDay = false;
+
+  DAY_KEYS.forEach((dayKey) => {
+    const day = officeHours[dayKey];
+    if (!day || typeof day !== 'object') return;
+
+    const dayErrors = {};
+    const isClosed = Boolean(day.closed);
+    const open = day.open;
+    const close = day.close;
+
+    if (!isClosed) {
+      hasOpenDay = true;
+      if (!isFilled(open)) {
+        dayErrors.open = 'Open time is required when this day is active.';
+      } else if (!isTime24h(open)) {
+        dayErrors.open = 'Use HH:MM format.';
+      }
+
+      if (!isFilled(close)) {
+        dayErrors.close = 'Close time is required when this day is active.';
+      } else if (!isTime24h(close)) {
+        dayErrors.close = 'Use HH:MM format.';
+      }
+
+      if (isFilled(open) && isFilled(close) && isTime24h(open) && isTime24h(close) && open === close) {
+        dayErrors.close = 'Open and close times cannot match.';
+      }
+    }
+
+    if (Object.keys(dayErrors).length) {
+      officeHoursErrors[dayKey] = dayErrors;
+    }
+  });
+
+  if (Object.keys(officeHoursErrors).length) {
+    errors.officeHours = officeHoursErrors;
+  } else if (Object.keys(officeHours).length > 0 && !hasOpenDay) {
+    errors.officeHours = { base: 'Set at least one open day or clear office hours.' };
+  }
+
+  const lunch = data.lunchHours && typeof data.lunchHours === 'object' ? data.lunchHours : {};
+  if (lunch.enabled) {
+    const lunchErrors = {};
+    if (!isFilled(lunch.open)) {
+      lunchErrors.open = 'Lunch start time is required when lunch is enabled.';
+    } else if (!isTime24h(lunch.open)) {
+      lunchErrors.open = 'Use HH:MM format.';
+    }
+
+    if (!isFilled(lunch.close)) {
+      lunchErrors.close = 'Lunch end time is required when lunch is enabled.';
+    } else if (!isTime24h(lunch.close)) {
+      lunchErrors.close = 'Use HH:MM format.';
+    }
+
+    if (isFilled(lunch.open) && isFilled(lunch.close) && isTime24h(lunch.open) && isTime24h(lunch.close) && lunch.open === lunch.close) {
+      lunchErrors.close = 'Lunch start and end cannot match.';
+    }
+
+    if (Object.keys(lunchErrors).length) {
+      errors.lunchHours = lunchErrors;
+    }
+  }
+
+  const plannedTimes = data.plannedTimes && typeof data.plannedTimes === 'object' ? data.plannedTimes : {};
+  const plannedTimesErrors = {};
+  if (plannedTimes.other && !isFilled(plannedTimes.otherText)) {
+    plannedTimesErrors.otherText = 'Explain "Other" planned service times.';
+  }
+
+  if (plannedTimes.emergency) {
+    const emergencyProtocols = data.emergencyProtocols && typeof data.emergencyProtocols === 'object'
+      ? data.emergencyProtocols
+      : {};
+    const hasEmergencyChoice = Object.values(emergencyProtocols).some((entry) => Boolean(entry?.enabled));
+    if (!hasEmergencyChoice) {
+      plannedTimesErrors.emergency = 'Select at least one emergency scenario.';
+    }
+  }
+
+  const holidays = plannedTimes.holidays && typeof plannedTimes.holidays === 'object'
+    ? plannedTimes.holidays
+    : {};
+  const holidayErrors = {};
+  if (holidays.otherHolidays) {
+    if (!Array.isArray(holidays.customDates) || holidays.customDates.length === 0) {
+      holidayErrors.customDates = 'Add at least one custom holiday date.';
+    } else {
+      const dateErrors = [];
+      const seen = new Set();
+      holidays.customDates.forEach((entry, index) => {
+        const itemErrors = {};
+        const date = asTrimmed(entry);
+        if (!isIsoDate(date)) {
+          itemErrors.date = 'Use YYYY-MM-DD for each custom holiday date.';
+        } else if (seen.has(date)) {
+          itemErrors.date = 'Duplicate custom holiday date.';
+        } else {
+          seen.add(date);
+        }
+        if (Object.keys(itemErrors).length) {
+          dateErrors[index] = itemErrors;
+        }
+      });
+      if (dateErrors.length) {
+        holidayErrors.customDates = dateErrors;
+      }
+    }
+  }
+
+  if (isFilled(holidays.easterNotes) && asTrimmed(holidays.easterNotes).length > 500) {
+    holidayErrors.easterNotes = 'Keep Easter notes under 500 characters.';
+  }
+
+  if (Object.keys(holidayErrors).length) {
+    plannedTimesErrors.holidays = holidayErrors;
+  }
+
+  if (Object.keys(plannedTimesErrors).length) {
+    errors.plannedTimes = plannedTimesErrors;
+  }
+
+  if (Array.isArray(data.specialEvents)) {
+    const specialEventErrors = [];
+    data.specialEvents.forEach((event = {}, index) => {
+      const eventErrors = {};
+      const hasAnyField =
+        isFilled(event.name) ||
+        isFilled(event.date) ||
+        isFilled(event.hours?.startHour) ||
+        isFilled(event.hours?.startMinute) ||
+        isFilled(event.hours?.endHour) ||
+        isFilled(event.hours?.endMinute);
+
+      if (!hasAnyField) return;
+
+      if (!isFilled(event.name)) {
+        eventErrors.name = 'Event name is required.';
+      }
+      if (!isIsoDate(event.date)) {
+        eventErrors.date = 'Use YYYY-MM-DD for event dates.';
+      }
+
+      if (event.hours && typeof event.hours === 'object') {
+        const startHour = asTrimmed(event.hours.startHour);
+        const startMinute = asTrimmed(event.hours.startMinute);
+        const endHour = asTrimmed(event.hours.endHour);
+        const endMinute = asTrimmed(event.hours.endMinute);
+        const hasAllTimeParts = startHour && startMinute && endHour && endMinute;
+
+        if (!hasAllTimeParts) {
+          eventErrors.hours = 'Provide both start and end times for each event.';
+        } else if (`${startHour}:${startMinute}` === `${endHour}:${endMinute}`) {
+          eventErrors.hours = 'Start and end times cannot match.';
+        }
+      } else {
+        eventErrors.hours = 'Provide start and end times for each event.';
+      }
+
+      if (Object.keys(eventErrors).length) {
+        specialEventErrors[index] = eventErrors;
+      }
+    });
+
+    if (specialEventErrors.length) {
+      errors.specialEvents = specialEventErrors;
+    }
+  }
+
+  const summaryErrors = summaryPreferencesSchema(data.summaryPreferences || {});
+  if (summaryErrors) {
+    errors.summaryPreferences = summaryErrors;
+  }
+
+  const websiteErrors = websiteAccessSchema(data.websiteAccess || {});
+  if (websiteErrors) {
+    errors.websiteAccess = websiteErrors;
+  }
+
+  const overflow = data.businessHoursOverflow && typeof data.businessHoursOverflow === 'object'
+    ? data.businessHoursOverflow
+    : {};
+  if (overflow.enabled) {
+    const overflowErrors = {};
+    if (!isFilled(overflow.overflowNumber)) {
+      overflowErrors.overflowNumber = 'Overflow number is required when overflow is enabled.';
+    } else if (!phoneOk(overflow.overflowNumber)) {
+      overflowErrors.overflowNumber = 'Enter a valid overflow phone number.';
+    }
+
+    if (!isFilled(overflow.ringCount)) {
+      overflowErrors.ringCount = 'Ring count is required when overflow is enabled.';
+    } else {
+      const ringCount = Number(overflow.ringCount);
+      if (Number.isNaN(ringCount) || ringCount < 1 || ringCount > 10) {
+        overflowErrors.ringCount = 'Ring count must be between 1 and 10.';
+      }
+    }
+
+    if (Object.keys(overflowErrors).length) {
+      errors.businessHoursOverflow = overflowErrors;
+    }
+  }
+
+  const callFiltering = data.callFiltering && typeof data.callFiltering === 'object'
+    ? data.callFiltering
+    : {};
+  const callFilteringErrors = {};
+  if (!isBoolean(callFiltering.roboCallBlocking)) {
+    callFilteringErrors.roboCallBlocking = 'Choose whether robo-call blocking is enabled.';
+  }
+  if (callFiltering.roboCallBlocking === false && !isBoolean(callFiltering.businessGreeting)) {
+    callFilteringErrors.businessGreeting = 'Choose whether business greeting is enabled.';
+  }
+  if (!isBoolean(callFiltering.checkInRecording)) {
+    callFilteringErrors.checkInRecording = 'Choose whether check-in recording is enabled.';
+  }
+  if (Object.keys(callFilteringErrors).length) {
+    errors.callFiltering = callFilteringErrors;
+  }
+
+  return Object.keys(errors).length ? errors : null;
 };
 
 // ==============================
@@ -312,6 +559,33 @@ export const answerCallsSchema = (data = {}) => {
 
   if (!data.businessType || !data.businessType.toString().trim()) {
     errors.businessType = 'Select the business type that best fits your organization.';
+  }
+
+  if (Array.isArray(data.categories)) {
+    if (data.categories.length === 0) {
+      errors.categories = 'Add at least one call category.';
+    } else {
+      const categoryErrors = [];
+      data.categories.forEach((category = {}, index) => {
+        const rowErrors = {};
+        const categoryName = asTrimmed(category.customName) || asTrimmed(category.selectedCommon);
+        if (!categoryName) {
+          rowErrors.customName = 'Give this call category a name.';
+        }
+        if (!isFilled(category.details)) {
+          rowErrors.details = 'Add clarifying questions or instructions for this category.';
+        } else if (asTrimmed(category.details).length > 2000) {
+          rowErrors.details = 'Keep category instructions under 2000 characters.';
+        }
+
+        if (Object.keys(rowErrors).length) {
+          categoryErrors[index] = rowErrors;
+        }
+      });
+      if (categoryErrors.length) {
+        errors.categories = categoryErrors;
+      }
+    }
   }
 
   // Validate custom phrases if they're being used
@@ -382,9 +656,33 @@ export const escalationMatrixSchema = (/* rows = [] */) => {
 // ==============================
 //   ON-CALL DEPARTMENTS SCHEMA (legacy)
 // ==============================
-export const onCallDepartmentsSchema = (/* list = [] */) => {
-  // All fields optional (kept for backward-compat)
-  return null;
+export const onCallDepartmentsSchema = (list = []) => {
+  if (!Array.isArray(list) || list.length === 0) {
+    return { base: 'Add at least one on-call team.' };
+  }
+
+  const errors = [];
+  list.forEach((row = {}, index) => {
+    const rowErrors = {};
+    const department = asTrimmed(row.department || row.name);
+    const members = Array.isArray(row.members) ? row.members.filter((memberId) => isFilled(memberId)) : [];
+
+    if (!department) {
+      rowErrors.department = 'Team / department name is required.';
+    }
+    if (members.length === 0) {
+      rowErrors.members = 'Select at least one member for this team.';
+    }
+    if (isFilled(row.contactMemberId) && !members.includes(row.contactMemberId)) {
+      rowErrors.contactMemberId = 'Default contact must also be selected as a team member.';
+    }
+
+    if (Object.keys(rowErrors).length) {
+      errors[index] = rowErrors;
+    }
+  });
+
+  return errors.length ? errors : null;
 };
 
 // ==============================
@@ -467,16 +765,58 @@ export const summaryPreferencesSchema = (data = {}) => {
 
   const errors = {};
 
-  if (data.dailyRecapEnabled !== null && data.dailyRecapEnabled !== undefined && typeof data.dailyRecapEnabled !== 'boolean') {
+  if (data.dailyRecapEnabled == null) {
     errors.dailyRecapEnabled = 'Select yes or no for daily recaps.';
+  } else if (typeof data.dailyRecapEnabled !== 'boolean') {
+    errors.dailyRecapEnabled = 'Daily recap selection must be yes or no.';
   }
 
-  if (data.reportSpamHangups != null && typeof data.reportSpamHangups !== 'boolean') {
+  if (data.dailyRecapEnabled === false) {
+    return Object.keys(errors).length ? errors : null;
+  }
+
+  if (data.reportSpamHangups == null) {
+    errors.reportSpamHangups = 'Choose yes or no for hang-up and spam reporting.';
+  } else if (typeof data.reportSpamHangups !== 'boolean') {
     errors.reportSpamHangups = 'Choose yes or no for hang-up reporting.';
   }
 
   if (data.alwaysSendEvenIfNoMessages != null && typeof data.alwaysSendEvenIfNoMessages !== 'boolean') {
     errors.alwaysSendEvenIfNoMessages = 'Specify whether to send summaries on quiet days.';
+  }
+
+  const emailEnabled = Boolean(data.emailEnabled || data.recap?.delivery?.email);
+  const faxEnabled = Boolean(data.faxEnabled || data.recap?.delivery?.fax);
+  const otherEnabled = Boolean(data.recap?.delivery?.other);
+  if (!emailEnabled && !faxEnabled && !otherEnabled) {
+    errors.delivery = 'Select at least one delivery method (email, fax, or other).';
+  }
+
+  if (emailEnabled) {
+    const emailList = asTrimmed(data.email)
+      .split(/[,;]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    if (emailList.length === 0) {
+      errors.email = 'Add at least one email recipient for daily summaries.';
+    } else {
+      const invalid = emailList.filter((email) => !emailOk(email));
+      if (invalid.length) {
+        errors.email = `Invalid email recipient(s): ${invalid.join(', ')}`;
+      }
+    }
+  }
+
+  if (faxEnabled) {
+    if (!isFilled(data.faxNumber)) {
+      errors.faxNumber = 'Add a fax number when fax delivery is enabled.';
+    } else if (!phoneOk(data.faxNumber)) {
+      errors.faxNumber = 'Enter a valid fax number.';
+    }
+  }
+
+  if (otherEnabled && !isFilled(data.recap?.otherNotes)) {
+    errors.otherNotes = 'Describe the "Other" delivery method.';
   }
 
   if (Array.isArray(data.recapSchedule)) {
@@ -514,6 +854,14 @@ export const summaryPreferencesSchema = (data = {}) => {
     });
     if (Object.keys(scheduleErrors).length) {
       errors.recapSchedule = scheduleErrors;
+    }
+  }
+
+  if (data.recapSchedule && typeof data.recapSchedule === 'object') {
+    const enabledDays = Object.values(data.recapSchedule).filter((entry) => Boolean(entry?.enabled));
+    if (enabledDays.length === 0) {
+      errors.recapSchedule = errors.recapSchedule || {};
+      errors.recapSchedule.base = 'Select at least one day to send a recap.';
     }
   }
 
@@ -563,6 +911,16 @@ export const callVolumeSchema = (data = {}) => {
 // ==============================
 export const websiteAccessSchema = (data = {}) => {
   if (!data || typeof data !== 'object') return null;
+
+  if (Object.prototype.hasOwnProperty.call(data, 'hasWebsite')) {
+    const errors = {};
+    if (data.hasWebsite == null) {
+      errors.hasWebsite = 'Please select whether your company has a website.';
+    } else if (!isBoolean(data.hasWebsite)) {
+      errors.hasWebsite = 'Website selection must be yes or no.';
+    }
+    return Object.keys(errors).length ? errors : null;
+  }
 
   const errors = {};
 
@@ -707,7 +1065,7 @@ export const onCallRotationSchema = (data = {}) => {
   // If rotation changes, only validate basic formats (keep requirements light)
   if (!data.doesNotChange) {
     if (data.changeBeginsTime && !timeOk(data.changeBeginsTime)) {
-      errors.changeBeginsTime = 'Use HH:MM (24-hour) format.';
+      errors.changeBeginsTime = 'Select a valid time.';
     }
     // Optional: ensure frequency is one of allowed values, if provided
     const allowed = ['', 'daily', 'weekly', 'monthly'];
@@ -764,8 +1122,33 @@ export const onCallProceduresSchema = (data = {}) => {
 // On Call: Escalation List
 // ------------------------------
 export const onCallEscalationSchema = (steps = []) => {
-  // Escalation plan is optional in the current flow.
-  return null;
+  if (!Array.isArray(steps) || steps.length === 0) return null;
+
+  const errors = [];
+  steps.forEach((step = {}, index) => {
+    const stepErrors = {};
+    const hasAnyData = isFilled(step.name) || isFilled(step.contact) || isFilled(step.window) || isFilled(step.notes);
+    if (!hasAnyData) return;
+
+    if (!isFilled(step.name)) {
+      stepErrors.name = 'Escalation contact name is required.';
+    }
+    if (!isFilled(step.contact)) {
+      stepErrors.contact = 'Escalation contact details are required.';
+    }
+    if (isFilled(step.window) && asTrimmed(step.window).length > 120) {
+      stepErrors.window = 'Availability window must be 120 characters or less.';
+    }
+    if (isFilled(step.notes) && asTrimmed(step.notes).length > 1000) {
+      stepErrors.notes = 'Escalation notes must be 1000 characters or less.';
+    }
+
+    if (Object.keys(stepErrors).length) {
+      errors[index] = stepErrors;
+    }
+  });
+
+  return errors.length ? errors : null;
 };
 
 // ------------------------------
@@ -853,112 +1236,6 @@ export const attachmentsSchema = (items = []) => {
   });
 
   return errors.length ? errors : null;
-};
-
-// ------------------------------
-// Fast Track Flow
-// ------------------------------
-export const fastTrackSchema = (data = {}) => {
-  if (!data || data.enabled !== true) return null;
-
-  const errors = {};
-
-  const payment = data.payment || {};
-  const paymentErrors = {};
-  if (!payment.cardholderName || !payment.cardholderName.toString().trim()) {
-    paymentErrors.cardholderName = 'Cardholder name is required.';
-  }
-  const last4 = payment.cardLast4 != null ? payment.cardLast4.toString().trim() : '';
-  if (!/^[0-9]{4}$/.test(last4)) {
-    paymentErrors.cardLast4 = 'Enter the last four digits (numbers only).';
-  }
-  if (!payment.billingZip || !payment.billingZip.toString().trim()) {
-    paymentErrors.billingZip = 'Billing ZIP / postal code is required.';
-  }
-  if (payment.rushFeeAccepted !== true) {
-    paymentErrors.rushFeeAccepted = 'Please acknowledge the $100 rush fee.';
-  }
-  if (payment.authorization !== true) {
-    paymentErrors.authorization = 'Payment authorization is required to fast track your launch.';
-  }
-  if (payment.notes && payment.notes.length > 500) {
-    paymentErrors.notes = 'Keep payment notes under 500 characters.';
-  }
-  if (Object.keys(paymentErrors).length) {
-    errors.payment = paymentErrors;
-  }
-
-  const contacts = Array.isArray(data.onCallContacts) ? data.onCallContacts : [];
-  const contactRows = [];
-  let validContacts = 0;
-  contacts.forEach((contact = {}, index) => {
-    const rowErrors = {};
-    if (!contact?.name || !contact.name.toString().trim()) {
-      rowErrors.name = 'Name is required.';
-    }
-    if (!contact?.phone || !contact.phone.toString().trim()) {
-      rowErrors.phone = 'Direct phone number is required.';
-    }
-  if (contact?.email && !emailOk(contact.email.toString().trim())) {
-      rowErrors.email = 'Please enter a valid email address (e.g., name@company.com).';
-    }
-    if (Object.keys(rowErrors).length) {
-      contactRows[index] = rowErrors;
-    } else if (contact?.name && contact?.phone) {
-      validContacts += 1;
-    }
-  });
-  const contactsErrorObject = {};
-  if (contactRows.length) {
-    contactsErrorObject.rows = contactRows;
-  }
-  if (validContacts < 2) {
-    contactsErrorObject.base = 'Provide at least two primary contacts for the first weeks of coverage.';
-  }
-  if (Object.keys(contactsErrorObject).length) {
-    errors.onCallContacts = contactsErrorObject;
-  }
-
-  const slots = Array.isArray(data.callTypeSlots) ? data.callTypeSlots : [];
-  const slotErrors = [];
-  slots.forEach((slot = {}, index) => {
-    const rowErrors = {};
-    if (!slot?.instructions || !slot.instructions.toString().trim()) {
-      rowErrors.instructions = 'Tell us what to do for this scenario.';
-    }
-    if (slot?.afterHoursNotes && slot.afterHoursNotes.toString().length > 500) {
-      rowErrors.afterHoursNotes = 'Keep after-hours notes under 500 characters.';
-    }
-    if (Object.keys(rowErrors).length) {
-      slotErrors[index] = rowErrors;
-    }
-  });
-  if (slotErrors.length) {
-    errors.callTypeSlots = slotErrors;
-  }
-
-  const meeting = data.meeting || {};
-  const meetingErrors = {};
-  if (!meeting.platform || !meeting.platform.toString().trim()) {
-    meetingErrors.platform = 'Select a meeting platform.';
-  }
-  if (!meeting.date || !meeting.date.toString().trim()) {
-    meetingErrors.date = 'Choose a preferred date.';
-  }
-  if (!meeting.time || !meeting.time.toString().trim()) {
-    meetingErrors.time = 'Choose a preferred time.';
-  }
-  if (meeting.timezone && meeting.timezone.toString().length > 80) {
-    meetingErrors.timezone = 'Timezone label is too long.';
-  }
-  if (meeting.notes && meeting.notes.length > 600) {
-    meetingErrors.notes = 'Keep meeting notes under 600 characters.';
-  }
-  if (Object.keys(meetingErrors).length) {
-    errors.meeting = meetingErrors;
-  }
-
-  return Object.keys(errors).length ? errors : null;
 };
 
 // ------------------------------
@@ -1064,6 +1341,179 @@ export const onCallSchedulesSchema = (rows = []) => {
   });
 
   return errors.length ? errors : null;
+};
+
+// ==============================
+//   CALL ROUTING SCHEMA
+// ==============================
+export const callRoutingSchema = (data = {}) => {
+  const assignments = Array.isArray(data.categoryAssignments) ? data.categoryAssignments : [];
+  const errors = {};
+
+  if (assignments.length === 0) {
+    return { categoryAssignments: 'Add at least one call category assignment.' };
+  }
+
+  const allowedWhenToContact = new Set(['all-hours', 'business-hours', 'after-hours', 'different', 'emergency']);
+  const allowedFinalActions = new Set(['repeat-until-delivered', 'repeat-times', 'hold-checkin', 'hold', 'delivered']);
+  const allowedRepeatActions = new Set(['hold-checkin', 'hold', 'delivered']);
+
+  const normalizeContactList = (value) => {
+    if (Array.isArray(value)) {
+      return value.map((entry) => asTrimmed(entry)).filter(Boolean);
+    }
+    const trimmed = asTrimmed(value);
+    return trimmed ? [trimmed] : [];
+  };
+
+  const validateEscalationSteps = (steps = []) => {
+    if (!Array.isArray(steps) || steps.length === 0) {
+      return 'Add at least one escalation step.';
+    }
+
+    const stepErrors = [];
+    steps.forEach((step = {}, index) => {
+      const itemErrors = {};
+      const requiresContact = step.contactMethod !== 'delivered';
+      if (requiresContact && !isFilled(step.contactPerson)) {
+        itemErrors.contactPerson = index === 0
+          ? 'Select who should be contacted first.'
+          : 'Select a contact for this step.';
+      }
+      if (isFilled(step.notes) && asTrimmed(step.notes).length > 2000) {
+        itemErrors.notes = 'Step notes must be 2000 characters or less.';
+      }
+      if (Object.keys(itemErrors).length) {
+        stepErrors[index] = itemErrors;
+      }
+    });
+
+    return stepErrors.length ? stepErrors : null;
+  };
+
+  const validateModeSettings = (assignment = {}, isAfterHours = false) => {
+    const modeErrors = {};
+    const modePrefix = isAfterHours ? 'afterHours' : '';
+    const finalActionField = `${modePrefix}FinalAction`.replace(/^([a-z])/, (m) => m.toLowerCase());
+    const repeatCountField = `${modePrefix}RepeatCount`.replace(/^([a-z])/, (m) => m.toLowerCase());
+    const repeatFinalActionField = `${modePrefix}RepeatFinalAction`.replace(/^([a-z])/, (m) => m.toLowerCase());
+    const confirmationField = isAfterHours ? 'afterHoursSendConfirmation' : 'sendConfirmationAfterDelivery';
+    const confirmationTextField = isAfterHours ? 'afterHoursConfirmationViaText' : 'confirmationViaText';
+    const confirmationEmailField = isAfterHours ? 'afterHoursConfirmationViaEmail' : 'confirmationViaEmail';
+    const confirmationPhoneField = isAfterHours ? 'afterHoursConfirmationPhone' : 'confirmationPhone';
+    const confirmationEmailValueField = isAfterHours ? 'afterHoursConfirmationEmail' : 'confirmationEmail';
+
+    const finalAction = asTrimmed(assignment[finalActionField]) || 'repeat-until-delivered';
+    if (!allowedFinalActions.has(finalAction)) {
+      modeErrors[finalActionField] = 'Select a valid final action.';
+    }
+
+    if (finalAction === 'repeat-times') {
+      const repeatCount = Number(assignment[repeatCountField]);
+      if (!Number.isInteger(repeatCount) || repeatCount < 1 || repeatCount > 10) {
+        modeErrors[repeatCountField] = 'Repeat count must be a whole number between 1 and 10.';
+      }
+
+      const repeatAction = asTrimmed(assignment[repeatFinalActionField]);
+      if (!allowedRepeatActions.has(repeatAction)) {
+        modeErrors[repeatFinalActionField] = 'Select what to do after repeats are exhausted.';
+      }
+    }
+
+    if (assignment[confirmationField]) {
+      const wantsText = Boolean(assignment[confirmationTextField]);
+      const wantsEmail = Boolean(assignment[confirmationEmailField]);
+      if (!wantsText && !wantsEmail) {
+        modeErrors[confirmationField] = 'Choose at least one confirmation channel (text or email).';
+      }
+
+      if (wantsText) {
+        const phones = normalizeContactList(assignment[confirmationPhoneField]);
+        if (phones.length === 0) {
+          modeErrors[confirmationPhoneField] = 'Add at least one phone number for text confirmations.';
+        } else {
+          const phoneErrors = {};
+          phones.forEach((phone, index) => {
+            if (!phoneOk(phone)) {
+              phoneErrors[index] = 'Enter a valid phone number.';
+            }
+          });
+          if (Object.keys(phoneErrors).length) {
+            modeErrors[confirmationPhoneField] = phoneErrors;
+          }
+        }
+      }
+
+      if (wantsEmail) {
+        const emails = normalizeContactList(assignment[confirmationEmailValueField]);
+        if (emails.length === 0) {
+          modeErrors[confirmationEmailValueField] = 'Add at least one email for confirmations.';
+        } else {
+          const emailErrors = {};
+          emails.forEach((email, index) => {
+            if (!emailOk(email)) {
+              emailErrors[index] = 'Enter a valid email address.';
+            }
+          });
+          if (Object.keys(emailErrors).length) {
+            modeErrors[confirmationEmailValueField] = emailErrors;
+          }
+        }
+      }
+    }
+
+    return Object.keys(modeErrors).length ? modeErrors : null;
+  };
+
+  const assignmentErrors = [];
+  assignments.forEach((assignment = {}, index) => {
+    const rowErrors = {};
+
+    if (!isFilled(assignment.categoryId)) {
+      rowErrors.categoryId = 'Category identifier is missing.';
+    }
+    if (!isFilled(assignment.categoryName)) {
+      rowErrors.categoryName = 'Category name is required.';
+    }
+    if (isFilled(assignment.whenToContact) && !allowedWhenToContact.has(asTrimmed(assignment.whenToContact))) {
+      rowErrors.whenToContact = 'Select a valid contact timing option.';
+    }
+    if (isFilled(assignment.specialInstructions) && asTrimmed(assignment.specialInstructions).length > 2000) {
+      rowErrors.specialInstructions = 'Special instructions must be 2000 characters or less.';
+    }
+
+    const baseStepsErrors = validateEscalationSteps(assignment.escalationSteps);
+    if (baseStepsErrors) {
+      rowErrors.escalationSteps = baseStepsErrors;
+    }
+
+    const baseModeErrors = validateModeSettings(assignment, false);
+    if (baseModeErrors) {
+      Object.assign(rowErrors, baseModeErrors);
+    }
+
+    if (assignment.whenToContact === 'different') {
+      const afterHoursErrors = validateEscalationSteps(assignment.afterHoursSteps);
+      if (afterHoursErrors) {
+        rowErrors.afterHoursSteps = afterHoursErrors;
+      }
+
+      const afterModeErrors = validateModeSettings(assignment, true);
+      if (afterModeErrors) {
+        Object.assign(rowErrors, afterModeErrors);
+      }
+    }
+
+    if (Object.keys(rowErrors).length) {
+      assignmentErrors[index] = rowErrors;
+    }
+  });
+
+  if (assignmentErrors.length) {
+    errors.categoryAssignments = assignmentErrors;
+  }
+
+  return Object.keys(errors).length ? errors : null;
 };
 
 // ==============================

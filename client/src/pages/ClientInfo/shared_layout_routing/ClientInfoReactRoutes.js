@@ -16,8 +16,6 @@ const ReviewStep = lazy(() => import('../pages/ReviewStep'));
 const OnCall = lazy(() => import('../pages/OnCall'));
 const CallRouting = lazy(() => import('../pages/CallRouting'));
 const OfficeReach = lazy(() => import('../pages/OfficeReach'));
-const InviteLinkHandler = lazy(() => import('../pages/InviteLinkHandler'));
-const AdminInvite = lazy(() => import('../pages/AdminInvite'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -33,16 +31,6 @@ const ClientInfoReactRoutesInner = () => (
     <Suspense fallback={<div style={{ padding: 40 }}>Loading…</div>}>
       <Switch>
         <Route exact path="/ClientInfoReact" component={StartNewClient} />
-        <Route exact path="/ClientInfoReact/admin-invite">
-          <WizardLayout>
-            <AdminInvite />
-          </WizardLayout>
-        </Route>
-        <Route exact path="/ClientInfoReact/invite/:token">
-          <WizardLayout>
-            <InviteLinkHandler />
-          </WizardLayout>
-        </Route>
         <Route exact path="/ClientInfoReact/NewFormWizard" render={() => <Redirect to="/ClientInfoReact/NewFormWizard/company-info" />} />
 
         {/* Wizard routes wrapped in shared WizardLayout so navbar/footer render once */}
@@ -62,9 +50,6 @@ const ClientInfoReactRoutesInner = () => (
               <Route path="/ClientInfoReact/NewFormWizard/office-reach" component={OfficeReach} />
               <Route path="/ClientInfoReact/NewFormWizard/final-details" component={FinalDetails} />
               <Route path="/ClientInfoReact/NewFormWizard/review" component={ReviewStep} />
-
-              {/* Fast Track route */}
-              <Route path="/ClientInfoReact/NewFormWizard/fast-track" component={lazy(() => import('../pages/FastTrack'))} />
 
               <Route component={StartNewClient} />
             </Switch>
