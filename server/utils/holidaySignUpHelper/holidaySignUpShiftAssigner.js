@@ -81,9 +81,6 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
       // Limit to the same date between the overview and the stored data
       if (overviewByOffice[`${agent.Office}`][x].shiftDate == shift.holiday_date) {
         // Limit to the same employee level between overview and stored data
-        if (agent.Agent_name == "Nora Manzanares") {
-          console.log(shift, " ", shift.shift_time, " ", shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0]);
-        }
         if (overviewByOffice[`${agent.Office}`][x].employeeType == shift.employee_type) {
           if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) == await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
             overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);

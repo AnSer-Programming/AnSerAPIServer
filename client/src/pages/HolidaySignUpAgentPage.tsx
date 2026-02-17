@@ -11,9 +11,9 @@ const HolidaySignUpAgentPage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await getHolidays("Winter");
+        const response = await getHolidays("Summer");
         const holidays = new Array();
-        const agentDataResponse = await getAgentViewData("Winter", selectedHoliday);
+        const agentDataResponse = await getAgentViewData("Summer", selectedHoliday);
 
         if (!response.ok) {
           throw new Error('something went wrong!');

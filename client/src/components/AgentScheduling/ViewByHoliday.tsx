@@ -8,7 +8,7 @@ const ViewByHoliday = (data: any) => {
   const [employeeType, setEmployeeType] = useState([]);
   const [selectedEmployeeType, setSelectedEmployeeType] = useState("All");
   const [isEdit, setIsEdit] = useState(data.isEdit);
-  const [holidayType, setHolidayType] = useState("Winter");
+  const [holidayType, setHolidayType] = useState("Summer");
   const [agentData, setAgentData] = useState([]);
   const [viewType, setViewType] = useState("");
 
