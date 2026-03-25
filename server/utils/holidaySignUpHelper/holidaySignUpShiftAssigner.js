@@ -213,6 +213,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
             quaternaryPick: fourthPick,
             quinaryPick: fifthPick
           }
+          console.log("Send Break Report");
           sendBreakReportEmail(emailData);
           break;
         }

@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const sendEmail = (data) => {
+  console.log("Send Success Report");
   console.log("Sending an email!");
 
   function buildScheduleCSV() {
@@ -38,6 +39,7 @@ const sendEmail = (data) => {
       rejectUnauthorized: false
     },
     auth: {
+      // TODO: replace `user` and `pass` values from <https://forwardemail.net>
       user: process.env.EMAIL_USER_API,
       pass: process.env.EMAIL_PWD_API,
     },
@@ -50,12 +52,7 @@ const sendEmail = (data) => {
     }, {
       filename: `ShiftPicks.csv`,
       content: `${buildShiftPicksCSV()}`
-    }, {
-      filename: 'AnSerLogo.png',
-      path: '../SignatureImage/AnSerLogo.png',
-      cid: 'AnSerLogo'
-    }
-    ]
+    }]
     return attachment;
   }
 

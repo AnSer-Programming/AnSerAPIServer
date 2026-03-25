@@ -4,36 +4,33 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const sendEmail = (data) => {
+  console.log("Send Error Report");
   console.log("Sending an email!");
-  
+
   const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_SERVER,
-    port: process.env.EMAIL_PORT,
+    host: `${process.env.EMAIL_SERVER}`,
+    port: `${process.env.EMAIL_PORT}`,
     secure: true,
     tls: {
-        rejectUnauthorized:false
+      rejectUnauthorized: false
     },
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-      user: process.env.EMAIL_USER_API,
-      pass: process.env.EMAIL_PWD_API,
+      user: `${process.env.EMAIL_USER_API}`,
+      pass: `${process.env.EMAIL_PWD_API}`,
     },
   });
 
   const attachmentBuilder = () => {
-    if(!data.fileName) {
+    if (!data.fileName) {
       data.fileName = 'missingFile';
     }
-    if(!data.fileData) {
+    if (!data.fileData) {
       data.fileData = 'missing,data,please,submit,bug,report\r\nthank,you,for,your,patience\r\nSincerely,Stephen,Merki\r\n';
     }
     let attachment = [{
       filename: `${data.fileName}.csv`,
       content: `${data.fileData}`
-    },{
-      filename: 'AnSerLogo.png',
-      path: '../SignatureImage/AnSerLogo.png',
-      cid: 'AnSerLogo'
     }]
     return attachment;
   }
@@ -53,10 +50,10 @@ const sendEmail = (data) => {
       html: `${data.errorReport}`, // html body
       attachments: attachmentBuilder()
     });
-  
+
     console.log("Message sent: %s", info.messageId);
   }
-  
+
   main().catch(console.error);
 }
 

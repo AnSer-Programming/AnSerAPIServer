@@ -13,10 +13,10 @@ async function getAgentSignUpReport() {
           FROM [isapi].[dbo].[holidayShiftPicker] hsp
           LEFT JOIN [isapi].[dbo].[holidayShiftsSignUpAdminTable] hssua ON hsp.[holiday_id] = hssua.[id]
           ORDER BY hsp.[id], pick_number`;
-  try{
-    results = await config.query(query,{type:seq.QueryTypes.SELECT});
+  try {
+    results = await config.query(query, { type: seq.QueryTypes.SELECT });
     return results;
-  } catch(err) {
+  } catch (err) {
     console.log(err);
   }
 }
@@ -216,11 +216,11 @@ async function getAgentsBySenority() {
     console.log(err);
   }
 
-  for(let i = 0; i < results[0].length; i++) {
-    if(results[0][i].EmployeeID == 119) {
+  for (let i = 0; i < results[0].length; i++) {
+    if (results[0][i].EmployeeID == 119) {
       placeHolder = results[0][i];
-      results[0][i] = results[0][i+1];
-      results[0][i+1] = placeHolder;
+      results[0][i] = results[0][i + 1];
+      results[0][i + 1] = placeHolder;
       break;
     }
   }
@@ -320,11 +320,11 @@ router.get('/TestAutoAssign/:startPoint', async (req, res) => {
     schedule.setShifts[i] = await schedule.setShifts[i].split(',');
   }
 
-  for(let key in schedule.overviewByOffice) {
+  for (let key in schedule.overviewByOffice) {
     count = 0;
     overviewByOfficeForAgents[`${key}`] = new Array();
-    for(let i = 0; i < schedule.overviewByOffice[`${key}`].length; i ++) {
-      if(schedule.overviewByOffice[`${key}`][i].employeeType=="Agent") {
+    for (let i = 0; i < schedule.overviewByOffice[`${key}`].length; i++) {
+      if (schedule.overviewByOffice[`${key}`][i].employeeType == "Agent") {
         overviewByOfficeForAgents[`${key}`][count] = await schedule.overviewByOffice[`${key}`][i];
         count++;
       }
@@ -333,29 +333,30 @@ router.get('/TestAutoAssign/:startPoint', async (req, res) => {
 
   let agentSignUpReport = await getAgentSignUpReport();
 
-  for(let x = 0; x < agentSignUpReport.length; x++) {
+  for (let x = 0; x < agentSignUpReport.length; x++) {
     isFound = false;
-    for(let y = 0; y < agents[0].length; y++) {
-      if(agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
+    for (let y = 0; y < agents[0].length; y++) {
+      if (agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
         agentSignUpReport[x]['employee_name'] = await agents[0][y].Agent_name;
         agentSignUpReport[x]['office_location'] = await agents[0][y].Office;
         isFound = true;
       }
     }
-    if(!isFound) {
+    if (!isFound) {
       agentSignUpReport.splice(x, 1);
-      x-=1;
+      x -= 1;
     }
   }
 
-  if(schedule.scheduleBuild) {
-    sendSuccessReportEmail({schedule: schedule.setShifts, shiftPicks: agentSignUpReport});
+  if (schedule.scheduleBuild) {
+    sendSuccessReportEmail({ schedule: schedule.setShifts, shiftPicks: agentSignUpReport });
   }
 
-  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport});
+  res.json({ OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport });
 });
 
 router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
+  console.log("Start Assigning Shifts");
   let start = req.params.startPoint;
   let roundNumber = req.params.roundNumber;
   let agents = await getAgentsBySenority();
@@ -380,11 +381,11 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
     schedule.setShifts[i] = await schedule.setShifts[i].split(',');
   }
 
-  for(let key in schedule.overviewByOffice) {
+  for (let key in schedule.overviewByOffice) {
     count = 0;
     overviewByOfficeForAgents[`${key}`] = new Array();
-    for(let i = 0; i < schedule.overviewByOffice[`${key}`].length; i ++) {
-      if(schedule.overviewByOffice[`${key}`][i].employeeType=="Agent") {
+    for (let i = 0; i < schedule.overviewByOffice[`${key}`].length; i++) {
+      if (schedule.overviewByOffice[`${key}`][i].employeeType == "Agent") {
         overviewByOfficeForAgents[`${key}`][count] = await schedule.overviewByOffice[`${key}`][i];
         count++;
       }
@@ -393,23 +394,23 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
 
   let agentSignUpReport = await getAgentSignUpReport();
 
-  for(let x = 0; x < agentSignUpReport.length; x++) {
+  for (let x = 0; x < agentSignUpReport.length; x++) {
     isFound = false;
-    for(let y = 0; y < agents[0].length; y++) {
-      if(agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
+    for (let y = 0; y < agents[0].length; y++) {
+      if (agentSignUpReport[x].employee_id == agents[0][y].EmployeeID) {
         agentSignUpReport[x]['employee_name'] = await agents[0][y].Agent_name;
         agentSignUpReport[x]['office_location'] = await agents[0][y].Office;
         isFound = true;
       }
     }
-    if(!isFound) {
+    if (!isFound) {
       agentSignUpReport.splice(x, 1);
-      x-=1;
+      x -= 1;
     }
   }
-    sendSuccessReportEmail({schedule: schedule.setShifts, shiftPicks: agentSignUpReport});
+  sendSuccessReportEmail({ schedule: schedule.setShifts, shiftPicks: agentSignUpReport });
 
-  res.json({OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport});
+  res.json({ OverviewByOffice: overviewByOfficeForAgents, OverviewByShift: schedule.overviewData, AgentSignUpReport: agentSignUpReport });
 });
 
 router.get('/GetNotYetSignedUp', async (req, res) => {
