@@ -52,7 +52,7 @@ const sendEmail = (data) => {
       content: `${buildShiftPicksCSV()}`
     }, {
       filename: 'AnSerLogo.png',
-      path: './node-mailer/SignatureImage/AnSerLogo.png',
+      path: '../SignatureImage/AnSerLogo.png',
       cid: 'AnSerLogo'
     }
     ]
