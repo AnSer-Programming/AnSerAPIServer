@@ -32,7 +32,7 @@ const sendEmail = (data) => {
       content: `${data.fileData}`
     },{
       filename: 'AnSerLogo.png',
-      path: './node-mailer/SignatureImage/AnSerLogo.png',
+      path: '../SignatureImage/AnSerLogo.png',
       cid: 'AnSerLogo'
     }]
     return attachment;
