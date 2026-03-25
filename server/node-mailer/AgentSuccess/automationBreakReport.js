@@ -4,14 +4,15 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const sendEmail = (data) => {
+  console.log("Send Break Report");
   console.log("Sending an email!");
-  
+
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_SERVER,
     port: process.env.EMAIL_PORT,
     secure: true,
     tls: {
-        rejectUnauthorized:false
+      rejectUnauthorized: false
     },
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
@@ -21,19 +22,15 @@ const sendEmail = (data) => {
   });
 
   const attachmentBuilder = () => {
-    if(!data.fileName) {
+    if (!data.fileName) {
       data.fileName = 'missingFile';
     }
-    if(!data.fileData) {
+    if (!data.fileData) {
       data.fileData = 'missing,data,please,submit,bug,report\r\nthank,you,for,your,patience\r\nSincerely,Stephen,Merki\r\n';
     }
     let attachment = [{
       filename: `${data.fileName}.csv`,
       content: `${data.fileData}`
-    },{
-      filename: 'AnSerLogo.png',
-      path: '../SignatureImage/AnSerLogo.png',
-      cid: 'AnSerLogo'
     }]
     return attachment;
   }
@@ -52,12 +49,12 @@ const sendEmail = (data) => {
       text: `Hello,\n\nSomething happened!\n\nThank you,\nAnSer`, // plain text body
       html: `<p>Hello,</p>
       Automation stopped at: ${data ? data.agent_name : 'Agent Name'}<br />
-      Reason Automation stopped: ${data ? data.reason : 
-        'Reason is currently unavailable. Please reach out to Stephen Merki on either Teams or email at stephenm@anser.com'}<br />
+      Reason Automation stopped: ${data ? data.reason :
+          'Reason is currently unavailable. Please reach out to Stephen Merki on either Teams or email at stephenm@anser.com'}<br />
       Shifts selected by this agent: 
-      ${data.error == 'NoSelectedShifts' ? 
-        `You will need to use the script to either assign preferred picks for the agent or visit the admin site and manually assign a shift for ${data.agent_name}.`: 
-      `<ol>
+      ${data.error == 'NoSelectedShifts' ?
+          `You will need to use the script to either assign preferred picks for the agent or visit the admin site and manually assign a shift for ${data.agent_name}.` :
+          `<ol>
         <li>${data ? data.primaryPick : 'Primary pick unavailable'}</li>
         <li>${data ? data.secondaryPick : 'Secondary pick unavailable'}</li>
         <li>${data ? data.tertiaryPick : 'Tertiary pick unavailable'}</li>
@@ -68,14 +65,13 @@ const sendEmail = (data) => {
       When a shift is assigned use this link to continue automation<br /><br />
       <a href='http://localhost/api/AgentScheduling/HolidaySignUp/TestAutoAssign/${data.start}'>Continue Automation</a>
       <p>Thank you,<br />
-      AnSer API Server<br />
-      <img src='cid:AnSerLogo' width="180"/></p>`, // html body
+      AnSer API Server<br />`, // html body
       attachments: attachmentBuilder()
     });
-  
+
     console.log("Message sent: %s", info.messageId);
   }
-  
+
   main().catch(console.error);
 }
 
