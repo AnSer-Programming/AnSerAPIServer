@@ -13,6 +13,7 @@ vesselJSON/
 disconnectJSON/
 SignatureImage/
 Charts/
+SendTo.json
 # Ignore Copilot instructions file
 .github/copilot-instructions.md
 # Ignore running updated file of changes

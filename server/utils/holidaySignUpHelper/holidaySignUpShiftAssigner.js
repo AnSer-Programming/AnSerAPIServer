@@ -141,55 +141,71 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
     let thirdPick;
     let fourthPick;
     let fifthPick;
-    if (requestedShifts.length > 0) {
-      for (let y = 0; y < requestedShifts.length; y++) {
-        if (agentList[x].EmployeeID == requestedShifts[y].employee_id) {
-          if (requestedShifts[y].pick_number == 1 && requestedShifts[y].round_number == roundNumber) {
-            firstPick = await requestedShifts[y].holiday_id;
-          } else if (requestedShifts[y].pick_number == 2 && requestedShifts[y].round_number == roundNumber) {
-            secondPick = await requestedShifts[y].holiday_id;
-          } else if (requestedShifts[y].pick_number == 3 && requestedShifts[y].round_number == roundNumber) {
-            thirdPick = await requestedShifts[y].holiday_id;
-          } else if (requestedShifts[y].pick_number == 4 && requestedShifts[y].round_number == roundNumber) {
-            fourthPick = await requestedShifts[y].holiday_id;
-          } else if (requestedShifts[y].pick_number == 5 && requestedShifts[y].round_number == roundNumber) {
-            fifthPick = await requestedShifts[y].holiday_id;
+    if (agentList[x].Agent_name != 'Ashonte Cofield') {
+      if (requestedShifts.length > 0) {
+        for (let y = 0; y < requestedShifts.length; y++) {
+          if (agentList[x].EmployeeID == requestedShifts[y].employee_id) {
+            if (requestedShifts[y].pick_number == 1 && requestedShifts[y].round_number == roundNumber) {
+              firstPick = await requestedShifts[y].holiday_id;
+            } else if (requestedShifts[y].pick_number == 2 && requestedShifts[y].round_number == roundNumber) {
+              secondPick = await requestedShifts[y].holiday_id;
+            } else if (requestedShifts[y].pick_number == 3 && requestedShifts[y].round_number == roundNumber) {
+              thirdPick = await requestedShifts[y].holiday_id;
+            } else if (requestedShifts[y].pick_number == 4 && requestedShifts[y].round_number == roundNumber) {
+              fourthPick = await requestedShifts[y].holiday_id;
+            } else if (requestedShifts[y].pick_number == 5 && requestedShifts[y].round_number == roundNumber) {
+              fifthPick = await requestedShifts[y].holiday_id;
+            }
           }
         }
-      }
 
-      if (firstPick || secondPick || thirdPick || fourthPick || fifthPick) {
-        isBuilt = true;
-        if (firstPick && overviewData[`${firstPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[firstPick - 1])) {
-          await updateOverviewByOffice(agentList[x], await getShiftData(firstPick));
-          overviewData[`${firstPick}`].takenShifts += 1;
-          overviewData[`${firstPick}`].availableShifts -= 1;
-          setShifts[setShifts.length] = [firstPick, agentList[x].Agent_name, agentList[x].Office];
-        } else if (secondPick && overviewData[`${secondPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[secondPick - 1])) {
-          await updateOverviewByOffice(agentList[x], await getShiftData(secondPick));
-          overviewData[`${secondPick}`].takenShifts += 1;
-          overviewData[`${secondPick}`].availableShifts -= 1;
-          setShifts[setShifts.length] = [secondPick, agentList[x].Agent_name, agentList[x].Office];
-        } else if (thirdPick && overviewData[`${thirdPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[thirdPick - 1])) {
-          await updateOverviewByOffice(agentList[x], await getShiftData(thirdPick));
-          overviewData[`${thirdPick}`].takenShifts += 1;
-          overviewData[`${thirdPick}`].availableShifts -= 1;
-          setShifts[setShifts.length] = [thirdPick, agentList[x].Agent_name, agentList[x].Office];
-        } else if (fourthPick && overviewData[`${fourthPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[fourthPick - 1])) {
-          await updateOverviewByOffice(agentList[x], await getShiftData(fourthPick));
-          overviewData[`${fourthPick}`].takenShifts += 1;
-          overviewData[`${fourthPick}`].availableShifts -= 1;
-          setShifts[setShifts.length] = [fourthPick, agentList[x].Agent_name, agentList[x].Office];
-        } else if (fifthPick && overviewData[`${fifthPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[fifthPick - 1])) {
-          await updateOverviewByOffice(agentList[x], await getShiftData(fifthPick));
-          overviewData[`${fifthPick}`].takenShifts += 1;
-          overviewData[`${fifthPick}`].availableShifts -= 1;
-          setShifts[setShifts.length] = [fifthPick, agentList[x].Agent_name, agentList[x].Office];
+        if (firstPick || secondPick || thirdPick || fourthPick || fifthPick) {
+          isBuilt = true;
+          if (firstPick && overviewData[`${firstPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[firstPick - 1])) {
+            await updateOverviewByOffice(agentList[x], await getShiftData(firstPick));
+            overviewData[`${firstPick}`].takenShifts += 1;
+            overviewData[`${firstPick}`].availableShifts -= 1;
+            setShifts[setShifts.length] = [firstPick, agentList[x].Agent_name, agentList[x].Office];
+          } else if (secondPick && overviewData[`${secondPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[secondPick - 1])) {
+            await updateOverviewByOffice(agentList[x], await getShiftData(secondPick));
+            overviewData[`${secondPick}`].takenShifts += 1;
+            overviewData[`${secondPick}`].availableShifts -= 1;
+            setShifts[setShifts.length] = [secondPick, agentList[x].Agent_name, agentList[x].Office];
+          } else if (thirdPick && overviewData[`${thirdPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[thirdPick - 1])) {
+            await updateOverviewByOffice(agentList[x], await getShiftData(thirdPick));
+            overviewData[`${thirdPick}`].takenShifts += 1;
+            overviewData[`${thirdPick}`].availableShifts -= 1;
+            setShifts[setShifts.length] = [thirdPick, agentList[x].Agent_name, agentList[x].Office];
+          } else if (fourthPick && overviewData[`${fourthPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[fourthPick - 1])) {
+            await updateOverviewByOffice(agentList[x], await getShiftData(fourthPick));
+            overviewData[`${fourthPick}`].takenShifts += 1;
+            overviewData[`${fourthPick}`].availableShifts -= 1;
+            setShifts[setShifts.length] = [fourthPick, agentList[x].Agent_name, agentList[x].Office];
+          } else if (fifthPick && overviewData[`${fifthPick}`].availableShifts > 0 && await officeAvailable(agentList[x], shifts[fifthPick - 1])) {
+            await updateOverviewByOffice(agentList[x], await getShiftData(fifthPick));
+            overviewData[`${fifthPick}`].takenShifts += 1;
+            overviewData[`${fifthPick}`].availableShifts -= 1;
+            setShifts[setShifts.length] = [fifthPick, agentList[x].Agent_name, agentList[x].Office];
+          } else {
+            isBuilt = false;
+            emailData = {
+              reason: `Agent's selected preferred shifts are no longer available.`,
+              error: 'NoAvailability', agent_name: `${agentList[x].Agent_name}`,
+              start: newStart,
+              primaryPick: firstPick,
+              secondaryPick: secondPick,
+              tertiaryPick: thirdPick,
+              quaternaryPick: fourthPick,
+              quinaryPick: fifthPick
+            }
+            sendBreakReportEmail(emailData);
+            break;
+          }
         } else {
           isBuilt = false;
           emailData = {
-            reason: `Agent's selected preferred shifts are no longer available.`,
-            error: 'NoAvailability', agent_name: `${agentList[x].Agent_name}`,
+            reason: `Agent did not select any preferred shifts.`,
+            error: 'NoSelectedShifts', agent_name: `${agentList[x].Agent_name}`,
             start: newStart,
             primaryPick: firstPick,
             secondaryPick: secondPick,
@@ -200,20 +216,6 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
           sendBreakReportEmail(emailData);
           break;
         }
-      } else {
-        isBuilt = false;
-        emailData = {
-          reason: `Agent did not select any preferred shifts.`,
-          error: 'NoSelectedShifts', agent_name: `${agentList[x].Agent_name}`,
-          start: newStart,
-          primaryPick: firstPick,
-          secondaryPick: secondPick,
-          tertiaryPick: thirdPick,
-          quaternaryPick: fourthPick,
-          quinaryPick: fifthPick
-        }
-        sendBreakReportEmail(emailData);
-        break;
       }
     }
   }

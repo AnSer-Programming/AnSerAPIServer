@@ -1,6 +1,7 @@
 "use strict";
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const to = require('./SendTo.json');
 dotenv.config();
 
 const sendEmail = (data) => {
@@ -32,7 +33,7 @@ const sendEmail = (data) => {
   async function main() {
     const info = await transporter.sendMail({
       from: `${process.env.EMAIL_USER_API}`, // sender address
-      to: "rnecaise@myomnitech.com; robert.cain@daviscrump.com; Trevor.Rockstad@daviscrump.com; latrisha.crump@daviscrump.com; martincrump@daviscrump.com; leads@daviscrump.com", // list of receivers
+      to: `${to.To}`, // list of receivers
       cc: [
         'stephenm@anser.com'
       ],
