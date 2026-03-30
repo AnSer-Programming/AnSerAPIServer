@@ -6,6 +6,7 @@ const seq = require('sequelize');
 const { buildSchedule } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftAssigner');
 const sendBreakReportEmail = require('../../../node-mailer/AgentSuccess/automationBreakReport');
 const sendSuccessReportEmail = require('../../../node-mailer/AgentSuccess/automationSuccessReport');
+const agentExceptionList = `[Agent_Name] = 'John Antoniewicz' OR [Agent_Name] = 'Lilia Garcia' OR [Agent_Name] = 'Claudia Luna' OR [Agent_Name] = 'Kevin Warren'`
 
 async function getAgentSignUpReport() {
   let results;
@@ -142,7 +143,7 @@ async function getAgents(agentType) {
   if (agentType == "Agent") {
     query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 OR (${agentExceptionList})
       ORDER BY Agent_name`;
   } else if (agentType == "Dispatcher") {
     query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
@@ -163,6 +164,8 @@ async function getAgents(agentType) {
 
   try {
     let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
+
+    console.log(result);
 
     return result;
   } catch (err) {
@@ -195,14 +198,14 @@ async function setShiftData(shiftData) {
   }
 }
 
-async function getAgentsBySenority() {
+async function getAgentsBySeniority() {
   let results = new Array();
   let query = new Array();
   let placeHolder;
 
   query[0] = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, format(StartStamp, 'yyyy-MM-dd') as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 AND [EmployeeID] != 1740
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 OR (${agentExceptionList})
       ORDER BY StartStamp, EmployeeID ASC`;
 
   query[1] = `SELECT *
@@ -303,7 +306,7 @@ async function getNotYetSignedUp() {
 router.get('/TestAutoAssign/:startPoint', async (req, res) => {
   let start = req.params.startPoint;
   let roundNumber = 1;
-  let agents = await getAgentsBySenority();
+  let agents = await getAgentsBySeniority();
   let takenShifts = await getSignedUp('Summer');
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
@@ -418,8 +421,8 @@ router.get('/GetNotYetSignedUp', async (req, res) => {
   res.json(results);
 });
 
-router.get('/GetAgents/BySenority', async (req, res) => {
-  results = await getAgentsBySenority();
+router.get('/GetAgents/BySeniority', async (req, res) => {
+  results = await getAgentsBySeniority();
   res.json(results);
 });
 
