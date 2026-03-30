@@ -35,19 +35,19 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
       // Limit to the same date between the overview and the stored data
       if (overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftDate == takenShifts[x].holiday_date) {
         // Limit to the same employee level between overview and stored data
-        if (overviewByOffice[`${takenShifts[x].agent_office}`][y].employeeType == takenShifts[x].employee_type) {
-          if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) < await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[1]) &&
-              parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
-              overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents = 1 + parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents);
-            }
-          } else if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) < await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[1]) &&
-              parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
-              overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents = 1 + parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents);
-            }
+        // if (overviewByOffice[`${takenShifts[x].agent_office}`][y].employeeType == takenShifts[x].employee_type) {
+        if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) < await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[1]) &&
+            parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
+            overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents = 1 + parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents);
+          }
+        } else if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[0]) < await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[1]) &&
+            parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(takenShifts[x].shift_time)[0])) {
+            overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents = 1 + parseInt(overviewByOffice[`${takenShifts[x].agent_office}`][y].totalAgents);
           }
         }
+        // }
       }
     }
   }
@@ -81,21 +81,21 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
       // Limit to the same date between the overview and the stored data
       if (overviewByOffice[`${agent.Office}`][x].shiftDate == shift.holiday_date) {
         // Limit to the same employee level between overview and stored data
-        if (overviewByOffice[`${agent.Office}`][x].employeeType == shift.employee_type) {
-          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) == await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+        // if (overviewByOffice[`${agent.Office}`][x].employeeType == shift.employee_type) {
+        if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) == await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);
+        } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
+            parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
             overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);
-          } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
-              parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-              overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);
-            }
-          } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
-              parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-              overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);
-            }
+          }
+        } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
+            parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+            overviewByOffice[`${agent.Office}`][x].totalAgents = 1 + parseInt(overviewByOffice[`${agent.Office}`][x].totalAgents);
           }
         }
+        // }
       }
     }
   }
@@ -104,30 +104,30 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
     let isAvailable = true;
     for (let x = 0; x < overviewByOffice[`${agent.Office}`].length; x++) {
       if (overviewByOffice[`${agent.Office}`][x].shiftDate == shift.holiday_date) {
-        if (overviewByOffice[`${agent.Office}`][x].employeeType == shift.employee_type) {
-          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) == await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+        // if (overviewByOffice[`${agent.Office}`][x].employeeType == shift.employee_type) {
+        if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) == await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          if (overviewByOffice[`${agent.Office}`][x].availableSeats == overviewByOffice[`${agent.Office}`][x].totalAgents) {
+            isAvailable = false;
+            break;
+          }
+        } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
+            parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
             if (overviewByOffice[`${agent.Office}`][x].availableSeats == overviewByOffice[`${agent.Office}`][x].totalAgents) {
               isAvailable = false;
               break;
             }
-          } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
-              parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-              if (overviewByOffice[`${agent.Office}`][x].availableSeats == overviewByOffice[`${agent.Office}`][x].totalAgents) {
-                isAvailable = false;
-                break;
-              }
-            }
-          } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-            if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
-              parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
-              if (overviewByOffice[`${agent.Office}`][x].availableSeats == overviewByOffice[`${agent.Office}`][x].totalAgents) {
-                isAvailable = false;
-                break;
-              }
+          }
+        } else if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+          if (parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[0]) <= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[1]) &&
+            parseInt(overviewByOffice[`${agent.Office}`][x].shiftTimeRaw[1]) >= await parseInt(shiftTimeTwelveHourToTwentyFourHour(shift.shift_time)[0])) {
+            if (overviewByOffice[`${agent.Office}`][x].availableSeats == overviewByOffice[`${agent.Office}`][x].totalAgents) {
+              isAvailable = false;
+              break;
             }
           }
         }
+        // }
       }
     }
 
@@ -141,7 +141,7 @@ async function buildSchedule(agents, requestedShifts, shifts, savedShifts, round
     let thirdPick;
     let fourthPick;
     let fifthPick;
-    if (agentList[x].Agent_name != 'Ashonte Cofield') {
+    if (agentList[x].Agent_name != 'Ashonte Cofield' || agentList[x].Agent_name != 'Cassie Varble') {
       if (requestedShifts.length > 0) {
         for (let y = 0; y < requestedShifts.length; y++) {
           if (agentList[x].EmployeeID == requestedShifts[y].employee_id) {
