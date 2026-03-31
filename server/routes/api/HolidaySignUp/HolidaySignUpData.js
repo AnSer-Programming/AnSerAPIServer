@@ -6,7 +6,7 @@ const seq = require('sequelize');
 const { buildSchedule } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftAssigner');
 const sendBreakReportEmail = require('../../../node-mailer/AgentSuccess/automationBreakReport');
 const sendSuccessReportEmail = require('../../../node-mailer/AgentSuccess/automationSuccessReport');
-const agentExceptionList = `[Agent_Name] = 'John Antoniewicz' OR [Agent_Name] = 'Lilia Garcia' OR [Agent_Name] = 'Claudia Luna' OR [Agent_Name] = 'Kevin Warren'`
+const agentExceptionList = `[Agent_Name] = 'John Antoniewicz' OR [Agent_Name] = 'Lilia Garcia' OR [Agent_Name] = 'Claudia Luna' OR [Agent_Name] = 'Kevin Warren' OR [Agent_Name] = 'Wendy Abad'`
 
 async function getAgentSignUpReport() {
   let results;
@@ -145,6 +145,7 @@ async function getAgents(agentType) {
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 OR (${agentExceptionList})
       ORDER BY Agent_name`;
+      console.log(query);
   } else if (agentType == "Dispatcher") {
     query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
@@ -164,8 +165,6 @@ async function getAgents(agentType) {
 
   try {
     let result = await configAccounts.query(query, { type: seq.QueryTypes.SELECT });
-
-    console.log(result);
 
     return result;
   } catch (err) {
@@ -362,7 +361,7 @@ router.get('/AssignShifts/:roundNumber/:startPoint', async (req, res) => {
   console.log("Start Assigning Shifts");
   let start = req.params.startPoint;
   let roundNumber = req.params.roundNumber;
-  let agents = await getAgentsBySenority();
+  let agents = await getAgentsBySeniority();
   let takenShifts = await getSignedUp('Summer');
   let shifts = await getHolidayData('All');
   let requestedShifts = await getRequestedShifts();
