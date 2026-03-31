@@ -145,7 +145,6 @@ async function getAgents(agentType) {
       FROM AnSerTimecard.dbo.EmployeeList 
       WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 OR (${agentExceptionList})
       ORDER BY Agent_name`;
-      console.log(query);
   } else if (agentType == "Dispatcher") {
     query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
@@ -159,7 +158,7 @@ async function getAgents(agentType) {
   } else {
     query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight'
+      WHERE [Active] = 'Current' AND ([JobTitle] = 'Agent' OR [JobTitle] = 'Supervisor') AND ([ScheduleGroup] = 'Amtelco Agent' OR [ScheduleGroup] = 'Amtelco Supervisor') AND [Office] != 'Overnight' OR (${agentExceptionList})
       ORDER BY JobTitle, Dispatcher, Agent_name`;
   }
 
