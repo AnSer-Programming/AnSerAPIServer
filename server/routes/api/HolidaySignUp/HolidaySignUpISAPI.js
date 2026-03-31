@@ -4,6 +4,7 @@ const configAccounts = require('../../../config/connectionProductionCustom');
 const sql = require('mssql');
 const seq = require('sequelize');
 const { findShifts } = require('../../../utils/holidaySignUpHelper/holidaySignUpShiftLogic');
+const agentExceptionList = `[Agent_Name] = 'John Antoniewicz' OR [Agent_Name] = 'Lilia Garcia' OR [Agent_Name] = 'Claudia Luna' OR [Agent_Name] = 'Kevin Warren' OR [Agent_Name] = 'Wendy Abad'`
 
 async function getHolidays() {
   let results;
@@ -97,7 +98,7 @@ async function getAgentsAlphabeticalOrder() {
 
   query = `SELECT EmployeeID, Agent_name, JobTitle, Dispatcher, CONVERT(Date, StartStamp) as 'start_date', Office
       FROM AnSerTimecard.dbo.EmployeeList 
-      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0
+      WHERE [Active] = 'Current' AND [JobTitle] = 'Agent' AND [ScheduleGroup] = 'Amtelco Agent' AND [Office] != 'Overnight' AND [Dispatcher] = 0 OR ${agentExceptionList}
       ORDER BY Agent_name`;
 
   results = await runQuery();
