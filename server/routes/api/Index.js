@@ -133,4 +133,8 @@ const holidayScheduleISAPI = require('./HolidaySignUp/HolidaySignUpISAPI');
 router.use('/AgentScheduling/HolidaySignUp', holidaySchedule);
 router.use('/AgentScheduling/HolidaySignISAPI', holidayScheduleISAPI);
 
+//Fresh Desk
+const getTickets = require('./FreshDesk/GetTickets');
+router.use('/FreshDesk/GetTickets', getTickets);
+
 module.exports = router;
