@@ -10,13 +10,13 @@ async function runPostQuery(data) {
     for (let i = 0; i < data.POST.length; i++) { //Iterate through each provider
       query = `INSERT INTO [isapi].[dbo].[qgendaProviders] (first_name, last_name, staff_key, active, start_date, date_inactive, date_adjusted) 
         VALUES (
-          ${data.POST[i].first_name}, 
-          ${data.POST[i].last_name}, 
-          ${data.POST[i].staff_key}, 
-          ${data.POST[i].active}, 
-          ${data.POST[i].start_date}, 
-          ${data.POST[i].date_inactive}, 
-          ${data.POST[i].date_adjusted}
+          '${data.POST[i].first_name}', 
+          '${data.POST[i].last_name}', 
+          '${data.POST[i].staff_key}', 
+          '${data.POST[i].active}', 
+          '${data.POST[i].start_date}', 
+          ${data.POST[i].date_inactive == null ? null : `'${data.POST[i].date_inactive}'`}, 
+          '${data.POST[i].date_adjusted}'
         )`;
       result = await configAPI.query(query, { type: seq.QueryTypes.SELECT });
     }
