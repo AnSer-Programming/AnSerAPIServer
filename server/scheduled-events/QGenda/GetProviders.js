@@ -2,7 +2,13 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-function main() {
+async function main() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  let m = today.getMonth() + 1; // Months start at 0!
+  let d = today.getDate();
+
+  const formattedToday = m + '/' + d + '/' + yyyy;
   let returnData;
   let token;
   let data = {
@@ -20,6 +26,7 @@ function main() {
     });
 
     let bearerToken = await token.json();
+    console.log(bearerToken);
 
     returnData = await fetch(`https://api.qgenda.com/v2/staffmember?includes=String`, {
       headers: {
@@ -31,10 +38,10 @@ function main() {
 
     let parsedReturnData = await returnData.json();
 
-    return (parsedReturnData);
+    return parsedReturnData;
   } catch (err) {
     return (err);
   }
 }
 
-return main();
+module.exports = main();

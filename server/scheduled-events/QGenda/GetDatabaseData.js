@@ -14,4 +14,4 @@ async function main() {
   }
 }
 
-return main();
+module.exports = main();

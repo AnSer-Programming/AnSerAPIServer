@@ -76,19 +76,18 @@ schedule.scheduleJob('00 06 * * *', async function () { // run at 6:00AM every d
 
 // QGenda
 schedule.scheduleJob('00 04 * * 1', async function () { //Run every Monday at 4:00AM
-  if (process.env.SERVER_TYPE == "development") {
-    const localData = await require('./QGenda/GetDatabaseData');
-    const qgendaData = await require('./QGenda/GetProviders');
-    const updateData = await evaluateData(localData, qgendaData);
-    await AdjustDatabaseData(updateData);
-    SendNewProvider(
-      {
-        "fileName": "QGendaTestData",
-        "fileData": "FirstName,LastName,StaffKey,DateAdded,DateInactive,Active,DateAdjusted\r\nBob,Evans,123asdf456qwer789,2026-05-27,NULL,True,2026-05-27\r\n"
+  const { main } = require('./QGenda/EvaluateData');
+  const localData = await require('./QGenda/GetDatabaseData');
+  const qgendaData = await require('./QGenda/GetProviders');
+  const updateData = await main(localData, qgendaData);
+  await AdjustDatabaseData(updateData);
+    // SendNewProvider(
+    //   {
+    //     "fileName": "QGendaTestData",
+    //     "fileData": "FirstName,LastName,StaffKey,DateAdded,DateInactive,Active,DateAdjusted\r\nBob,Evans,123asdf456qwer789,2026-05-27,NULL,True,2026-05-27\r\n"
 
-      }
-    );
-  }
+    //   }
+    // );
 });
 
 // schedule.scheduleJob('*/5 * * * * *', async function () { // test email
@@ -101,8 +100,19 @@ schedule.scheduleJob('00 04 * * 1', async function () { //Run every Monday at 4:
 
 
 //Test
-// schedule.scheduleJob('10 38 17 * * *', async function () {
-//   SendDirectoriesWithoutOverrides(await directoriesMissingOverrides());
+// schedule.scheduleJob('15 * * * * *', async function () {
+  // const { main } = require('./QGenda/EvaluateData');
+  // console.log("run");
+  // const localData = await require('./QGenda/GetDatabaseData');
+  // const qgendaData = await require('./QGenda/GetProviders');
+  // const updateData = await main(localData, qgendaData);
+  // await AdjustDatabaseData(updateData);
+//   SendNewProvider(
+//     {
+//       "fileName": "QGendaTestData",
+//       "fileData": "FirstName,LastName,StaffKey,DateAdded,DateInactive,Active,DateAdjusted\r\nBob,Evans,123asdf456qwer789,2026-05-27,NULL,True,2026-05-27\r\n"
+//     }
+//   );
 // });
 
 // Event for sending the undelivered reports VIA Email
