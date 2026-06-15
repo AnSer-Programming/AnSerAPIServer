@@ -33,8 +33,11 @@ async function runUpdateQuery(data) {
   try {
     for (let i = 0; i < data.UPDATE.length; i++) { //Iterate through each provider
       query = `UPDATE [isapi].[dbo].[qgendaProviders] 
-        SET active = ${data.UPDATE[i].active}, date_inactive = ${data.UPDATE[i].date_inactive}, date_adjusted =  ${data.UPDATE[i].date_adjusted}
-        WHERE staff_key=${data.UPDATE[i].staff_key}`;
+        SET 
+          active = '${data.UPDATE[i].active}', 
+          date_inactive = '${data.UPDATE[i].date_inactive}', 
+          date_adjusted = '${data.UPDATE[i].date_adjusted}'
+        WHERE staff_key='${data.UPDATE[i].staff_key}'`;
       result = await configAPI.query(query, { type: seq.QueryTypes.SELECT });
     }
     return result;
