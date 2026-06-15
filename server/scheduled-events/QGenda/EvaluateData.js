@@ -14,31 +14,33 @@ function handleData(localData, qgendaData) {
     const dataLenght = localData.length;
     if (localData.length > 0) {
       for (let y = 0; y < dataLenght; y++) {
-        if (qgendaData[x].StaffKey == localData[y].staff_key) {
-          delete localData[y];
-          found = true;
-          break;
-        } else if (y == dataLenght && !found) {
-          if (json.POST.length > 0) {
-            json.POST[json.POST.length] = {
-              first_name: `${qgendaData[x].FirstName.replace(/'/g, '')}`,
-              last_name: `${qgendaData[x].LastName.replace(/'/g, '')}`,
-              staff_key: `${qgendaData[x].StaffKey}`,
-              active: "TRUE",
-              start_date: `${startDate.toLocaleDateString()}`,
-              date_inactive: null,
-              date_adjusted: date.toLocaleDateString()
-            };
-          } else {
-            json.POST[0] = {
-              first_name: `${qgendaData[x].FirstName.replace(/'/g, '')}`,
-              last_name: `${qgendaData[x].LastName.replace(/'/g, '')}`,
-              staff_key: `${qgendaData[x].StaffKey}`,
-              active: "TRUE",
-              start_date: `${startDate.toLocaleDateString()}`,
-              date_inactive: null,
-              date_adjusted: date.toLocaleDateString()
-            };
+        if (localData[y]) {
+          if (qgendaData[x].StaffKey == localData[y].staff_key) {
+            delete localData[y];
+            found = true;
+            break;
+          } else if (y == dataLenght && !found) {
+            if (json.POST.length > 0) {
+              json.POST[json.POST.length] = {
+                first_name: `${qgendaData[x].FirstName.replace(/'/g, '')}`,
+                last_name: `${qgendaData[x].LastName.replace(/'/g, '')}`,
+                staff_key: `${qgendaData[x].StaffKey}`,
+                active: "TRUE",
+                start_date: `${startDate.toLocaleDateString()}`,
+                date_inactive: null,
+                date_adjusted: date.toLocaleDateString()
+              };
+            } else {
+              json.POST[0] = {
+                first_name: `${qgendaData[x].FirstName.replace(/'/g, '')}`,
+                last_name: `${qgendaData[x].LastName.replace(/'/g, '')}`,
+                staff_key: `${qgendaData[x].StaffKey}`,
+                active: "TRUE",
+                start_date: `${startDate.toLocaleDateString()}`,
+                date_inactive: null,
+                date_adjusted: date.toLocaleDateString()
+              };
+            }
           }
         }
       }
@@ -68,28 +70,30 @@ function handleData(localData, qgendaData) {
   }
 
   for (let i = 0; i < localData.length; i++) {
-    const startDate = new Date(localData[i].StartDate);
-    if (localData[i] != null) {
-      if (json.UPDATE.length > 0) {
-        json.UPDATE[json.UPDATE.length] = {
-          first_name: `${localData[i].first_name}`,
-          last_name: `${localData[i].last_name}`,
-          staff_key: `${localData[i].staff_key}`,
-          active: "FALSE",
-          start_date: `${startDate.toLocaleDateString()}`,
-          date_inactive: date.toLocaleDateString(),
-          date_adjusted: date.toLocaleDateString()
-        };
-      } else {
-        json.UPDATE[0] = {
-          first_name: `${localData[i].first_name}`,
-          last_name: `${localData[i].last_name}`,
-          staff_key: `${localData[i].staff_key}`,
-          active: "FALSE",
-          start_date: `${startDate.toLocaleDateString()}`,
-          date_inactive: date.toLocaleDateString(),
-          date_adjusted: date.toLocaleDateString()
-        };
+    if (localData[i]) {
+      const startDate = new Date(localData[i].StartDate);
+      if (localData[i] != null) {
+        if (json.UPDATE.length > 0) {
+          json.UPDATE[json.UPDATE.length] = {
+            first_name: `${localData[i].first_name}`,
+            last_name: `${localData[i].last_name}`,
+            staff_key: `${localData[i].staff_key}`,
+            active: "FALSE",
+            start_date: `${startDate.toLocaleDateString()}`,
+            date_inactive: date.toLocaleDateString(),
+            date_adjusted: date.toLocaleDateString()
+          };
+        } else {
+          json.UPDATE[0] = {
+            first_name: `${localData[i].first_name}`,
+            last_name: `${localData[i].last_name}`,
+            staff_key: `${localData[i].staff_key}`,
+            active: "FALSE",
+            start_date: `${startDate.toLocaleDateString()}`,
+            date_inactive: date.toLocaleDateString(),
+            date_adjusted: date.toLocaleDateString()
+          };
+        }
       }
     }
   }
